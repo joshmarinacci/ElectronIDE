@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap 101 Template</title>
+
+    <!-- Bootstrap -->
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <style type='text/css'>
+
+        #ace-editor {
+            border: 1px solid #cccccc;
+            height: 600px;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+        }
+        #mainarea {
+            padding-top: 60px;
+        }
+    </style>
+  </head>
+  <body>
+
+<nav class="navbar navbar-default navbar-fixed-top " role="navigation">
+  <div class="container-fluid">
+
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">Arduino X</a>
+    </div>
+
+
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <form class="navbar-form navbar-left" role="search">
+            <div class='form-group'>
+                <input type='text' class='form-control' placeholder='search help' id='searchHelp'>
+            </div>
+        </form>
+        <form class="navbar-form navbar-right" role="search">
+
+
+            <div class="btn-group" id='port-selector'>
+              <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                port: cumodem1234 <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="#">Acti</a></li>
+                <li><a href="#">Another action</a></li>
+                <li><a href="#">Something else here</a></li>
+                <li class="divider"></li>
+                <li><a href="#">edit...</a></li>
+              </ul>
+            </div>
+
+            <div class="btn-group" id='board-selector'>
+              <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                board: Uno <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="#">Acti</a></li>
+                <li><a href="#">Another action</a></li>
+                <li><a href="#">Something else here</a></li>
+                <li class="divider"></li>
+                <li><a href="#">edit...</a></li>
+              </ul>
+            </div>
+
+            <div class='btn-group'>
+                <button id='toggleresources' type="button" class="btn btn-primary">compile</button>
+                <button id='toggleeditor' type="button" class="btn btn-success">run</button>
+            </div>
+        </form>
+
+    </div>
+  </div>
+</nav>
+
+
+<div class='container-fluid' id='mainarea'>
+    <div class='row'>
+        <div class='col-md-2'>
+            <h3>libs</h3>
+            <div class='list-group' id='used-libraries'>
+                <a href='#' class='list-group-item' data-lib='spi'>SPI</a>
+                <a href='#' class='list-group-item' data-lib='adafruit'>Adafruit</a>
+            </div>
+            <h3>used pins</h3>
+            <ul>
+                <li>2 : digital <label>dataPin</label></li>
+                <li>3 : digital <label>clockPin</label></li>
+            </ul>
+            <!-- list of installed libs. click on a link to see it's docs -->
+            <h3>available libs</h3>
+            <div class='list-group' id='available-libraries'>
+                <a href='#' class='list-group-item' data-lib='spi'>SPI</a>
+                <a href='#' class='list-group-item' data-lib='adafruit'>Adafruit</a>
+                <a href='#' class='list-group-item' data-lib='adafruit'>Serial</a>
+            </div>
+        </div>
+        <div class='col-md-6'>
+            <h4>foo</h4>
+            <div id='ace-editor'>
+#include "SPI.h"
+#include "Adafruit_WS2801.h"
+
+/*****************************************************************************
+Example sketch for driving Adafruit WS2801 pixels!
+
+
+  Designed specifically to work with the Adafruit RGB Pixels!
+  12mm Bullet shape ----> https://www.adafruit.com/products/322
+  12mm Flat shape   ----> https://www.adafruit.com/products/738
+  36mm Square shape ----> https://www.adafruit.com/products/683
+
+  These pixels use SPI to transmit the color data, and have built in
+  high speed PWM drivers for 24 bit color per pixel
+  2 pins are required to interface
+
+  Adafruit invests time and resources providing this open source code,
+  please support Adafruit and open-source hardware by purchasing
+  products from Adafruit!
+
+  Written by Limor Fried/Ladyada for Adafruit Industries.
+  BSD license, all text above must be included in any redistribution
+
+*****************************************************************************/
+
+// Choose which 2 pins you will use for output.
+// Can be any valid output pins.
+// The colors of the wires may be totally different so
+// BE SURE TO CHECK YOUR PIXELS TO SEE WHICH WIRES TO USE!
+uint8_t dataPin  = 2;    // Yellow wire on Adafruit Pixels
+uint8_t clockPin = 3;    // Green wire on Adafruit Pixels
+
+// Don't forget to connect the ground wire to Arduino ground,
+// and the +5V wire to a +5V supply
+
+// Set the first variable to the NUMBER of pixels. 25 = 25 pixels in a row
+Adafruit_WS2801 strip = Adafruit_WS2801(25, dataPin, clockPin);
+
+// Optional: leave off pin numbers to use hardware SPI
+// (pinout is then specific to each board and can't be changed)
+//Adafruit_WS2801 strip = Adafruit_WS2801(25);
+
+// For 36mm LED pixels: these pixels internally represent color in a
+// different format.  Either of the above constructors can accept an
+// optional extra parameter: WS2801_RGB is 'conventional' RGB order
+// WS2801_GRB is the GRB order required by the 36mm pixels.  Other
+// than this parameter, your code does not need to do anything different;
+// the library will handle the format change.  Examples:
+//Adafruit_WS2801 strip = Adafruit_WS2801(25, dataPin, clockPin, WS2801_GRB);
+//Adafruit_WS2801 strip = Adafruit_WS2801(25, WS2801_GRB);
+
+void setup() {
+
+  strip.begin();
+
+  // Update LED contents, to start they are all 'off'
+  strip.show();
+}
+
+
+void loop() {
+  // Some example procedures showing how to display to the pixels
+
+  colorWipe(Color(255, 0, 0), 50);
+  colorWipe(Color(0, 255, 0), 50);
+  colorWipe(Color(0, 0, 255), 50);
+  rainbow(20);
+  rainbowCycle(20);
+}
+
+void rainbow(uint8_t wait) {
+  int i, j;
+
+  for (j=0; j < 256; j++) {     // 3 cycles of all 256 colors in the wheel
+    for (i=0; i < strip.numPixels(); i++) {
+      strip.setPixelColor(i, Wheel( (i + j) % 255));
+    }
+    strip.show();   // write all the pixels out
+    delay(wait);
+  }
+}
+
+// Slightly different, this one makes the rainbow wheel equally distributed
+// along the chain
+void rainbowCycle(uint8_t wait) {
+  int i, j;
+
+  for (j=0; j < 256 * 5; j++) {     // 5 cycles of all 25 colors in the wheel
+    for (i=0; i < strip.numPixels(); i++) {
+      // tricky math! we use each pixel as a fraction of the full 96-color wheel
+      // (thats the i / strip.numPixels() part)
+      // Then add in j which makes the colors go around per pixel
+      // the % 96 is to make the wheel cycle around
+      strip.setPixelColor(i, Wheel( ((i * 256 / strip.numPixels()) + j) % 256) );
+    }
+    strip.show();   // write all the pixels out
+    delay(wait);
+  }
+}
+
+// fill the dots one after the other with said color
+// good for testing purposes
+void colorWipe(uint32_t c, uint8_t wait) {
+  int i;
+
+  for (i=0; i < strip.numPixels(); i++) {
+      strip.setPixelColor(i, c);
+      strip.show();
+      delay(wait);
+  }
+}
+
+/* Helper functions */
+
+// Create a 24 bit color value from R,G,B
+uint32_t Color(byte r, byte g, byte b)
+{
+  uint32_t c;
+  c = r;
+  c <<= 8;
+  c |= g;
+  c <<= 8;
+  c |= b;
+  return c;
+}
+
+//Input a value 0 to 255 to get a color value.
+//The colours are a transition r - g -b - back to r
+uint32_t Wheel(byte WheelPos)
+{
+  if (WheelPos < 85) {
+   return Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+  } else if (WheelPos < 170) {
+   WheelPos -= 85;
+   return Color(255 - WheelPos * 3, 0, WheelPos * 3);
+  } else {
+   WheelPos -= 170;
+   return Color(0, WheelPos * 3, 255 - WheelPos * 3);
+  }
+}</div>
+        </div>
+        <div class='col-md-4'>
+
+            <ul class="nav nav-tabs">
+              <li class="active"><a href="#console-pane" data-toggle="tab">Console</a></li>
+              <li><a href="#docs-pane" data-toggle="tab">Docs</a></li>
+              <li><a href="#board-info-pane" data-toggle="tab">Board Info</a></li>
+            </ul>
+
+            <div class='tab-content'>
+                <div id='console-pane' class='tab-pane active'></div>
+                <div id='docs-pane' class='tab-pane'>
+                    some docs go here
+                </div>
+                <div id='board-info-pane' class='tab-pane'>
+                    board info goes here
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="jquery.js"></script>
+    <script src="mustache.js"></script>
+    <script src='./ace-builds-master/src-noconflict/ace.js' type='text/javascript' charset='utf-8'></script>
+    <script src="./ace-builds-master/src-noconflict/ext-language_tools.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+<script type='text/javascript'>
+$(document).ready(function() {
+
+var langTools = ace.require("ace/ext/language_tools");
+var editor = ace.edit('ace-editor');
+editor.setOptions({
+    enableBasicAutocompletion: true,
+});
+//editor.setTheme('ace/theme/xcode');
+editor.getSession().setMode('ace/mode/c_cpp');
+editor.getSession().setUseWrapMode(true);
+
+
+var boards = [
+    {
+        name:'Uno',
+        platform:'AVR',
+        mcu:'ATmega328',
+        voltage: '5',
+        memory: '32kb',
+        sram: '2kb',
+        eeprom: '1kb',
+        pins: [
+            { name:'IOREF', desc: 'voltage reference' },
+            { name:'reset', desc: 'raise to reset' },
+            { name:'3V3',   desc: '3.3 regulated output'},
+            { name:'5V',    desc: 'regulated 5v output'},
+            { name:'GND',   desc: 'ground'},
+            { name:'GND',   desc: 'ground'},
+            { name:'VIN',   desc: 'voltage input'},
+
+            { name:'A0',   desc: 'analog 0', type:'analog'},
+            { name:'A1',   desc: 'analog 1', type:'analog'},
+            { name:'A2',   desc: 'analog 1', type:'analog'},
+            { name:'A3',   desc: 'analog 1', type:'analog'},
+            { name:'A4',   desc: 'analog 1', type:'analog', altname:'SDA', alttype:'I2C'},
+            { name:'A5',   desc: 'analog 1', type:'analog', altname:'SCL', alttype:'I2C'},
+
+            { name: 'D0', type:'digital', desc:'digital 0', altname:'RX', alttype:'serial'},
+            { name: 'D1', type:'digital', desc:'digital 1', altname:'TX', alttype:'serial'},
+            { name: 'D2', type:'digital', desc:'digital 2', altname:'Interrupt 0', alttype:'interrupt', pwm:'false'},
+            { name: 'D3', type:'digital', desc:'digital 3', altname:'Interrupt 1', alttype:'interrupt', pwm:'true'},
+            { name: 'D4', type:'digital', desc:'digital 4', pwm:'false'},
+            { name: 'D5', type:'digital', desc:'digital 5', pwm:'true'},
+            { name: 'D6', type:'digital', desc:'digital 6', pwm:'true'},
+            { name: 'D7', type:'digital', desc:'digital 7', pwm:'false'},
+
+            { name: 'D8', type:'digital', desc:'digital 8', pwm:'false'},
+            { name: 'D9', type:'digital', desc:'digital 9', pwm:'true'},
+            { name: 'D10', type:'digital', desc:'digital 10', altname:'SS',   alttype:'spi', pwm:'true'},
+            { name: 'D11', type:'digital', desc:'digital 11', altname:'MOSI', alttype:'spi', pwm:'true'},
+            { name: 'D12', type:'digital', desc:'digital 12', altname:'MISO', alttype:'spi', pwm:'false'},
+            { name: 'D13', type:'digital', desc:'digital 13', altname:'SCK',  alttype:'spi', pwm:'false'},
+
+            { name: 'SDA', type:'I2C', desc:'I2C data line'},
+            { name: 'SCL', type:'I2C', desc:'I2C clock'},
+
+
+        ]
+
+    },
+    {
+        name:'Due',
+        platform:'ARM',
+        cpu:'368'
+    }
+];
+
+$("#board-selector .dropdown-menu").empty().append(Mustache.render($("#board-selector-template").text(),boards));
+$("#board-info-pane").empty().append(Mustache.render($("#board-info-template").text(),boards[0]));
+
+var serialports = [
+    {
+        name:'1234',
+        path:'/dev/tty1234'
+    },
+    {
+        name:'modem546',
+        path:'/dev/cumodem546',
+    }
+];
+$("#port-selector .dropdown-menu").empty().append(Mustache.render($("#port-selector-template").text(),serialports));
+
+var libraries = [
+    {
+        name: "Adafruit RGB Pixel",
+        platforms: [
+            'avr',
+            'sparkcore',
+            'rfduino',
+            'ARM',
+        ],
+        docs: [
+            {
+                type:'class',
+                name:'Adafruit_WS2801',
+                constructors:[
+                    "Adafruit_WS2801(uint16_t n, uint8_t dpin, uint8_t cpin, uint8_t order=WS2801_RGB);",
+                    "Adafruit_WS2801(uint16_t x, uint16_t y, uint8_t dpin, uint8_t cpin, uint8_t order=WS2801_RGB);",
+                    "Adafruit_WS2801(uint16_t n, uint8_t order=WS2801_RGB);",
+                    "Adafruit_WS2801();",
+                ],
+                methods: [
+                    "begin(void)",
+                    "show(void)",
+                    "setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b)",
+                    "setPixelColor(uint16_t n, uint32_t c)",
+                    "setPixelColor(uint16_t x, uint16_t y, uint8_t r, uint8_t g, uint8_t b)",
+                    "setPixelColor(uint16_t x, uint16_t y, uint32_t c)",
+                    "updatePins(uint8_t dpin, uint8_t cpin), // Change pins, configurable",
+                    "updatePins(void), // Change pins, hardware SPI",
+                    "updateLength(uint16_t n), // Change strand length",
+                    "updateOrder(uint8_t order); // Change data order",
+                ]
+            },
+        ]
+    },
+]
+
+
+$("#used-libraries a").click(function(e){
+    e.preventDefault();
+    console.log("clicked on ", $(this).attr('data-lib'));
+    $("#docs-pane").empty().append(Mustache.render($("#docs-template").text(),libraries[0]));
+
+});
+      });
+    </script>
+  </body>
+
+
+
+<script id='board-selector-template' type='text/mustache'>
+  {{#.}}
+    <li><a href='#'><b>{{name}}</b> : {{platform}}</a></li>
+  {{/.}}
+</script>
+
+<script id='port-selector-template' type='text/mustache'>
+    {{#.}}
+      <li><a href='#'><b>{{name}}</b> : {{path}}</a></li>
+    {{/.}}
+</script>
+
+<script id='docs-template' type='text/mustache'>
+<h3>{{name}}</h3>
+<p><b>Platforms</b> {{#platforms}} {{.}} {{/platforms}}
+{{#docs}}
+<div>
+  <h4>{{type}}:{{name}}</h4>
+
+  <h5>constructors</h5>
+  {{#constructors}}
+  <h6>{{.}}</h6>
+  {{/constructors}}
+
+  <h5>methods</h5>
+  {{#methods}}
+  <h6>{{.}}</h6>
+  {{/methods}}
+
+</div>
+{{/docs}}
+</script>
+
+
+<script id='board-info-template' type='text/mustache'>
+<h3>{{name}}</h3>
+<dl class='dl-horizontal'>
+<dt>platform</dt><dd>{{platform}}</dd>
+<dt>mcu</dt><dd>{{mcu}}</dd>
+<dt>voltage</dt><dd>{{voltage}}</dd>
+<dt>memory</dt><dd>{{memory}}</dd>
+<dt>sram</dt><dd>{{sram}}</dd>
+<dt>eeprom</dt><dd>{{eeprom}}</dd>
+</dl>
+
+
+<h3>PINS</h3>
+<dl class='dl-horizontal'>
+{{#pins}}
+  <dt>{{name}}</dt>
+  <dd>{{desc}}, {{type}} <b>{{altname}} {{alttype}}</b></dd>
+{{/pins}}
+</script>
+
+</html>

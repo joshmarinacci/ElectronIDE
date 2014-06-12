@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<example
+    name="Blink"    
+>
+<keyword>basic</keyword>
+<keyword>LED</keyword>
+<keyword>digitalWrite</keyword>
+<description>Turns on an LED on for one second, then off for one second, repeatedly.</description>
+</example>
+
