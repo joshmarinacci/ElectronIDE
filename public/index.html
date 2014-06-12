@@ -21,7 +21,7 @@
         #ace-editor {
             position: fixed;
             border: 1px solid #cccccc;
-            left: 300px;
+            left: 250px;
             right: 500px;
             top: 100px;
             bottom: 10px;
@@ -34,7 +34,7 @@
             border: 1px solid black;
             top: 100px;
             bottom: 10px;
-            right: 0px;
+            right: 10px;
             width: 450px;
             overflow: auto;
         }
@@ -111,6 +111,11 @@
 <div class='container-fluid' id='mainarea'>
     <div class='row'>
         <div class='col-md-2'>
+            <h3>Sketch</h3>
+            <div id='sketch-info'></div>
+            <h3>Sketches</h3>
+            <div id='sketch-picker'></div>
+            <!--
             <h3>libs</h3>
             <div class='list-group' id='used-libraries'>
                 <a href='#' class='list-group-item' data-lib='spi'>SPI</a>
@@ -121,16 +126,16 @@
                 <li>2 : digital <label>dataPin</label></li>
                 <li>3 : digital <label>clockPin</label></li>
             </ul>
-            <!-- list of installed libs. click on a link to see it's docs -->
             <h3>available libs</h3>
             <div class='list-group' id='available-libraries'>
                 <a href='#' class='list-group-item' data-lib='spi'>SPI</a>
                 <a href='#' class='list-group-item' data-lib='adafruit'>Adafruit</a>
                 <a href='#' class='list-group-item' data-lib='adafruit'>Serial</a>
             </div>
+        -->
         </div>
         <div class='col-md-6'>
-            <h4>foo</h4>
+            <h4 id='sketch-name'>foo</h4>
             <div id='ace-editor'>/*
   Blink
   Turns on an LED on for one second, then off for one second, repeatedly.
@@ -263,6 +268,7 @@ var boards = [
 var STATE = {
     port:'',
     board:'',
+    sketch:'',
 }
 function setPort(port) {
     STATE.port = port;
@@ -273,6 +279,27 @@ function setBoard(board) {
     $("#board-selector .data").text(board);
 }
 
+function loadSketch(name) {
+    $.get(HOSTNAME+'/sketch/'+name,function(res) {
+        console.log("the result is ",res);
+        $("#sketch-name").text(res.name);
+        var infotemplate = $("#sketch-info-template").text();
+        $("#sketch-info").empty().append(Mustache.render(infotemplate,res.info));
+        $("#sketch-info .libraries a").click(function(e) {
+            e.preventDefault();
+            var libname =  $(this).attr('data-id');
+            console.log('clicked on lib', libname);
+            $('.nav-tabs a[href="#docs-pane"]').tab('show');
+            $.get(HOSTNAME+'/docs/library/'+libname,function(res2) {
+                var libdoctemplate = $("#library-doc-template").text();
+                console.log('got back docs',res2);
+                $("#docs-pane").empty().append(Mustache.render(libdoctemplate,res2));
+            })
+        })
+
+        editor.setValue(res.files[0].content);
+    })
+}
 
 var HOSTNAME = 'http://localhost:54329';
 function fetchSerialports(cb) {
@@ -292,6 +319,7 @@ function populateSerialports(ports) {
 }
 fetchSerialports(populateSerialports);
 
+
 function fetchBoards(cb) {
     $.get(HOSTNAME+"/boards",function(res) {
         cb(JSON.parse(res));
@@ -299,7 +327,6 @@ function fetchBoards(cb) {
 }
 
 function populateBoards(boards) {
-    console.log('boards = ',boards);
     var template = $("#board-selector-template").text();
     $("#board-selector .dropdown-menu")
         .empty()
@@ -349,11 +376,9 @@ function compileAndRunCode() {
 
 
 function appendConsole(str) {
-    console.log('appending:',str);
     $("#console").append('<p>'+str+'</p>');
 }
 function appendConsoleResponse(str) {
-    console.log('appending:',str);
     $("#console").append('<p class="response">'+str+'</p>');
 }
 $("#compile").click(function(e) {
@@ -406,10 +431,30 @@ var libraries = [
 
 $("#used-libraries a").click(function(e){
     e.preventDefault();
-    console.log("clicked on ", $(this).attr('data-lib'));
     $("#docs-pane").empty().append(Mustache.render($("#docs-template").text(),libraries[0]));
-
 });
+
+
+
+function fetchSketches(cb) {
+    $.get(HOSTNAME+"/sketches",function(res) {
+        cb(JSON.parse(res));
+    });
+}
+
+function populateSketches(sketches) {
+    var template = $("#sketch-template").text();
+    $("#sketch-picker")
+        .empty()
+        .append(Mustache.render(template,sketches));
+    $("#sketch-picker a").click(function(e) {
+        e.preventDefault();
+        loadSketch($(this).attr('data-name'));
+    })
+}
+
+fetchSketches(populateSketches);
+
       });
     </script>
   </body>
@@ -449,6 +494,13 @@ $("#used-libraries a").click(function(e){
     {{/docs}}
 </script>
 
+<script id='sketch-template' type='text/mustache'>
+    <div class='list-group'>
+        {{#.}}
+            <a href='#' class='list-group-item' data-name="{{.}}">{{.}}</a>
+        {{/.}}
+    </div>
+</script>
 
 <script id='board-info-template' type='text/mustache'>
     <h3>{{name}}</h3>
@@ -468,6 +520,35 @@ $("#used-libraries a").click(function(e){
       <dt>{{name}}</dt>
       <dd>{{desc}}, {{type}} <b>{{altname}} {{alttype}}</b></dd>
     {{/pins}}
+</script>
+
+<script id='sketch-info-template' type='text/mustache'>
+    <h5>libraries</h5>
+    <ul class='libraries'>
+        {{#libraries}}
+            <li><a href='#' data-id='{{.}}'>{{.}}</a></li>
+        {{/libraries}}
+    </ul>
+</script>
+
+<script id='library-doc-template' type='text/mustache'>
+    {{#classes}}
+        class <b>{{name}}</b>
+        <h5>constants</h5>
+        <ul>
+        {{#constants}}
+            <li>{{name}}::{{.}}</li>
+        {{/constants}}
+        </ul>
+        <h5>constructors</h5>
+        {{#constructors}}
+            <p><b>{{name}}</b> ( <i>{{args}}</i> )</p>
+        {{/constructors}}
+        <h5>methods</h5>
+        {{#methods}}
+            <p>{{ret}} <b>{{name}}</b> ( <i>{{args}}</i>) </p>
+        {{/methods}}
+    {{/classes}}
 </script>
 
 </html>
