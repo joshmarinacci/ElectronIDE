@@ -1,10 +1,12 @@
 var sp = require('serialport');
 var sh = require('execSync');
 
+/*
 sp.list(function(err,list) {
     console.log(list);
 });
-
+*/
+/*
 var options = {
     userlibs: "/Users/josh/Documents/Arduino/Libraries",
     root: "/Applications/Arduino.app/Contents/Resources/Java",
@@ -21,18 +23,19 @@ options.device = {
     protocol:'arduino',
     uploadspeed:115200
 }
+*/
 
-exports.upload = function(hexfile) {
+exports.upload = function(hexfile,port,options) {
     console.log("uploading to device using ",options.device.protocol);
 //    var serialpath = "/tty/foobar";
-    var serialpath = '/dev/cu.usbserial-AH019ZWX';
+    //var serialpath = '/dev/cu.usbserial-AH019ZWX';
     var uploadcmd = [
         options.root+'/hardware/tools/avr/bin/avrdude',
         '-C'+options.root+'/hardware/tools/avr/etc/avrdude.conf',
         '-v','-v','-v', //super verbose
         '-p'+options.device.mcu,
         '-c'+options.device.protocol,
-        '-P'+serialpath,
+        '-P'+port,
         '-b'+options.device.uploadspeed,
         '-D', //don't erase
         '-Uflash:w:'+hexfile+':i',

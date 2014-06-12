@@ -19,15 +19,30 @@
     <style type='text/css'>
 
         #ace-editor {
+            position: fixed;
             border: 1px solid #cccccc;
-            height: 600px;
-            left: 0;
-            right: 0;
-            top: 0;
-            bottom: 0;
+            left: 300px;
+            right: 500px;
+            top: 100px;
+            bottom: 10px;
         }
         #mainarea {
             padding-top: 60px;
+        }
+        #console {
+            position: fixed;
+            border: 1px solid black;
+            top: 100px;
+            bottom: 10px;
+            right: 0px;
+            width: 450px;
+            overflow: auto;
+        }
+        #console p {
+            background-color: #f0f0f0;
+        }
+        #console p.response {
+            background-color: #ffe0e0;
         }
     </style>
   </head>
@@ -43,7 +58,7 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="#">Arduino X</a>
+      <a class="navbar-brand" href="#">Arduino X2</a>
     </div>
 
 
@@ -58,7 +73,7 @@
 
             <div class="btn-group" id='port-selector'>
               <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                port: cumodem1234 <span class="caret"></span>
+                 port: <b class='data'>cumodem1234</b> <span class="caret"></span>
               </button>
               <ul class="dropdown-menu" role="menu">
                 <li><a href="#">Acti</a></li>
@@ -71,7 +86,7 @@
 
             <div class="btn-group" id='board-selector'>
               <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                board: Uno <span class="caret"></span>
+                board: <b class='data'>asdf</b> <span class="caret"></span>
               </button>
               <ul class="dropdown-menu" role="menu">
                 <li><a href="#">Acti</a></li>
@@ -83,8 +98,8 @@
             </div>
 
             <div class='btn-group'>
-                <button id='toggleresources' type="button" class="btn btn-primary">compile</button>
-                <button id='toggleeditor' type="button" class="btn btn-success">run</button>
+                <button id='compile' type="button" class="btn btn-primary">compile</button>
+                <button id='run' type="button" class="btn btn-success">run</button>
             </div>
         </form>
 
@@ -116,147 +131,33 @@
         </div>
         <div class='col-md-6'>
             <h4>foo</h4>
-            <div id='ace-editor'>
-#include "SPI.h"
-#include "Adafruit_WS2801.h"
+            <div id='ace-editor'>/*
+  Blink
+  Turns on an LED on for one second, then off for one second, repeatedly.
 
-/*****************************************************************************
-Example sketch for driving Adafruit WS2801 pixels!
+  This example code is in the public domain.
+ */
 
+// Pin 13 has an LED connected on most Arduino boards.
+// give it a name:
+int led = 13;
 
-  Designed specifically to work with the Adafruit RGB Pixels!
-  12mm Bullet shape ----> https://www.adafruit.com/products/322
-  12mm Flat shape   ----> https://www.adafruit.com/products/738
-  36mm Square shape ----> https://www.adafruit.com/products/683
-
-  These pixels use SPI to transmit the color data, and have built in
-  high speed PWM drivers for 24 bit color per pixel
-  2 pins are required to interface
-
-  Adafruit invests time and resources providing this open source code,
-  please support Adafruit and open-source hardware by purchasing
-  products from Adafruit!
-
-  Written by Limor Fried/Ladyada for Adafruit Industries.
-  BSD license, all text above must be included in any redistribution
-
-*****************************************************************************/
-
-// Choose which 2 pins you will use for output.
-// Can be any valid output pins.
-// The colors of the wires may be totally different so
-// BE SURE TO CHECK YOUR PIXELS TO SEE WHICH WIRES TO USE!
-uint8_t dataPin  = 2;    // Yellow wire on Adafruit Pixels
-uint8_t clockPin = 3;    // Green wire on Adafruit Pixels
-
-// Don't forget to connect the ground wire to Arduino ground,
-// and the +5V wire to a +5V supply
-
-// Set the first variable to the NUMBER of pixels. 25 = 25 pixels in a row
-Adafruit_WS2801 strip = Adafruit_WS2801(25, dataPin, clockPin);
-
-// Optional: leave off pin numbers to use hardware SPI
-// (pinout is then specific to each board and can't be changed)
-//Adafruit_WS2801 strip = Adafruit_WS2801(25);
-
-// For 36mm LED pixels: these pixels internally represent color in a
-// different format.  Either of the above constructors can accept an
-// optional extra parameter: WS2801_RGB is 'conventional' RGB order
-// WS2801_GRB is the GRB order required by the 36mm pixels.  Other
-// than this parameter, your code does not need to do anything different;
-// the library will handle the format change.  Examples:
-//Adafruit_WS2801 strip = Adafruit_WS2801(25, dataPin, clockPin, WS2801_GRB);
-//Adafruit_WS2801 strip = Adafruit_WS2801(25, WS2801_GRB);
-
+// the setup routine runs once when you press reset:
 void setup() {
-
-  strip.begin();
-
-  // Update LED contents, to start they are all 'off'
-  strip.show();
+  // initialize the digital pin as an output.
+  pinMode(led, OUTPUT);
+  Serial.begin(9600);
 }
 
-
+// the loop routine runs over and over again forever:
 void loop() {
-  // Some example procedures showing how to display to the pixels
-
-  colorWipe(Color(255, 0, 0), 50);
-  colorWipe(Color(0, 255, 0), 50);
-  colorWipe(Color(0, 0, 255), 50);
-  rainbow(20);
-  rainbowCycle(20);
+  digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
+  delay(1000);               // wait for a second
+  digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
+  delay(1000);               // wait for a second
+  Serial.println("foo");
 }
-
-void rainbow(uint8_t wait) {
-  int i, j;
-
-  for (j=0; j < 256; j++) {     // 3 cycles of all 256 colors in the wheel
-    for (i=0; i < strip.numPixels(); i++) {
-      strip.setPixelColor(i, Wheel( (i + j) % 255));
-    }
-    strip.show();   // write all the pixels out
-    delay(wait);
-  }
-}
-
-// Slightly different, this one makes the rainbow wheel equally distributed
-// along the chain
-void rainbowCycle(uint8_t wait) {
-  int i, j;
-
-  for (j=0; j < 256 * 5; j++) {     // 5 cycles of all 25 colors in the wheel
-    for (i=0; i < strip.numPixels(); i++) {
-      // tricky math! we use each pixel as a fraction of the full 96-color wheel
-      // (thats the i / strip.numPixels() part)
-      // Then add in j which makes the colors go around per pixel
-      // the % 96 is to make the wheel cycle around
-      strip.setPixelColor(i, Wheel( ((i * 256 / strip.numPixels()) + j) % 256) );
-    }
-    strip.show();   // write all the pixels out
-    delay(wait);
-  }
-}
-
-// fill the dots one after the other with said color
-// good for testing purposes
-void colorWipe(uint32_t c, uint8_t wait) {
-  int i;
-
-  for (i=0; i < strip.numPixels(); i++) {
-      strip.setPixelColor(i, c);
-      strip.show();
-      delay(wait);
-  }
-}
-
-/* Helper functions */
-
-// Create a 24 bit color value from R,G,B
-uint32_t Color(byte r, byte g, byte b)
-{
-  uint32_t c;
-  c = r;
-  c <<= 8;
-  c |= g;
-  c <<= 8;
-  c |= b;
-  return c;
-}
-
-//Input a value 0 to 255 to get a color value.
-//The colours are a transition r - g -b - back to r
-uint32_t Wheel(byte WheelPos)
-{
-  if (WheelPos < 85) {
-   return Color(WheelPos * 3, 255 - WheelPos * 3, 0);
-  } else if (WheelPos < 170) {
-   WheelPos -= 85;
-   return Color(255 - WheelPos * 3, 0, WheelPos * 3);
-  } else {
-   WheelPos -= 170;
-   return Color(0, WheelPos * 3, 255 - WheelPos * 3);
-  }
-}</div>
+</div>
         </div>
         <div class='col-md-4'>
 
@@ -267,7 +168,9 @@ uint32_t Wheel(byte WheelPos)
             </ul>
 
             <div class='tab-content'>
-                <div id='console-pane' class='tab-pane active'></div>
+                <div id='console-pane' class='tab-pane active'>
+                    <div id='console'>this is the console</div>
+                </div>
                 <div id='docs-pane' class='tab-pane'>
                     some docs go here
                 </div>
@@ -354,8 +257,21 @@ var boards = [
     }
 ];
 
-$("#board-selector .dropdown-menu").empty().append(Mustache.render($("#board-selector-template").text(),boards));
-$("#board-info-pane").empty().append(Mustache.render($("#board-info-template").text(),boards[0]));
+//$("#board-selector .dropdown-menu").empty().append(Mustache.render($("#board-selector-template").text(),boards));
+//$("#board-info-pane").empty().append(Mustache.render($("#board-info-template").text(),boards[0]));
+
+var STATE = {
+    port:'',
+    board:'',
+}
+function setPort(port) {
+    STATE.port = port;
+    $("#port-selector .data").text(port);
+}
+function setBoard(board) {
+    STATE.board = board;
+    $("#board-selector .data").text(board);
+}
 
 
 var HOSTNAME = 'http://localhost:54329';
@@ -365,17 +281,91 @@ function fetchSerialports(cb) {
     })
 }
 function populateSerialports(ports) {
-    console.log("ports = ",ports);
     var template = $("#port-selector-template").text();
     $("#port-selector .dropdown-menu")
         .empty()
         .append(Mustache.render(template,ports));
     $("#port-selector .dropdown-menu a").click(function(e) {
         e.preventDefault();
-        console.log('selected',$(this).attr('data-name'));
+        setPort($(this).attr('data-name'));
     })
 }
 fetchSerialports(populateSerialports);
+
+function fetchBoards(cb) {
+    $.get(HOSTNAME+"/boards",function(res) {
+        cb(JSON.parse(res));
+    })
+}
+
+function populateBoards(boards) {
+    console.log('boards = ',boards);
+    var template = $("#board-selector-template").text();
+    $("#board-selector .dropdown-menu")
+        .empty()
+        .append(Mustache.render(template,boards));
+    $("#board-selector .dropdown-menu a").click(function(e) {
+        e.preventDefault();
+        setBoard($(this).attr('data-id'));
+    })
+}
+
+fetchBoards(populateBoards);
+
+function compileCode() {
+    appendConsole('compiling and running');
+    var data = new FormData();
+    data.append('code',editor.getValue());
+    data.append('board',STATE.board);
+    $.ajax({
+        url: HOSTNAME+'/compile',
+        type: "POST",
+        data: data,
+        processData: false,  // tell jQuery not to process the data
+        contentType: false,   // tell jQuery not to set contentType
+        success: function(res) {
+            appendConsoleResponse(JSON.parse(res).status);
+        },
+    });
+}
+
+function compileAndRunCode() {
+    appendConsole('compiling and running');
+    var data = new FormData();
+    data.append('code',editor.getValue());
+    data.append('board',STATE.board);
+    data.append('port',STATE.port);
+    $.ajax({
+        url: HOSTNAME+'/run',
+        type: "POST",
+        data: data,
+        processData: false,  // tell jQuery not to process the data
+        contentType: false,   // tell jQuery not to set contentType
+        success: function(res) {
+            appendConsoleResponse(JSON.parse(res).status);
+        },
+    });
+}
+
+
+function appendConsole(str) {
+    console.log('appending:',str);
+    $("#console").append('<p>'+str+'</p>');
+}
+function appendConsoleResponse(str) {
+    console.log('appending:',str);
+    $("#console").append('<p class="response">'+str+'</p>');
+}
+$("#compile").click(function(e) {
+    e.preventDefault();
+    compileCode();
+});
+$("#run").click(function(e) {
+    e.preventDefault();
+    compileAndRunCode();
+});
+
+
 
 var libraries = [
     {
@@ -428,7 +418,7 @@ $("#used-libraries a").click(function(e){
 
 <script id='board-selector-template' type='text/mustache'>
   {{#.}}
-    <li><a href='#'><b>{{name}}</b> : {{platform}}</a></li>
+    <li><a href='#' data-id='{{id}}'><b>{{name}}</b> : {{mcu}}</a></li>
   {{/.}}
 </script>
 
@@ -439,45 +429,45 @@ $("#used-libraries a").click(function(e){
 </script>
 
 <script id='docs-template' type='text/mustache'>
-<h3>{{name}}</h3>
-<p><b>Platforms</b> {{#platforms}} {{.}} {{/platforms}}
-{{#docs}}
-<div>
-  <h4>{{type}}:{{name}}</h4>
+    <h3>{{name}}</h3>
+    <p><b>Platforms</b> {{#platforms}} {{.}} {{/platforms}}
+    {{#docs}}
+    <div>
+      <h4>{{type}}:{{name}}</h4>
 
-  <h5>constructors</h5>
-  {{#constructors}}
-  <h6>{{.}}</h6>
-  {{/constructors}}
+      <h5>constructors</h5>
+      {{#constructors}}
+      <h6>{{.}}</h6>
+      {{/constructors}}
 
-  <h5>methods</h5>
-  {{#methods}}
-  <h6>{{.}}</h6>
-  {{/methods}}
+      <h5>methods</h5>
+      {{#methods}}
+      <h6>{{.}}</h6>
+      {{/methods}}
 
-</div>
-{{/docs}}
+    </div>
+    {{/docs}}
 </script>
 
 
 <script id='board-info-template' type='text/mustache'>
-<h3>{{name}}</h3>
-<dl class='dl-horizontal'>
-<dt>platform</dt><dd>{{platform}}</dd>
-<dt>mcu</dt><dd>{{mcu}}</dd>
-<dt>voltage</dt><dd>{{voltage}}</dd>
-<dt>memory</dt><dd>{{memory}}</dd>
-<dt>sram</dt><dd>{{sram}}</dd>
-<dt>eeprom</dt><dd>{{eeprom}}</dd>
-</dl>
+    <h3>{{name}}</h3>
+    <dl class='dl-horizontal'>
+    <dt>platform</dt><dd>{{platform}}</dd>
+    <dt>mcu</dt><dd>{{mcu}}</dd>
+    <dt>voltage</dt><dd>{{voltage}}</dd>
+    <dt>memory</dt><dd>{{memory}}</dd>
+    <dt>sram</dt><dd>{{sram}}</dd>
+    <dt>eeprom</dt><dd>{{eeprom}}</dd>
+    </dl>
 
 
-<h3>PINS</h3>
-<dl class='dl-horizontal'>
-{{#pins}}
-  <dt>{{name}}</dt>
-  <dd>{{desc}}, {{type}} <b>{{altname}} {{alttype}}</b></dd>
-{{/pins}}
+    <h3>PINS</h3>
+    <dl class='dl-horizontal'>
+    {{#pins}}
+      <dt>{{name}}</dt>
+      <dd>{{desc}}, {{type}} <b>{{altname}} {{alttype}}</b></dd>
+    {{/pins}}
 </script>
 
 </html>
