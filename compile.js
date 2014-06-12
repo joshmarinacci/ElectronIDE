@@ -64,8 +64,8 @@ exports.compile = function(sketchPath, outdir,options) {
     checkfile(tmp);
 
 
-    options.corepath     = options.hardware +'/arduino/cores/'+options.device.core;
-    options.variantpath  = options.hardware + '/arduino/variants/'+options.device.variant;
+    options.corepath     = options.hardware +'/arduino/cores/'+options.device.build.core;
+    options.variantpath  = options.hardware + '/arduino/variants/'+options.device.build.variant;
     options.arduinolibs = options.root+'/libraries';
 
     console.log("options",options);
@@ -231,9 +231,9 @@ function compileFiles(options, outdir, includepaths, cfiles) {
 
 function compileCPP(options, outdir, includepaths, cfile) {
     console.log("compiling ",cfile);//,"to",outdir,"with options",options);
-    var bin = options.avrbase+"/avr-g++";
 
     var cmd = [
+        options.avrbase+"/avr-g++",
         "-c", //compile, don't link
         '-g', //include debug info and line numbers
         '-Os', //optimize for size
@@ -241,8 +241,8 @@ function compileCPP(options, outdir, includepaths, cfile) {
         '-fno-exceptions',// ??
         '-ffunction-sections',// put each function in it's own section
         '-fdata-sections', //??
-        '-mmcu='+options.device.mcu,
-        '-DF_CPU='+options.device.fcpu,
+        '-mmcu='+options.device.build.mcu,
+        '-DF_CPU='+options.device.build.f_cpu,
         '-MMD',//output dependency info
         '-DARDUINO=101', //??
         '-DUSB_VID='+options.device.vid, //??
@@ -262,14 +262,14 @@ function compileCPP(options, outdir, includepaths, cfile) {
     //    console.log("bin is ",bin);
     //    console.log("command is",cmd);
 
-    var torun = bin+' '+cmd.join(' ');
-    //console.log('running',torun);
-    var result = sh.exec(torun);
+//    var torun = bin+' '+cmd.join(' ');
+    //console.log('running',cmd);
+    var result = sh.exec(cmd.join(' '));
     //console.log("result = ",result.code);
     if(result.code != 0) {
+        console.log("stdout = ",result.stdout);
         throw new Error("there was an error compiling");
     }
-    //console.log("stdout = ",result.stdout);
 }
 
 function compileC(options, outdir, includepaths, cfile) {
@@ -282,8 +282,8 @@ function compileC(options, outdir, includepaths, cfile) {
         '-Wall', //turn on verbose warnings
         '-ffunction-sections',// put each function in it's own section
         '-fdata-sections', //??
-        '-mmcu='+options.device.mcu,
-        '-DF_CPU='+options.device.fcpu,
+        '-mmcu='+options.device.build.mcu,
+        '-DF_CPU='+options.device.build.f_cpu,
         '-MMD',//output dependency info
         '-DARDUINO=101', //??
         '-DUSB_VID='+options.device.vid, //??
