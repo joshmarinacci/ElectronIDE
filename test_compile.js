@@ -3,6 +3,11 @@ var compile = require('./compile');
 var uploader = require('./uploader');
 
 var BOARDS = require('./boards').loadBoards();
+var UNO = null;
+BOARDS.forEach(function(board) {
+    if(board.id == 'uno') UNO = board;
+});
+
 
 var outpath = "build/out";
 if(fs.existsSync(outpath)) {
@@ -25,7 +30,7 @@ var options = {
 }
 options.hardware = options.root +'/hardware';
 options.avrbase  = options.root +'/hardware/tools/avr/bin';
-options.device = BOARDS[0];
+options.device = UNO;
 
 //console.log("options = ",options);
 
