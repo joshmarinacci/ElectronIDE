@@ -24,7 +24,8 @@ options.device = {
 
 exports.upload = function(hexfile) {
     console.log("uploading to device using ",options.device.protocol);
-    var serialpath = "/tty/foobar";
+//    var serialpath = "/tty/foobar";
+    var serialpath = '/dev/cu.usbserial-AH019ZWX';
     var uploadcmd = [
         options.root+'/hardware/tools/avr/bin/avrdude',
         '-C'+options.root+'/hardware/tools/avr/etc/avrdude.conf',

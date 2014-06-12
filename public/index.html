@@ -357,17 +357,25 @@ var boards = [
 $("#board-selector .dropdown-menu").empty().append(Mustache.render($("#board-selector-template").text(),boards));
 $("#board-info-pane").empty().append(Mustache.render($("#board-info-template").text(),boards[0]));
 
-var serialports = [
-    {
-        name:'1234',
-        path:'/dev/tty1234'
-    },
-    {
-        name:'modem546',
-        path:'/dev/cumodem546',
-    }
-];
-$("#port-selector .dropdown-menu").empty().append(Mustache.render($("#port-selector-template").text(),serialports));
+
+var HOSTNAME = 'http://localhost:54329';
+function fetchSerialports(cb) {
+    $.get(HOSTNAME+"/ports",function(res) {
+        cb(JSON.parse(res));
+    })
+}
+function populateSerialports(ports) {
+    console.log("ports = ",ports);
+    var template = $("#port-selector-template").text();
+    $("#port-selector .dropdown-menu")
+        .empty()
+        .append(Mustache.render(template,ports));
+    $("#port-selector .dropdown-menu a").click(function(e) {
+        e.preventDefault();
+        console.log('selected',$(this).attr('data-name'));
+    })
+}
+fetchSerialports(populateSerialports);
 
 var libraries = [
     {
@@ -426,7 +434,7 @@ $("#used-libraries a").click(function(e){
 
 <script id='port-selector-template' type='text/mustache'>
     {{#.}}
-      <li><a href='#'><b>{{name}}</b> : {{path}}</a></li>
+      <li><a href='#' data-name='{{comName}}'><b>{{comName}}</b> : {{comName}}</a></li>
     {{/.}}
 </script>
 
