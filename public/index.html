@@ -65,7 +65,8 @@
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
         <form class="navbar-form navbar-left" role="search">
             <div class='form-group'>
-                <input type='text' class='form-control' placeholder='search help' id='searchHelp'>
+                <input type='text' class='form-control' placeholder='search help' id='search-help'>
+                <button id='search-button' class='btn btn-success'>search</button>
             </div>
         </form>
         <form class="navbar-form navbar-right" role="search">
@@ -351,7 +352,12 @@ function compileCode() {
         processData: false,  // tell jQuery not to process the data
         contentType: false,   // tell jQuery not to set contentType
         success: function(res) {
-            appendConsoleResponse(JSON.parse(res).status);
+            var resp = JSON.parse(res);
+            console.log("compiled got back",resp);
+            appendConsoleResponse(resp.status);
+            if(resp.status == 'error') {
+                appendConsoleResponse(resp.output);
+            }
         },
     });
 }
@@ -454,6 +460,15 @@ function populateSketches(sketches) {
 }
 
 fetchSketches(populateSketches);
+
+
+$("#search-button").click(function(e){
+    e.preventDefault();
+    console.log("searching",$("#search-help").val());
+    $.get(HOSTNAME+'/search?query='+$("#search-help").val(),function(res) {
+        console.log("got back",res);
+    });
+})
 
       });
     </script>

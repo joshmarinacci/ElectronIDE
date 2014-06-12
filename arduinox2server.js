@@ -11,6 +11,7 @@ var settings = require('./settings.js');
 
 //load up standard boards
 var BOARDS = require('./boards').loadBoards();
+var LIBS   = require('./libraries').loadLibraries();
 //standard options
 var OPTIONS = {
     userlibs: settings.userlibs,
@@ -78,9 +79,17 @@ app.post('/compile',function(req,res) {
         res.end();
         return;
     }
-    doCompile(req.body.code,req.body.board);
-    res.send(JSON.stringify({status:'okay'}));
-    res.end();
+    try {
+        doCompile(req.body.code,req.body.board);
+        res.send(JSON.stringify({status:'okay'}));
+        res.end();
+
+    } catch(e) {
+        console.log("compliation error",e);
+        console.log(e.output);
+        res.send(JSON.stringify({status:'error',output:e.output}));
+        res.end();
+    }
 });
 
 app.post('/run',function(req,res) {
@@ -186,6 +195,14 @@ app.get('/libraries',function(req,res) {
 
 });
 
+app.get('/search',function(req,res){
+    console.log("searching for",req.query);
+    LIBS.search(req.query.query,function(results) {
+        console.log("found libs",results);
+        res.send(results);
+        res.end();
+    })
+})
 
 var server = app.listen(54329,function() {
     console.log('listening on port ', server.address().port);

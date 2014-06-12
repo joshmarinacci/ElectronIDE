@@ -268,7 +268,9 @@ function compileCPP(options, outdir, includepaths, cfile) {
     //console.log("result = ",result.code);
     if(result.code != 0) {
         console.log("stdout = ",result.stdout);
-        throw new Error("there was an error compiling");
+        var err = new Error("there was an error compiling");
+        err.output = result.stdout;
+        throw err;
     }
 }
 
