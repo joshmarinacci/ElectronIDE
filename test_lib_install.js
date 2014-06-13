@@ -23,7 +23,7 @@ lib.install();
 console.log("is installed",lib.isInstalled());
 
 
-
+/*
 console.log("searching for the NESPad lib by tag 'input'");
 libs.search('input',function(results){
     console.log("returned",results);
@@ -36,4 +36,15 @@ if(!lib.isInstalled()) {
         console.log("now it should be installed");
         console.log("nes installed?",lib.isInstalled());
     });
+}
+*/
+var lib = libs.getById('accelstepper');
+if(!lib.isInstalled()) {
+    console.log("not installed");
+    lib.install(function(status) {
+        console.log("now it should be installed");
+        console.log("accel installed?",lib.isInstalled());
+    })
+} else {
+    console.log("already installed");
 }

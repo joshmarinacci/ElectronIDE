@@ -1,6 +1,7 @@
 var fs = require('fs');
 //var child = require('child_process');
 var sh = require('execSync');
+var libs = require('./libraries').loadLibraries();
 
 String.prototype.endsWith = function(suffix) {
     return this.indexOf(suffix, this.length - suffix.length) !== -1;
@@ -55,6 +56,20 @@ String.prototype.endsWith = function(suffix) {
 function checkfile(path) {
     if(!fs.existsSync(path)) throw new Error("file not found " + path);
 }
+
+function detectLibs(code) {
+//    console.log("scanning code",code);
+    var libs = [];
+    var lines = code.split('\n');
+    lines.forEach(function(line){
+        var re = /\s*#include\s*[<"](\w+)\.h[>"]/i;
+        var res = line.match(re);
+        //if(res) console.log(res[1]);
+        if(res) libs.push(res[1]);
+    });
+    return libs;
+}
+
 exports.compile = function(sketchPath, outdir,options) {
     console.log("compiling ",sketchPath,"to dir",outdir);
 
@@ -76,7 +91,7 @@ exports.compile = function(sketchPath, outdir,options) {
     console.log("generating",cfile);
 
     //write the standard header
-    fs.writeFileSync(cfile,'#include "Arduino.h"');
+    fs.writeFileSync(cfile,'#include "Arduino.h"\n');
 
     //append all sketch files
     fs.readdirSync(sketchPath).forEach(function(file){
@@ -87,6 +102,11 @@ exports.compile = function(sketchPath, outdir,options) {
     })
     //extra newline just in case
     fs.appendFileSync(cfile,"\n");
+
+
+    var includedLibs = detectLibs(fs.readFileSync(cfile).toString());
+    console.log('scanned for included libs',includedLibs);
+
 
     //generate list of libs
     /*
@@ -122,6 +142,27 @@ exports.compile = function(sketchPath, outdir,options) {
         options.corepath,
         options.variantpath,
     ];
+
+    //install libs if needed, and add to the include paths
+    includedLibs.forEach(function(libname){
+        if(libname == 'Arduino') return; //already included, skip it
+        console.log('looking at lib',libname);
+        var library = libs.getById(libname.toLowerCase());
+        if(!library) {
+            console.log("ERROR. couldn't find library",libname);
+            return;
+        }
+        if(!library.isInstalled()) {
+            console.log("not installed yet. we must install it");
+            library.install(function(){
+                console.log(libname+' installed now');
+            });
+        } else {
+            console.log(libname + " already installed");
+        }
+        console.log("include path = ",library.getIncludePath());
+        includepaths.push(library.getIncludePath());
+    })
 
     compileFiles(options,outdir,includepaths,[cfile]);
 

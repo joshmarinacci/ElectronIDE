@@ -1,5 +1,7 @@
 var fs = require('fs');
 var spawn = require('child_process').spawn;
+var http = require('http');
+var unzip = require('unzip');
 
 var REPOS = '/Users/josh/projects/junkrepos';
 
@@ -11,12 +13,16 @@ function isInstalled() {
     if(fs.existsSync(REPOS+'/'+this.id)) return true;
     return false;
 }
+
+function getIncludePath() {
+    return REPOS+'/'+this.id;
+}
 function install(cb) {
+    if(!fs.existsSync(REPOS)) {
+        fs.mkdirSync(REPOS);
+    }
     console.log('installing',this.id);
     if(this.source == 'git') {
-        if(!fs.existsSync(REPOS)) {
-            fs.mkdirSync(REPOS);
-        }
         var bin = 'git';
         var cmd = [
             'clone',
@@ -36,6 +42,29 @@ function install(cb) {
             if(cb) cb(null);
         });
     }
+
+    if(this.source == 'http'){
+        console.log("source is http",this.location);
+        var outpath = REPOS;
+        var req = http.get(this.location)
+            .on('response',function(res){
+                //console.log("response");
+                /*
+                res.on('error',function(err){
+                    console.log('err');
+                })
+                .on('end',function(){
+                    console.log("fisinshed download");
+                })
+                */
+                res.pipe(unzip.Extract({path:outpath}))
+                .on('close',function() {
+                    console.log("finished inflating");
+                    if(cb) cb(null);
+                })
+            });
+        req.end();
+    }
 }
 
 var libs = [];
@@ -46,6 +75,7 @@ exports.loadLibraries = function() {
         var lib = JSON.parse(str);
         lib.isInstalled = isInstalled;
         lib.install = install;
+        lib.getIncludePath = getIncludePath;
         libs.push(lib);
     });
     return {

@@ -9,18 +9,18 @@ BOARDS.forEach(function(board) {
 });
 
 
+//clean the build path
 var outpath = "build/out";
 if(fs.existsSync(outpath)) {
     fs.readdirSync(outpath).forEach(function(file) {
         fs.unlinkSync(outpath+'/'+file);
-//        fs.unlink(file);
     })
     fs.rmdirSync(outpath);
 }
 fs.mkdirSync(outpath);
 
 
-var sketchPath = 'test/examples/Blink/';
+var sketchPath = 'test/examples/NESTest/';
 
 //setup standard options
 var options = {
