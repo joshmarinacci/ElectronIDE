@@ -70,16 +70,19 @@ function install(cb) {
     }
 }
 
-var libs = [];
+var libs = null;
 exports.loadLibraries = function() {
-    fs.readdirSync(settings.datapath).forEach(function(file){
-        var str = fs.readFileSync(settings.datapath+'/'+file).toString();
-        var lib = JSON.parse(str);
-        lib.isInstalled = isInstalled;
-        lib.install = install;
-        lib.getIncludePath = getIncludePath;
-        libs.push(lib);
-    });
+    if(libs == null) {
+        libs = [];
+        fs.readdirSync(settings.datapath).forEach(function(file){
+            var str = fs.readFileSync(settings.datapath+'/'+file).toString();
+            var lib = JSON.parse(str);
+            lib.isInstalled = isInstalled;
+            lib.install = install;
+            lib.getIncludePath = getIncludePath;
+            libs.push(lib);
+        });
+    }
     return {
         search: function(str,cb) {
             str = str.toLowerCase();

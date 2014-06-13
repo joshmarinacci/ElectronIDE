@@ -27,15 +27,19 @@ If you want to help on the Node side, you can work on
 * support uploading to Leonardo and related boards using the serial port tricks.
 * support proper software reset on Unos (setting DTR high?)
 * figure out how to extract documentation from Arduino library source directly (doxygen?)
+* figure out how to support Windows and Linux (shouldn't be too much)
+* look into integrating the embedded webkit from Atom.io
+* rewrite the compile system to be properly asynchronous and send feedback to the browser
+
 
 If you want to help on the HTML side, you can work on
 
-* preferences dialog
-* a dialog for managing boards
-* a dialog to search and install and query libraries
-* design a panel system to manage the sidebars, main editor, tabs, etc.
-* pick better defaults
-* design a new file picker interface
+* Build a preferences dialog
+* Build a dialog for managing boards
+* Build a dialog to search and install and query libraries
+* Design a panel system to manage the sidebars, main editor, tabs, etc. something more like XCode
+* Pick better defaults for the Ace editor. Syntax highlighting, themes, search, etc.
+* Design a new file picker interface. The current one really isn't usable.
 
 
 If you want to help with metadata, you can add:
@@ -46,11 +50,15 @@ If you want to help with metadata, you can add:
 * more extensive lib info, like alternate versions of AccelStepper for other platforms
 
 
+And of course everyone can test test test.
+
 ## Architecture
 
 There are three components.
 
 * The NodeJS side handles actually compiling and uploading sketches,
 as well as all on disk tasks like installing libraries and opening sketches.
-* The HTML side which is the GUI. The text editor is using [Ace][http://ace.c9.io/#nav=about]
-* A metadata repo containing lists of all known boards and libraries, in machine readable form (JSON files).
+* The HTML side which is the GUI. The text editor is using [Ace](http://ace.c9.io/)
+* A metadata repo containing lists of all known
+boards and libraries, in machine readable form (JSON files).
+[repo](https://github.com/joshmarinacci/arduino-data)

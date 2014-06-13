@@ -81,6 +81,13 @@
             position: absolute;
             bottom: 0px;
         }
+
+        #search-results {
+            position: absolute;
+            top: 50px;
+            left: 110px;
+            display:none;
+        }
     </style>
   </head>
   <body>
@@ -106,6 +113,25 @@
                 <button id='search-button' class='btn btn-success'>search</button>
             </div>
         </form>
+        <div class="list-group" id='search-results'>
+            <a href="#" class="list-group-item active">
+              <h4 class="list-group-item-heading">library name</h4>
+              <p class="list-group-item-text">some text about the library</p>
+            </a>
+            <a href="#" class="list-group-item active">
+              <h4 class="list-group-item-heading">List group item heading</h4>
+              <p class="list-group-item-text">...</p>
+            </a>
+            <a href="#" class="list-group-item active">
+              <h4 class="list-group-item-heading">List group item heading</h4>
+              <p class="list-group-item-text">...</p>
+            </a>
+            <a href="#" class="list-group-item active">
+              <h4 class="list-group-item-heading">List group item heading</h4>
+              <p class="list-group-item-text">...</p>
+            </a>
+        </div>
+
         <form class="navbar-form navbar-right" role="search">
 
 
@@ -231,64 +257,6 @@ editor.setOptions({
 editor.getSession().setMode('ace/mode/c_cpp');
 editor.getSession().setUseWrapMode(true);
 
-
-var boards = [
-    {
-        name:'Uno',
-        platform:'AVR',
-        mcu:'ATmega328',
-        voltage: '5',
-        memory: '32kb',
-        sram: '2kb',
-        eeprom: '1kb',
-        pins: [
-            { name:'IOREF', desc: 'voltage reference' },
-            { name:'reset', desc: 'raise to reset' },
-            { name:'3V3',   desc: '3.3 regulated output'},
-            { name:'5V',    desc: 'regulated 5v output'},
-            { name:'GND',   desc: 'ground'},
-            { name:'GND',   desc: 'ground'},
-            { name:'VIN',   desc: 'voltage input'},
-
-            { name:'A0',   desc: 'analog 0', type:'analog'},
-            { name:'A1',   desc: 'analog 1', type:'analog'},
-            { name:'A2',   desc: 'analog 1', type:'analog'},
-            { name:'A3',   desc: 'analog 1', type:'analog'},
-            { name:'A4',   desc: 'analog 1', type:'analog', altname:'SDA', alttype:'I2C'},
-            { name:'A5',   desc: 'analog 1', type:'analog', altname:'SCL', alttype:'I2C'},
-
-            { name: 'D0', type:'digital', desc:'digital 0', altname:'RX', alttype:'serial'},
-            { name: 'D1', type:'digital', desc:'digital 1', altname:'TX', alttype:'serial'},
-            { name: 'D2', type:'digital', desc:'digital 2', altname:'Interrupt 0', alttype:'interrupt', pwm:'false'},
-            { name: 'D3', type:'digital', desc:'digital 3', altname:'Interrupt 1', alttype:'interrupt', pwm:'true'},
-            { name: 'D4', type:'digital', desc:'digital 4', pwm:'false'},
-            { name: 'D5', type:'digital', desc:'digital 5', pwm:'true'},
-            { name: 'D6', type:'digital', desc:'digital 6', pwm:'true'},
-            { name: 'D7', type:'digital', desc:'digital 7', pwm:'false'},
-
-            { name: 'D8', type:'digital', desc:'digital 8', pwm:'false'},
-            { name: 'D9', type:'digital', desc:'digital 9', pwm:'true'},
-            { name: 'D10', type:'digital', desc:'digital 10', altname:'SS',   alttype:'spi', pwm:'true'},
-            { name: 'D11', type:'digital', desc:'digital 11', altname:'MOSI', alttype:'spi', pwm:'true'},
-            { name: 'D12', type:'digital', desc:'digital 12', altname:'MISO', alttype:'spi', pwm:'false'},
-            { name: 'D13', type:'digital', desc:'digital 13', altname:'SCK',  alttype:'spi', pwm:'false'},
-
-            { name: 'SDA', type:'I2C', desc:'I2C data line'},
-            { name: 'SCL', type:'I2C', desc:'I2C clock'},
-
-
-        ]
-
-    },
-    {
-        name:'Due',
-        platform:'ARM',
-        cpu:'368'
-    }
-];
-
-//$("#board-selector .dropdown-menu").empty().append(Mustache.render($("#board-selector-template").text(),boards));
-//$("#board-info-pane").empty().append(Mustache.render($("#board-info-template").text(),boards[0]));
 
 var STATE = {
     port:'',
@@ -449,6 +417,18 @@ $("#search-button").click(function(e){
     console.log("searching",$("#search-help").val());
     $.get(HOSTNAME+'/search?query='+$("#search-help").val(),function(res) {
         console.log("got back",res);
+        $("#search-results").css('display','block').empty().append(
+            Mustache.render($("#library-template").text(),res)
+        );
+        $("#search-results a").click(function(e) {
+            e.preventDefault();
+            var libid = $(this).attr('data-id');
+            var libname = $(this).attr('data-name');
+            $("#search-results").css('display','none');
+            console.log("adding library",libid);
+            editor.gotoLine(0);
+            editor.insert("#include <"+libname+".h>\n");
+        });
     });
 })
 
@@ -568,6 +548,15 @@ $("#edit-sketches-button").click(function(e) {
             <p>{{ret}} <b>{{name}}</b> ( <i>{{args}}</i>) </p>
         {{/methods}}
     {{/classes}}
+</script>
+
+<script id='library-template' type='text/mustache'>
+    {{#.}}
+        <a href="#" class="list-group-item" data-id={{id}} data-name={{name}}>
+          <h4 class="list-group-item-heading">{{name}}</h4>
+          <p class="list-group-item-text">{{description}}</p>
+        </a>
+    {{/.}}
 </script>
 
 </html>
