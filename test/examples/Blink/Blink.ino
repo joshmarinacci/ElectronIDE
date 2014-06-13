@@ -23,4 +23,11 @@ void loop() {
   digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
   delay(1000);               // wait for a second
   Serial.println("foo");
+  TESTIO();
+}
+
+
+void TESTIO(void)
+{
+    Serial.println("dummy function. needs a prototype above");
 }

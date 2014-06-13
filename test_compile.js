@@ -20,7 +20,7 @@ if(fs.existsSync(outpath)) {
 fs.mkdirSync(outpath);
 
 
-var sketchPath = 'test/examples/NESTest/';
+var sketchPath = 'test/examples/Blink/';
 
 //setup standard options
 var options = {

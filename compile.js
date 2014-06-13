@@ -70,6 +70,60 @@ function detectLibs(code) {
     return libs;
 }
 
+var FUNCTION_DEFINITION_REGEX =  /(void)\s+(\w+)\((.*)\)/;
+
+function generateDecs(code) {
+    console.log("scanning for defs",code);
+    var decs = [];
+    code.split('\n').forEach(function(line) {
+        var def = line.match(FUNCTION_DEFINITION_REGEX);
+        if(def) {
+            console.log("this is a function definition");
+            console.log("line = ",line);
+            console.log(def);
+            var dec = def[1]+' '+def[2]+'('+def[3]+');\n';
+            console.log("declaration = ",dec);
+            decs.push(dec);
+        }
+    });
+    return decs;
+}
+
+function generateCPPFile(cfile,sketchPath) {
+    //write the standard header
+    fs.writeFileSync(cfile,'#include "Arduino.h"\n');
+
+    var funcdecs = [];
+    var codes = [];
+
+    //loop through all sketch files
+    fs.readdirSync(sketchPath).forEach(function(file){
+        if(file.toLowerCase().endsWith('.ino')) {
+            var code = fs.readFileSync(sketchPath+'/'+file).toString();
+            console.log("code = ");
+            generateDecs(code).forEach(function(dec){
+                funcdecs.push(dec);
+            });
+            codes.push(code);
+        }
+    })
+
+    //insert the generated definitions
+    funcdecs.forEach(function(dec){
+        fs.appendFileSync(cfile,dec);
+    });
+
+    //insert the code chunks
+    codes.forEach(function(def){
+        fs.appendFileSync(cfile,def);
+    })
+
+    //extra newline just in case
+    fs.appendFileSync(cfile,"\n");
+    console.log("final code = ", fs.readFileSync(cfile).toString());
+//    throw new Error('foo');
+}
+
 exports.compile = function(sketchPath, outdir,options) {
     console.log("compiling ",sketchPath,"to dir",outdir);
 
@@ -89,44 +143,13 @@ exports.compile = function(sketchPath, outdir,options) {
     var cfile = tmp+'/'+options.name+'.cpp';
 
     console.log("generating",cfile);
+    generateCPPFile(cfile,sketchPath);
 
-    //write the standard header
-    fs.writeFileSync(cfile,'#include "Arduino.h"\n');
 
-    //append all sketch files
-    fs.readdirSync(sketchPath).forEach(function(file){
-        if(file.toLowerCase().endsWith('.ino')) {
-            console.log("appending",file);
-            fs.appendFileSync(cfile,fs.readFileSync(sketchPath+'/'+file).toString());
-        }
-    })
-    //extra newline just in case
-    fs.appendFileSync(cfile,"\n");
 
 
     var includedLibs = detectLibs(fs.readFileSync(cfile).toString());
     console.log('scanned for included libs',includedLibs);
-
-
-    //generate list of libs
-    /*
-            File arduinoLibrariesDir = new File(root,"libraries");
-        //list of all possible libraries
-        List<File> libraryDirs = new ArrayList<File>();
-        libraryDirs.addAll(Arrays.asList(arduinoLibrariesDir.listFiles()));
-        if(userLibrariesDir.exists()){
-            libraryDirs.addAll(Arrays.asList(userLibrariesDir.listFiles()));
-        }
-*/
-
-    /*
-            //compile the sketch itself
-        log("compiling the sketch");
-        List<File> cFiles = new ArrayList<File>();
-        cFiles.add(cfile);
-        includePaths.addAll(calculateIncludePaths(sketchDir,libraryDirs));
-        compile(avrBase,tempdir,cFiles,includePaths);
-    */
 
     var librarypaths = [];
     //global libs
@@ -272,6 +295,8 @@ function compileFiles(options, outdir, includepaths, cfiles) {
 
 function compileCPP(options, outdir, includepaths, cfile) {
     console.log("compiling ",cfile);//,"to",outdir,"with options",options);
+    //console.log("include files = ",includepaths);
+    //console.log("options = ",options);
 
     var cmd = [
         options.avrbase+"/avr-g++",
