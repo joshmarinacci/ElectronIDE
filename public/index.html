@@ -19,30 +19,67 @@
     <style type='text/css'>
 
         #ace-editor {
-            position: fixed;
-            border: 1px solid #cccccc;
-            left: 250px;
-            right: 500px;
-            top: 100px;
-            bottom: 10px;
+            width: 100%;
+            height: 100%;
         }
         #mainarea {
             padding-top: 60px;
         }
-        #console {
+        .fixed-pane {
             position: fixed;
-            border: 1px solid black;
-            top: 100px;
+            top: 4em;
             bottom: 10px;
+        }
+        .left-pane {
+            left: 10px;
+            width: 300px;
+        }
+        .center-pane {
+            border: 1px solid #cccccc;
+            left: 300px;
+            right: 300px;
+        }
+        .right-pane {
             right: 10px;
-            width: 450px;
+            width: 300px;
+        }
+
+        .tab-content {
+            border: 1px solid gray;
+            position: absolute;
+            top: 40px;
+            bottom: 0px;
+            left:0px;
+            right:0px;
+        }
+
+        #console {
+            position: absolute;
+            width: 100%;
             overflow: auto;
+            border:1px solid green;
+            top: 0px;
+            bottom: 0px;
+            font-size: 90%;
         }
         #console p {
             background-color: #f0f0f0;
         }
         #console p.response {
             background-color: #ffe0e0;
+        }
+        #sketch-picker {
+            position: absolute;
+            overflow: auto;
+            border: 1px solid gray;
+            top: 100px;
+            bottom: 40px;
+            right: 20px;
+            left: 0px;
+        }
+        #sketch-buttons {
+            position: absolute;
+            bottom: 0px;
         }
     </style>
   </head>
@@ -111,50 +148,23 @@
 
 <div class='container-fluid' id='mainarea'>
     <div class='row'>
-        <div class='col-md-2'>
-            <h3>Sketch</h3>
+        <div class='col-md-2 fixed-pane left-pane'>
+            <h4 id='sketch-name'>foo</h4>
             <div id='sketch-info'></div>
             <h3>Sketches</h3>
             <div id='sketch-picker'></div>
             <div class='row'>
-                <div class='col-md-12'>
+                <div class='col-md-12' id='sketch-buttons'>
                     <button class='btn btn-default' id='new-sketch-button'>new</button>
                     <button class='btn btn-default' id='edit-sketches-button'>edit</button>
                 </div>
 
             </div>
         </div>
-        <div class='col-md-6'>
-            <h4 id='sketch-name'>foo</h4>
-            <div id='ace-editor'>/*
-  Blink
-  Turns on an LED on for one second, then off for one second, repeatedly.
-
-  This example code is in the public domain.
- */
-
-// Pin 13 has an LED connected on most Arduino boards.
-// give it a name:
-int led = 13;
-
-// the setup routine runs once when you press reset:
-void setup() {
-  // initialize the digital pin as an output.
-  pinMode(led, OUTPUT);
-  Serial.begin(9600);
-}
-
-// the loop routine runs over and over again forever:
-void loop() {
-  digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
-  delay(1000);               // wait for a second
-  digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
-  delay(1000);               // wait for a second
-  Serial.println("foo");
-}
-</div>
+        <div class='col-md-6 fixed-pane center-pane'>
+            <div id='ace-editor'>asdfas</div>
         </div>
-        <div class='col-md-4'>
+        <div class='col-md-4 fixed-pane right-pane'>
 
             <ul class="nav nav-tabs">
               <li class="active"><a href="#console-pane" data-toggle="tab">Console</a></li>
