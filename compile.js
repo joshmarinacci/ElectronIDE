@@ -73,7 +73,7 @@ function detectLibs(code) {
 exports.compile = function(sketchPath, outdir,options) {
     console.log("compiling ",sketchPath,"to dir",outdir);
 
-    var tmp = "./tmp";
+    var tmp = "build/tmp";
 
     console.log("assembling the sketch in the directory",tmp);
     checkfile(tmp);

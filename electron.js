@@ -60,7 +60,13 @@ function makeCleanDir(outpath) {
 
 function doCompile(code,board) {
     //create output dir
+    console.log('making build dir');
+    if(!fs.existsSync('build')) {
+        fs.mkdirSync('build');
+    }
+    console.log('making build/out dir');
     var outpath = makeCleanDir('build/out');
+    console.log('making build/tmp dir');
     var sketchpath = makeCleanDir("build/tmp");
     fs.writeFileSync(sketchpath+'/Blink.ino',code);
 
