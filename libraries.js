@@ -3,14 +3,14 @@ var spawn = require('child_process').spawn;
 var http = require('http');
 var unzip = require('unzip');
 
-var REPOS = '/Users/josh/projects/junkrepos';
+var settings = require('./settings.js');
 
 console.log("inside of the libraries");
 
 function isInstalled() {
     console.log('checking if',this.id,'is installed');
     if(this.source == 'ide') return true;
-    if(fs.existsSync(REPOS+'/'+this.id)) return true;
+    if(fs.existsSync(settings.repos+'/'+this.id)) return true;
     return false;
 }
 
@@ -18,8 +18,8 @@ function getIncludePath() {
     return REPOS+'/'+this.id;
 }
 function install(cb) {
-    if(!fs.existsSync(REPOS)) {
-        fs.mkdirSync(REPOS);
+    if(!fs.existsSync(settings.repos)) {
+        fs.mkdirSync(settings.repos);
     }
     console.log('installing',this.id);
     if(this.source == 'git') {
@@ -69,9 +69,8 @@ function install(cb) {
 
 var libs = [];
 exports.loadLibraries = function() {
-    var datapath = "/Users/josh/projects/arduino-data/libraries";
-    fs.readdirSync(datapath).forEach(function(file){
-        var str = fs.readFileSync(datapath+'/'+file).toString();
+    fs.readdirSync(settings.datapath).forEach(function(file){
+        var str = fs.readFileSync(settings.datapath+'/'+file).toString();
         var lib = JSON.parse(str);
         lib.isInstalled = isInstalled;
         lib.install = install;
