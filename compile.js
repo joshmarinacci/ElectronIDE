@@ -185,7 +185,10 @@ exports.compile = function(sketchPath, outdir,options) {
         }
         console.log("include path = ",library.getIncludePath());
         includepaths.push(library.getIncludePath());
-    })
+    });
+
+    console.log("included libs = ", includedLibs);
+    console.log("included patsh = ", includepaths);
 
     compileFiles(options,outdir,includepaths,[cfile]);
 
@@ -325,13 +328,7 @@ function compileCPP(options, outdir, includepaths, cfile) {
     var shortname = filename.substring(0,filename.lastIndexOf('.'));
     cmd.push(outdir+'/'+shortname+'.o');
 
-    //    console.log("bin is ",bin);
-    //    console.log("command is",cmd);
-
-//    var torun = bin+' '+cmd.join(' ');
-    //console.log('running',cmd);
     var result = sh.exec(cmd.join(' '));
-    //console.log("result = ",result.code);
     if(result.code != 0) {
         console.log("stdout = ",result.stdout);
         var err = new Error("there was an error compiling");
