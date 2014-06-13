@@ -256,5 +256,5 @@ app.get('/search',function(req,res){
 })
 
 var server = app.listen(54329,function() {
-    console.log('listening on port ', server.address().port);
+    console.log('open your browser to http://localhost:'+server.address().port+'/');
 });
