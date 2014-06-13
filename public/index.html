@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Electron IDE</title>
+    <title>Electron Arduino IDE</title>
 
     <!-- Bootstrap -->
     <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -58,7 +58,7 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="#">Arduino X2</a>
+      <a class="navbar-brand" href="#">Electron</a>
     </div>
 
 
@@ -116,24 +116,13 @@
             <div id='sketch-info'></div>
             <h3>Sketches</h3>
             <div id='sketch-picker'></div>
-            <!--
-            <h3>libs</h3>
-            <div class='list-group' id='used-libraries'>
-                <a href='#' class='list-group-item' data-lib='spi'>SPI</a>
-                <a href='#' class='list-group-item' data-lib='adafruit'>Adafruit</a>
+            <div class='row'>
+                <div class='col-md-12'>
+                    <button class='btn btn-default' id='new-sketch-button'>new</button>
+                    <button class='btn btn-default' id='edit-sketches-button'>edit</button>
+                </div>
+
             </div>
-            <h3>used pins</h3>
-            <ul>
-                <li>2 : digital <label>dataPin</label></li>
-                <li>3 : digital <label>clockPin</label></li>
-            </ul>
-            <h3>available libs</h3>
-            <div class='list-group' id='available-libraries'>
-                <a href='#' class='list-group-item' data-lib='spi'>SPI</a>
-                <a href='#' class='list-group-item' data-lib='adafruit'>Adafruit</a>
-                <a href='#' class='list-group-item' data-lib='adafruit'>Serial</a>
-            </div>
-        -->
         </div>
         <div class='col-md-6'>
             <h4 id='sketch-name'>foo</h4>
@@ -196,6 +185,31 @@ void loop() {
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="bootstrap/js/bootstrap.min.js"></script>
 <script type='text/javascript'>
+var HOSTNAME = 'http://localhost:54329';
+
+function POST(url,payload,cb) {
+    var data = new FormData();
+    if(payload instanceof FormData) {
+        data = payload;
+    } else {
+        for(var name in payload) {
+            data.append(name,payload[name]);
+        }
+    }
+    $.ajax({
+        url: HOSTNAME+url,
+        type: "POST",
+        data: data,
+        processData: false,  // tell jQuery not to process the data
+        contentType: false,   // tell jQuery not to set contentType
+        success: function(res) {
+            var resp = JSON.parse(res);
+            console.log("POST got back",resp);
+            if(cb) cb(resp);
+        }
+    });
+}
+
 $(document).ready(function() {
 
 var langTools = ace.require("ace/ext/language_tools");
@@ -302,7 +316,6 @@ function loadSketch(name) {
     })
 }
 
-var HOSTNAME = 'http://localhost:54329';
 function fetchSerialports(cb) {
     $.get(HOSTNAME+"/ports",function(res) {
         cb(JSON.parse(res));
@@ -341,24 +354,14 @@ function populateBoards(boards) {
 fetchBoards(populateBoards);
 
 function compileCode() {
-    appendConsole('compiling and running');
-    var data = new FormData();
-    data.append('code',editor.getValue());
-    data.append('board',STATE.board);
-    $.ajax({
-        url: HOSTNAME+'/compile',
-        type: "POST",
-        data: data,
-        processData: false,  // tell jQuery not to process the data
-        contentType: false,   // tell jQuery not to set contentType
-        success: function(res) {
-            var resp = JSON.parse(res);
-            console.log("compiled got back",resp);
-            appendConsoleResponse(resp.status);
-            if(resp.status == 'error') {
-                appendConsoleResponse(resp.output);
-            }
-        },
+    POST('/compile',{
+        code: editor.getValue(),
+        board: STATE.board,
+    }, function(resp) {
+        appendConsoleResponse(resp.status);
+        if(resp.status == 'error') {
+            appendConsoleResponse(resp.output);
+        }
     });
 }
 
@@ -397,51 +400,6 @@ $("#run").click(function(e) {
 });
 
 
-
-var libraries = [
-    {
-        name: "Adafruit RGB Pixel",
-        platforms: [
-            'avr',
-            'sparkcore',
-            'rfduino',
-            'ARM',
-        ],
-        docs: [
-            {
-                type:'class',
-                name:'Adafruit_WS2801',
-                constructors:[
-                    "Adafruit_WS2801(uint16_t n, uint8_t dpin, uint8_t cpin, uint8_t order=WS2801_RGB);",
-                    "Adafruit_WS2801(uint16_t x, uint16_t y, uint8_t dpin, uint8_t cpin, uint8_t order=WS2801_RGB);",
-                    "Adafruit_WS2801(uint16_t n, uint8_t order=WS2801_RGB);",
-                    "Adafruit_WS2801();",
-                ],
-                methods: [
-                    "begin(void)",
-                    "show(void)",
-                    "setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b)",
-                    "setPixelColor(uint16_t n, uint32_t c)",
-                    "setPixelColor(uint16_t x, uint16_t y, uint8_t r, uint8_t g, uint8_t b)",
-                    "setPixelColor(uint16_t x, uint16_t y, uint32_t c)",
-                    "updatePins(uint8_t dpin, uint8_t cpin), // Change pins, configurable",
-                    "updatePins(void), // Change pins, hardware SPI",
-                    "updateLength(uint16_t n), // Change strand length",
-                    "updateOrder(uint8_t order); // Change data order",
-                ]
-            },
-        ]
-    },
-]
-
-
-$("#used-libraries a").click(function(e){
-    e.preventDefault();
-    $("#docs-pane").empty().append(Mustache.render($("#docs-template").text(),libraries[0]));
-});
-
-
-
 function fetchSketches(cb) {
     $.get(HOSTNAME+"/sketches",function(res) {
         cb(JSON.parse(res));
@@ -454,9 +412,23 @@ function populateSketches(sketches) {
         .empty()
         .append(Mustache.render(template,sketches));
     $("#sketch-picker a").click(function(e) {
+        console.log('switching');
         e.preventDefault();
         loadSketch($(this).attr('data-name'));
-    })
+    });
+    $("#sketch-picker .delete-button").click(function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var name = $(this).attr('data-name');
+        console.log('deleting',name);
+        POST('/sketches/delete',{name:name},function(res){
+            console.log("repsonse from delete is",res);
+            appendConsole('deleted sketch '+name);
+            if(res.status == 'error') {
+                appendConsoleResponse(res.output);
+            }
+        });
+    });
 }
 
 fetchSketches(populateSketches);
@@ -468,6 +440,26 @@ $("#search-button").click(function(e){
     $.get(HOSTNAME+'/search?query='+$("#search-help").val(),function(res) {
         console.log("got back",res);
     });
+})
+
+
+$("#new-sketch-button").click(function(e){
+    e.preventDefault();
+    console.log("making a new sketch");
+    var name = "Sketch"+Math.floor(Math.random()*10000);
+    console.log("name = ",name);
+    POST("/new",{name:name},function(res){
+        console.log("new sketch = ",res);
+        appendConsole('created new sketch '+name);
+        if(res.status == 'error') {
+            appendConsoleResponse(res.output);
+        }
+    });
+});
+
+$("#edit-sketches-button").click(function(e) {
+    e.preventDefault();
+    $("#sketch-picker .delete-button").toggleClass('hidden');
 })
 
       });
@@ -512,7 +504,9 @@ $("#search-button").click(function(e){
 <script id='sketch-template' type='text/mustache'>
     <div class='list-group'>
         {{#.}}
-            <a href='#' class='list-group-item' data-name="{{.}}">{{.}}</a>
+            <a href='#' class='list-group-item' data-name="{{.}}">{{.}}
+                <button data-name='{{.}}' class='btn btn-default btn-xs pull-right hidden delete-button'><span class='glyphicon glyphicon-remove'></span></button>
+            </a>
         {{/.}}
     </div>
 </script>

@@ -111,6 +111,50 @@ app.post('/run',function(req,res) {
     res.end();
 });
 
+app.post('/new',function(req,res) {
+    console.log(req.body.name);
+    if(!req.body.name) {
+        res.send(JSON.stringify({status:'missing sketch name'}));
+        res.end();
+        return;
+    }
+    try {
+        var sketch = req.body.name;
+        fs.mkdirSync(settings.usersketches+'/'+sketch);
+        var example = fs.readFileSync(settings.sketchtemplate).toString();
+        fs.writeFileSync(settings.usersketches+'/'+sketch+'/'+sketch+'.ino',example);
+        res.send(JSON.stringify({status:'okay',content:example, name:sketch}));
+        res.end();
+    } catch(err) {
+        console.log(err);
+        res.end(JSON.stringify({status:'error',output:err.toString()}));
+    }
+});
+
+app.post('/sketches/delete', function(req,res){
+    console.log(req.body.name);
+    if(!req.body.name) {
+        res.send(JSON.stringify({status:'missing sketch name'}));
+        res.end();
+        return;
+    }
+
+    try {
+        var sketch = req.body.name;
+        var dir = settings.usersketches+'/'+sketch;
+        fs.readdirSync(dir).forEach(function(file) {
+            console.log("deleting file = ",file);
+            fs.unlinkSync(dir+'/'+file);
+        });
+        fs.rmdirSync(dir);
+        res.send(JSON.stringify({status:'okay', name:sketch}));
+        res.end();
+    } catch (err) {
+        console.log(err);
+        res.end(JSON.stringify({status:'error',output:err.toString()}));
+    }
+});
+
 app.get('/sketches',function(req,res) {
     var sketches = fs.readdirSync(settings.usersketches);
     sketches = sketches.filter(function(file) {
@@ -120,6 +164,7 @@ app.get('/sketches',function(req,res) {
     res.send(JSON.stringify(sketches));
     res.end();
 });
+
 
 app.get('/sketch/:name',function(req,res) {
     console.log(req.params.name);
