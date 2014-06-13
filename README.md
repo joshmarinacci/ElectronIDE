@@ -1,4 +1,4 @@
-arduinox2
+Electron IDE
 =========
 
 New web based Arduino IDE, not affiliated with the official Arduino projects.
