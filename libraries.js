@@ -15,6 +15,9 @@ function isInstalled() {
 }
 
 function getIncludePath() {
+    if(this.source == 'ide') {
+        return settings.root+'/libraries/'+this.location;
+    }
     return settings.repos+'/'+this.id;
 }
 function install(cb) {
