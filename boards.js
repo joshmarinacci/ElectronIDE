@@ -1,12 +1,12 @@
 var fs = require('fs');
+var settings = require('./settings.js');
 
 exports.loadBoards = function() {
     console.log("loading boards");
     var boards = [];
-    var datapath = "/Users/josh/projects/arduino-data/boards";
-    fs.readdirSync(datapath).forEach(function(file){
+    fs.readdirSync(settings.boardpath).forEach(function(file){
         console.log("parsing board file = ",file);
-        var str = fs.readFileSync(datapath+'/'+file).toString();
+        var str = fs.readFileSync(settings.boardpath+'/'+file).toString();
         boards.push(JSON.parse(str));
     });
     return boards;

@@ -14,3 +14,4 @@ exports.repos = "/Users/josh/projects/junkrepos";
 
 //path to the metadata repo
 exports.datapath = "/Users/josh/projects/arduino-data/libraries";
+exports.boardpath = "/Users/josh/projects/arduino-data/boards";
