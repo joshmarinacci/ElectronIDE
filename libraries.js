@@ -15,7 +15,7 @@ function isInstalled() {
 }
 
 function getIncludePath() {
-    return REPOS+'/'+this.id;
+    return settings.repos+'/'+this.id;
 }
 function install(cb) {
     if(!fs.existsSync(settings.repos)) {
@@ -27,7 +27,7 @@ function install(cb) {
         var cmd = [
             'clone',
             this.location,
-            REPOS+'/'+this.id,
+            settings.repos+'/'+this.id,
         ];
         console.log("execing",bin,cmd);
         var proc = spawn(bin,cmd);
@@ -45,7 +45,7 @@ function install(cb) {
 
     if(this.source == 'http'){
         console.log("source is http",this.location);
-        var outpath = REPOS;
+        var outpath = settings.repos;
         var req = http.get(this.location)
             .on('response',function(res){
                 //console.log("response");
