@@ -58,13 +58,11 @@ function checkfile(path) {
 }
 
 function detectLibs(code) {
-//    console.log("scanning code",code);
     var libs = [];
     var lines = code.split('\n');
     lines.forEach(function(line){
         var re = /\s*#include\s*[<"](\w+)\.h[>"]/i;
         var res = line.match(re);
-        //if(res) console.log(res[1]);
         if(res) libs.push(res[1]);
     });
     return libs;
@@ -73,16 +71,11 @@ function detectLibs(code) {
 var FUNCTION_DEFINITION_REGEX =  /(void)\s+(\w+)\((.*)\)/;
 
 function generateDecs(code) {
-    console.log("scanning for defs",code);
     var decs = [];
     code.split('\n').forEach(function(line) {
         var def = line.match(FUNCTION_DEFINITION_REGEX);
         if(def) {
-            console.log("this is a function definition");
-            console.log("line = ",line);
-            console.log(def);
             var dec = def[1]+' '+def[2]+'('+def[3]+');\n';
-            console.log("declaration = ",dec);
             decs.push(dec);
         }
     });
@@ -120,7 +113,7 @@ function generateCPPFile(cfile,sketchPath) {
 
     //extra newline just in case
     fs.appendFileSync(cfile,"\n");
-    console.log("final code = ", fs.readFileSync(cfile).toString());
+    //console.log("final code = ", fs.readFileSync(cfile).toString());
 //    throw new Error('foo');
 }
 
@@ -314,8 +307,8 @@ function compileCPP(options, outdir, includepaths, cfile) {
         '-DF_CPU='+options.device.build.f_cpu,
         '-MMD',//output dependency info
         '-DARDUINO=101', //??
-        '-DUSB_VID='+options.device.vid, //??
-        '-DUSB_PID='+options.device.pid, //??
+        '-DUSB_VID='+options.device.build.vid, //??
+        '-DUSB_PID='+options.device.build.pid, //??
     ];
 
     includepaths.forEach(function(path){

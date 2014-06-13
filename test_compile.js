@@ -4,9 +4,12 @@ var uploader = require('./uploader');
 
 var BOARDS = require('./boards').loadBoards();
 var UNO = null;
+var LEO = null;
 BOARDS.forEach(function(board) {
     if(board.id == 'uno') UNO = board;
+    if(board.id == 'leonardo') LEO = board;
 });
+
 
 
 //clean the build path
@@ -30,7 +33,7 @@ var options = {
 }
 options.hardware = options.root +'/hardware';
 options.avrbase  = options.root +'/hardware/tools/avr/bin';
-options.device = UNO;
+options.device = LEO;
 
 //console.log("options = ",options);
 
