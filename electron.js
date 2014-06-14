@@ -123,12 +123,13 @@ app.post('/new',function(req,res) {
     }
     try {
         var sketch = req.body.name;
-        sketches.makeNewSketch(sketch, function(name) {
-            res.send(JSON.stringify({status:'okay',content:example, name:sketch}));
+        sketches.makeNewSketch(sketch, function(name,content) {
+            res.send(JSON.stringify({status:'okay',content:content, name:sketch}));
             res.end();
         });
     } catch(err) {
         console.log(err);
+        err.printStackTrace();
         res.end(JSON.stringify({status:'error',output:err.toString()}));
     }
 });
@@ -143,7 +144,7 @@ app.post('/sketches/delete', function(req,res){
 
     try {
         sketches.deleteSketch(req.body.name,function(name) {
-            res.send(JSON.stringify({status:'okay', name:sketch}));
+            res.send(JSON.stringify({status:'okay', name:name}));
             res.end();
         });
     } catch (err) {
@@ -159,6 +160,15 @@ app.get('/sketches',function(req,res) {
     });
 });
 
+app.post('/save',function(req,res) {
+    console.log(req.body.name);
+    console.log(req.body.code);
+    sketches.saveSketch(req.body.name,req.body.code,function(results) {
+        console.log(" saved");
+        res.send(JSON.stringify({status:'okay', name:req.body.name}));
+        res.end();
+    });
+});
 
 app.get('/sketch/:name',function(req,res) {
     sketches.getSketch(req.params.name, function(sketch) {

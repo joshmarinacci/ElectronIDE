@@ -11,7 +11,7 @@ exports.makeNewSketch = function(name,cb) {
     fs.mkdirSync(dir);
     var example = fs.readFileSync(settings.sketchtemplate).toString();
     fs.writeFileSync(settings.usersketches+'/'+name+'/'+name+'.ino',example);
-    if(cb) cb(name);
+    if(cb) cb(name,example);
 }
 
 exports.deleteSketch = function(name, cb) {
@@ -57,4 +57,14 @@ exports.getSketch = function(name, cb) {
     if(cb) cb(obj);
 
 
+}
+
+exports.saveSketch = function(name, code, cb) {
+    console.log("saving to ",name);
+    var dir = settings.usersketches + '/' + name;
+    console.log("dir = ",dir);
+    var file = dir+'/'+name+'.ino';
+    console.log("file = ",file);
+    fs.writeFileSync(file,code);
+    if(cb)cb();
 }

@@ -111,6 +111,7 @@
                 <div class='col-md-12' id='sketch-buttons'>
                     <button class='btn btn-default' id='new-sketch-button'>new</button>
                     <button class='btn btn-default' id='edit-sketches-button'>edit</button>
+                    <button class='btn btn-default' id='save-sketch-button'>save</button>
                 </div>
 
             </div>
@@ -200,10 +201,16 @@ function setBoard(board) {
     $("#board-selector .data").text(board);
 }
 
+function setSketch(sketch) {
+    STATE.sketch = sketch;
+    $("#sketch-name").text(sketch.name);
+    editor.setValue(sketch.files[0].content);
+}
+
 function loadSketch(name) {
     $.get(HOSTNAME+'/sketch/'+name,function(res) {
         console.log("the result is ",res);
-        $("#sketch-name").text(res.name);
+        setSketch(res);
         var infotemplate = $("#sketch-info-template").text();
         $("#sketch-info").empty().append(Mustache.render(infotemplate,res.info));
         $("#sketch-info .libraries a").click(function(e) {
@@ -218,7 +225,6 @@ function loadSketch(name) {
             })
         })
 
-        editor.setValue(res.files[0].content);
     })
 }
 
@@ -260,6 +266,7 @@ function populateBoards(boards) {
 fetchBoards(populateBoards);
 
 function compileCode() {
+    appendConsole("compiling");
     POST('/compile',{
         code: editor.getValue(),
         board: STATE.board,
@@ -332,6 +339,8 @@ function populateSketches(sketches) {
             appendConsole('deleted sketch '+name);
             if(res.status == 'error') {
                 appendConsoleResponse(res.output);
+            } else {
+                fetchSketches(populateSketches);
             }
         });
     });
@@ -371,6 +380,8 @@ $("#new-sketch-button").click(function(e){
         appendConsole('created new sketch '+name);
         if(res.status == 'error') {
             appendConsoleResponse(res.output);
+        } else {
+            fetchSketches(populateSketches);
         }
     });
 });
@@ -378,6 +389,24 @@ $("#new-sketch-button").click(function(e){
 $("#edit-sketches-button").click(function(e) {
     e.preventDefault();
     $("#sketch-picker .delete-button").toggleClass('hidden');
+})
+
+$("#save-sketch-button").click(function(e) {
+    e.preventDefault();
+    console.log('current sketch is ',STATE);
+    STATE.sketch.files[0].content = editor.getValue();
+    console.log("code = ",STATE.sketch.files[0].content);
+    appendConsole("saving " + STATE.sketch.name);
+    POST('/save',{
+        code: STATE.sketch.files[0].content,
+        name: STATE.sketch.name,
+    }, function(resp) {
+        appendConsoleResponse(resp.status);
+        if(resp.status == 'error') {
+            appendConsoleResponse(resp.output);
+        }
+    });
+
 })
 
       });
