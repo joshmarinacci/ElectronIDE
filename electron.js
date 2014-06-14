@@ -8,6 +8,7 @@ var compile = require('./compile');
 var uploader = require('./uploader');
 
 var settings = require('./settings.js');
+var sketches = require('./sketches.js');
 
 //load up standard boards
 var BOARDS = require('./boards').loadBoards();
@@ -30,10 +31,6 @@ app.use(multer({dest:'./uploads'}));
 
 //public is the dir for static files
 app.use(express.static(__dirname+'/public'));
-
-app.get('/status',function(req,res){
-
-});
 
 app.get('/ports',function(req,res) {
     sp.list(function(err,list) {
@@ -126,11 +123,10 @@ app.post('/new',function(req,res) {
     }
     try {
         var sketch = req.body.name;
-        fs.mkdirSync(settings.usersketches+'/'+sketch);
-        var example = fs.readFileSync(settings.sketchtemplate).toString();
-        fs.writeFileSync(settings.usersketches+'/'+sketch+'/'+sketch+'.ino',example);
-        res.send(JSON.stringify({status:'okay',content:example, name:sketch}));
-        res.end();
+        sketches.makeNewSketch(sketch, function(name) {
+            res.send(JSON.stringify({status:'okay',content:example, name:sketch}));
+            res.end();
+        });
     } catch(err) {
         console.log(err);
         res.end(JSON.stringify({status:'error',output:err.toString()}));
@@ -146,15 +142,10 @@ app.post('/sketches/delete', function(req,res){
     }
 
     try {
-        var sketch = req.body.name;
-        var dir = settings.usersketches+'/'+sketch;
-        fs.readdirSync(dir).forEach(function(file) {
-            console.log("deleting file = ",file);
-            fs.unlinkSync(dir+'/'+file);
+        sketches.deleteSketch(req.body.name,function(name) {
+            res.send(JSON.stringify({status:'okay', name:sketch}));
+            res.end();
         });
-        fs.rmdirSync(dir);
-        res.send(JSON.stringify({status:'okay', name:sketch}));
-        res.end();
     } catch (err) {
         console.log(err);
         res.end(JSON.stringify({status:'error',output:err.toString()}));
@@ -162,88 +153,18 @@ app.post('/sketches/delete', function(req,res){
 });
 
 app.get('/sketches',function(req,res) {
-    var sketches = fs.readdirSync(settings.usersketches);
-    sketches = sketches.filter(function(file) {
-        if(file.toLowerCase() == 'libraries') return false;
-        return true;
+    sketches.listSketches(function(list) {
+        res.send(JSON.stringify(list));
+        res.end();
     });
-    res.send(JSON.stringify(sketches));
-    res.end();
 });
 
 
 app.get('/sketch/:name',function(req,res) {
-    console.log(req.params.name);
-
-    var dir = settings.usersketches + '/' + req.params.name;
-    var obj = {
-        name:req.params.name,
-        files:[]
-    };
-    fs.readdirSync(dir).forEach(function(filename) {
-        var file = fs.readFileSync(dir+'/'+filename);
-        //console.log("file",file.toString());
-        if(filename.toLowerCase() == 'info.json') {
-            console.log("info file");
-            obj.info = JSON.parse(file.toString());
-            console.log("info = ",obj.info);
-            return;
-        }
-        obj.files.push({
-            filename:filename,
-            content:file.toString(),
-        });
-    });
-
-    res.send(obj);
-    res.end();
-});
-
-app.get('/docs/library/:name',function(req,res) {
-    console.log("looking up docs for ",req.params.name);
-    var libname = req.params.name;
-    if(libname == 'AccelStepper') {
-        res.send({
-            classes:[
-                {
-                    name:'AccelStepper',
-                    constants:[
-                        'FUNCTION',
-                        'DRIVER',
-                        'FULL2WIRE',
-                        'FULL3WIRE',
-                        'FULL4WIRE',
-                        'HALF3WIRE',
-                        'HALF4WIRE',
-                    ],
-                    constructors:[
-                    {
-                        name:'AccelStepper',
-                        args:['interface','pin1','pin2','pin3','pin4','enable'],
-                    },
-                    {
-                        name:'AccelStepper',
-                        args:['*forward','*backward'],
-                    }
-                    ],
-                    methods:[
-                        {name:'moveTo',args:['absolute'],ret:'void'},
-                        {name:'move',args:['relative'],ret:'void'},
-                        {name:'run',args:[],ret:'boolean'},
-                        {name:'runSpeed',args:[],ret:'boolean'},
-                    ],
-                }
-            ]
-            });
+    sketches.getSketch(req.params.name, function(sketch) {
+        res.send(sketch);
         res.end();
-        return;
-    }
-    res.send({bar:'foo'});
-    res.end();
-})
-
-app.get('/libraries',function(req,res) {
-
+    });
 });
 
 app.get('/search',function(req,res){
