@@ -109,6 +109,8 @@ app.post('/run',function(req,res) {
     }
 
     doCompile(req.body.code,req.body.board);
+    console.log('port = ',req.body.port);
+    console.log('OPTIONS = ',OPTIONS);
     uploader.upload('build/out/Blink.hex',req.body.port,OPTIONS);
     res.send(JSON.stringify({status:'okay'}));
     res.end();

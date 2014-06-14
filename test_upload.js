@@ -1,5 +1,3 @@
-var fs = require('fs');
-var compile = require('./compile');
 var uploader = require('./uploader');
 
 var BOARDS = require('./boards').loadBoards();
@@ -10,22 +8,6 @@ BOARDS.forEach(function(board) {
     if(board.id == 'leonardo') LEO = board;
 });
 
-
-
-//clean the build path
-var outpath = "build/out";
-if(fs.existsSync(outpath)) {
-    fs.readdirSync(outpath).forEach(function(file) {
-        fs.unlinkSync(outpath+'/'+file);
-    })
-    fs.rmdirSync(outpath);
-}
-fs.mkdirSync(outpath);
-
-
-var sketchPath = 'test/examples/Blink/';
-
-//setup standard options
 var options = {
     userlibs: "/Users/josh/Documents/Arduino/Libraries",
     root: "/Applications/Arduino.app/Contents/Resources/Java",
@@ -34,11 +16,6 @@ var options = {
 options.hardware = options.root +'/hardware';
 options.avrbase  = options.root +'/hardware/tools/avr/bin';
 options.device = LEO;
-
-//console.log("options = ",options);
-
-compile.compile(sketchPath,outpath,options);
-
 
 var port = '/dev/cu.usbmodem1421';
 uploader.upload('build/out/Blink.hex',port,options);

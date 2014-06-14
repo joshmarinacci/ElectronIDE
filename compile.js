@@ -193,17 +193,25 @@ exports.compile = function(sketchPath, outdir,options) {
         return options.corepath+'/'+file;
     });
     compileFiles(options,outdir,includepaths,cfiles);
+    
+    //compile core avr-libc
+    var cfiles = fs.readdirSync(options.corepath+'/avr-libc').map(function(file) {
+        return options.corepath+'/avr-libc/'+file;
+    });
+    compileFiles(options,outdir,includepaths,cfiles);
+
 
     //link everything into core.a
     fs.readdirSync(outdir).forEach(function(file) {
-        //console.log("linking",file);
+        if(file.endsWith('.d')) return;
+        console.log("linking",file);
         var cmd = [
             options.avrbase+'/avr-ar',
             'rcs',
             outdir+'/core.a',
             outdir+'/'+file,
         ];
-        //console.log("execing",cmd.join(' '));
+        console.log("execing",cmd.join(' '));
         var result = sh.exec(cmd.join(' '));
         if(result.code != 0) {
             console.log("there was a problem running",cmd,result);
@@ -216,7 +224,7 @@ exports.compile = function(sketchPath, outdir,options) {
         options.avrbase+'/avr-gcc', //gcc
         '-Os', //??
         '-Wl,--gc-sections', //not using relax yet
-        '-mmcu='+options.device.mcu, //the mcu, ex: atmega168
+        '-mmcu='+options.device.build.mcu, //the mcu, ex: atmega168
         '-o', //??
         outdir+'/'+options.name+'.elf',
         outdir+'/'+options.name+'.o',
@@ -225,7 +233,8 @@ exports.compile = function(sketchPath, outdir,options) {
         '-lm',
     ];
 
-    //console.log("building elf file",elfcmd.join(' '));
+    console.log("building elf file");
+    console.log(elfcmd.join(' '));
     var result = sh.exec(elfcmd.join(' '));
     //console.log("elf output = ",result.stdout);
 
@@ -248,7 +257,8 @@ exports.compile = function(sketchPath, outdir,options) {
         outdir+'/'+options.name+'.eep',
     ];
 
-    //console.log('extracting EEPROM data to .eep file', eepcmd.join(' '));
+    console.log('extracting EEPROM data to .eep file');
+    console.log(eepcmd.join(' '));
     var result = sh.exec(eepcmd.join(' '));
     //console.log("output = ",result);
 
@@ -264,7 +274,8 @@ exports.compile = function(sketchPath, outdir,options) {
         outdir+'/'+options.name+'.elf',
         outdir+'/'+options.name+'.hex',
     ];
-    //console.log('building hex file', hexcmd.join(' '));
+    console.log('building hex file');
+    console.log(hexcmd.join(' '));
     var result = sh.exec(hexcmd.join(' '));
     //console.log("output = ",result);
 
@@ -306,7 +317,7 @@ function compileCPP(options, outdir, includepaths, cfile) {
         '-mmcu='+options.device.build.mcu,
         '-DF_CPU='+options.device.build.f_cpu,
         '-MMD',//output dependency info
-        '-DARDUINO=101', //??
+        '-DARDUINO=105', //??
         '-DUSB_VID='+options.device.build.vid, //??
         '-DUSB_PID='+options.device.build.pid, //??
     ];
@@ -320,7 +331,7 @@ function compileCPP(options, outdir, includepaths, cfile) {
     var filename = cfile.substring(cfile.lastIndexOf('/')+1);
     var shortname = filename.substring(0,filename.lastIndexOf('.'));
     cmd.push(outdir+'/'+shortname+'.o');
-
+    console.log(cmd.join(' '));
     var result = sh.exec(cmd.join(' '));
     if(result.code != 0) {
         console.log("stdout = ",result.stdout);
@@ -343,7 +354,7 @@ function compileC(options, outdir, includepaths, cfile) {
         '-mmcu='+options.device.build.mcu,
         '-DF_CPU='+options.device.build.f_cpu,
         '-MMD',//output dependency info
-        '-DARDUINO=101', //??
+        '-DARDUINO=105', //??
         '-DUSB_VID='+options.device.vid, //??
         '-DUSB_PID='+options.device.pid, //??
     ];
