@@ -13,5 +13,5 @@ exports.sketchtemplate = "sketchtemplate.ino";
 exports.repos = "/Users/josh/projects/junkrepos";
 
 //path to the metadata repo
-exports.datapath = "/Users/josh/projects/arduino-data/libraries";
-exports.boardpath = "/Users/josh/projects/arduino-data/boards";
+exports.datapath = "node_modules/arduinodata/libraries";
+exports.boardpath = "node_modules/arduinodata/boards";
