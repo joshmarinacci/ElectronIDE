@@ -10,10 +10,9 @@ To try it out do:
 
 * have NodeJS and NPM installed
 * have the regular Arduino IDE installed
-* check out the arduino-data project in an adjacent directory.  https://github.com/joshmarinacci/arduino-data
-* check out this project. https://github.com/joshmarinacci/ElectronIDE
-* install all deps with `npm install`
-* modify settings.js to fit your environment
+* check out the code: `git clone https://github.com/joshmarinacci/ElectronIDE`
+* install all deps with `cd ElectronIDE; npm install`
+* modify `settings.js` to fit your environment
 * run `node electron`
 * open your browser to `http://localhost:54329/`
 
