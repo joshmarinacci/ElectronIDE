@@ -48,3 +48,13 @@ if(!lib.isInstalled()) {
 } else {
     console.log("already installed");
 }
+
+
+var lib = libs.getById('rbl_nrf8001');
+if(!lib.isInstalled()) {
+    console.log("not installed");
+    lib.install(function(status) {
+        console.log("now it should be installed");
+        console.log("accel installed?",lib.isInstalled());
+    })
+}

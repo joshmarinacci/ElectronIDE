@@ -1,7 +1,7 @@
 var fs = require('fs');
 //var child = require('child_process');
 var sh = require('execSync');
-var libs = require('./libraries').loadLibraries();
+var LIBRARIES = require('./libraries').loadLibraries();
 
 String.prototype.endsWith = function(suffix) {
     return this.indexOf(suffix, this.length - suffix.length) !== -1;
@@ -114,9 +114,36 @@ function generateCPPFile(cfile,sketchPath) {
     //extra newline just in case
     fs.appendFileSync(cfile,"\n");
     //console.log("final code = ", fs.readFileSync(cfile).toString());
-//    throw new Error('foo');
+
 }
 
+
+function calculateLibs(list, paths, libs, debug) {
+    //install libs if needed, and add to the include paths
+    list.forEach(function(libname){
+        if(libname == 'Arduino') return; //already included, skip it
+        debug('looking at lib',libname);
+        var lib = LIBRARIES.getById(libname.toLowerCase());
+        if(!lib) {
+            debug("ERROR. couldn't find library",libname);
+            return;
+        }
+        if(!lib.isInstalled()) {
+            debug("not installed yet. we must install it");
+            lib.install(function(){
+                debug(libname+' installed now');
+            });
+        } else {
+            debug(libname + " already installed");
+        }
+        debug("include path = ",lib.getIncludePath());
+        paths.push(lib.getIncludePath());
+        libs.push(lib);
+        if(lib.dependencies && lib.dependencies.length) {
+            calculateLibs(lib.dependencies, paths, libs, debug);
+        }
+    });
+}
 
 
 exports.compile = function(sketchPath, outdir,options, publish, sketchDir) {
@@ -182,28 +209,9 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir) {
         sketchDir,
     ];
 
+    console.log("includedlibs = ", includedLibs);
+    calculateLibs(includedLibs,includepaths,libextra, debug);
 
-    //install libs if needed, and add to the include paths
-    includedLibs.forEach(function(libname){
-        if(libname == 'Arduino') return; //already included, skip it
-        debug('looking at lib',libname);
-        var library = libs.getById(libname.toLowerCase());
-        if(!library) {
-            debug("ERROR. couldn't find library",libname);
-            return;
-        }
-        if(!library.isInstalled()) {
-            debug("not installed yet. we must install it");
-            library.install(function(){
-                debug(libname+' installed now');
-            });
-        } else {
-            debug(libname + " already installed");
-        }
-        debug("include path = ",library.getIncludePath());
-        includepaths.push(library.getIncludePath());
-        libextra.push(library);
-    });
 
     debug("included libs = ", includedLibs);
     debug("included path = ", includepaths);

@@ -4,6 +4,7 @@ var http = require('http');
 var unzip = require('unzip');
 
 var settings = require('./settings.js');
+var master = null;
 
 console.log("inside of the libraries");
 
@@ -18,12 +19,35 @@ function getIncludePath() {
     if(this.source == 'ide') {
         return settings.root+'/libraries/'+this.location;
     }
+    if(this.path) {
+        return settings.repos+'/'+this.id+'/'+this.path;
+    }
     return settings.repos+'/'+this.id;
 }
 function install(cb) {
     if(!fs.existsSync(settings.repos)) {
         fs.mkdirSync(settings.repos);
     }
+
+
+    if(this.dependencies) {
+        console.log("we have deps first",this.dependencies);
+        var self = this;
+        for(var i=0; i<this.dependencies.length; i++) {
+            var dep = this.dependencies[i];
+            var lib = master.getById(dep);
+            console.log("dep lib = ",dep,lib);
+            if(lib && !lib.isInstalled()) {
+                console.log("installing dependency");
+                lib.install(function() {
+                    console.log("now, trying to install main lib again");
+                    self.install(cb);
+                });
+                return;
+            }
+        }
+    }
+
     console.log('installing',this.id);
     if(this.source == 'git') {
         var bin = 'git';
@@ -68,6 +92,7 @@ function install(cb) {
             });
         req.end();
     }
+
 }
 
 var libs = null;
@@ -83,7 +108,7 @@ exports.loadLibraries = function() {
             libs.push(lib);
         });
     }
-    return {
+    master = {
         search: function(str,cb) {
             str = str.toLowerCase();
             var results = [];
@@ -110,5 +135,6 @@ exports.loadLibraries = function() {
             }
             return null;
         },
-    }
+    };
+    return master;
 }
