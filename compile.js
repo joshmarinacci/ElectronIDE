@@ -119,7 +119,7 @@ function generateCPPFile(cfile,sketchPath) {
 
 
 
-exports.compile = function(sketchPath, outdir,options, publish) {
+exports.compile = function(sketchPath, outdir,options, publish, sketchDir) {
 
     function debug(message) {
         var args = Array.prototype.slice.call(arguments);
@@ -128,6 +128,7 @@ exports.compile = function(sketchPath, outdir,options, publish) {
     }
 
     debug("compiling ",sketchPath,"to dir",outdir);
+    debug("root sketch dir = ",sketchDir);
 
     var tmp = "build/tmp";
 
@@ -141,11 +142,22 @@ exports.compile = function(sketchPath, outdir,options, publish) {
 
     debug("options",options);
 
-    var includepaths = [options.corepath,options.variantpath];
     var cfile = tmp+'/'+options.name+'.cpp';
 
     debug("generating",cfile);
     generateCPPFile(cfile,sketchPath);
+    //copy other sketch files over
+    var cfiles = [cfile];
+    //compile sketch files
+    function copyToDir(file, indir, outdir) {
+        var text = fs.readFileSync(indir+'/'+file);
+        fs.writeFileSync(outdir+'/'+file,text);
+    }
+    fs.readdirSync(sketchDir).forEach(function(file) {
+        if(file.toLowerCase().endsWith('.h')) copyToDir(file,sketchDir,tmp);
+        if(file.toLowerCase().endsWith('.cpp')) copyToDir(file,sketchDir,tmp);
+        cfiles.push(tmp+'/'+file);
+    });
 
 
 
@@ -167,6 +179,7 @@ exports.compile = function(sketchPath, outdir,options, publish) {
     var includepaths = [
         options.corepath,
         options.variantpath,
+        sketchDir,
     ];
 
 
@@ -196,8 +209,7 @@ exports.compile = function(sketchPath, outdir,options, publish) {
     debug("included path = ", includepaths);
     debug("included 3rd party libs objects",libextra);
 
-    //compile sketch files
-    compileFiles(options,outdir,includepaths,[cfile],debug);
+    compileFiles(options,outdir,includepaths,cfiles,debug);
 
 
     //TODO compile 3rd party libs
@@ -324,6 +336,7 @@ function compileFiles(options, outdir, includepaths, cfiles,debug) {
         if(file.toLowerCase().endsWith('.md')) return;
         if(file.toLowerCase().endsWith('.h')) return;
         if(file.toLowerCase().endsWith('/avr-libc')) return;
+        if(file.toLowerCase().endsWith('examples')) return;
         debug("still need to compile",file);
         //throw new Error("couldn't compile file: "+file);
     })
