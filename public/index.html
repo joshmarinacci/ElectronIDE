@@ -409,6 +409,24 @@ $("#save-sketch-button").click(function(e) {
 
 })
 
+
+var wsurl = "ws:localhost:4202";
+var monitor = new WebSocket(wsurl);
+monitor.onopen = function(e) {
+    console.log("opened the websocket for ",wsurl);
+}
+monitor.onclose = function(e) {
+    console.log("closed websocket");
+}
+monitor.onerror = function(e) {
+    console.log("error in websocket");
+}
+monitor.onmessage = function(e) {
+    var event = JSON.parse(e.data);
+    $("#console").append('<p class="response">'+event.message+'</p>');
+}
+
+
       });
     </script>
   </body>

@@ -6,6 +6,7 @@ var http   = require('http');
 var sp = require('serialport');
 var compile = require('./compile');
 var uploader = require('./uploader');
+var websocket = require('nodejs-websocket');
 
 var settings = require('./settings.js');
 var sketches = require('./sketches.js');
@@ -24,6 +25,15 @@ var OPTIONS = {
 
 console.log('settings',settings);
 console.log("options",OPTIONS);
+
+var wslist = [];
+function publishEvent(evt) {
+    wslist.forEach(function(conn) {
+        console.log('sending event',evt);
+        conn.sendText(JSON.stringify(evt));
+    });
+}
+
 
 var app = express();
 //parse post bodies
@@ -67,12 +77,14 @@ function doCompile(code,board) {
     var sketchpath = makeCleanDir("build/tmp");
     fs.writeFileSync(sketchpath+'/Blink.ino',code);
 
+    publishEvent({ type:'compile', message:'writing to ' + sketchpath+'/Blink.ino'});
+
     var foundBoard = null;
     BOARDS.forEach(function(bd) {
         if(bd.id == board) foundBoard = bd;
     })
     OPTIONS.device = foundBoard;
-    compile.compile(sketchpath,outpath,OPTIONS);
+    compile.compile(sketchpath,outpath,OPTIONS, publishEvent);
 }
 
 app.post('/compile',function(req,res) {
@@ -191,3 +203,18 @@ app.get('/search',function(req,res){
 var server = app.listen(54329,function() {
     console.log('open your browser to http://localhost:'+server.address().port+'/');
 });
+
+
+var wss = websocket.createServer(function(conn) {
+    console.log('web socket connected');
+    wslist.push(conn);
+    conn.on('message',function(message) {
+        console.log("got a request");
+    });
+    conn.on('error',function(err){
+        console.log('websocket got an error',err);
+    });
+    conn.on('close',function(code,reason) {
+        console.log("websocket closed",code,reason);
+    });
+}).listen(4202);

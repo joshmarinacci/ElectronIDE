@@ -117,12 +117,21 @@ function generateCPPFile(cfile,sketchPath) {
 //    throw new Error('foo');
 }
 
-exports.compile = function(sketchPath, outdir,options) {
-    console.log("compiling ",sketchPath,"to dir",outdir);
+
+
+exports.compile = function(sketchPath, outdir,options, publish) {
+
+    function debug(message) {
+        var args = Array.prototype.slice.call(arguments);
+        console.log(args.join(' '));
+        publish({type:"compile", message:args.join(" ")});
+    }
+
+    debug("compiling ",sketchPath,"to dir",outdir);
 
     var tmp = "build/tmp";
 
-    console.log("assembling the sketch in the directory",tmp);
+    debug("assembling the sketch in the directory",tmp);
     checkfile(tmp);
 
 
@@ -130,23 +139,23 @@ exports.compile = function(sketchPath, outdir,options) {
     options.variantpath  = options.hardware + '/arduino/variants/'+options.device.build.variant;
     options.arduinolibs = options.root+'/libraries';
 
-    console.log("options",options);
+    debug("options",options);
 
     var includepaths = [options.corepath,options.variantpath];
     var cfile = tmp+'/'+options.name+'.cpp';
 
-    console.log("generating",cfile);
+    debug("generating",cfile);
     generateCPPFile(cfile,sketchPath);
 
 
 
 
     var includedLibs = detectLibs(fs.readFileSync(cfile).toString());
-    console.log('scanned for included libs',includedLibs);
+    debug('scanned for included libs',includedLibs);
 
     var librarypaths = [];
     //global libs
-    console.log("arduino libs = ",options.arduinolibs);
+    debug("arduino libs = ",options.arduinolibs);
     fs.readdirSync(options.arduinolibs).forEach(function(lib) {
         librarypaths.push(options.arduinolibs+'/'+lib);
     });
@@ -162,28 +171,28 @@ exports.compile = function(sketchPath, outdir,options) {
     //install libs if needed, and add to the include paths
     includedLibs.forEach(function(libname){
         if(libname == 'Arduino') return; //already included, skip it
-        console.log('looking at lib',libname);
+        debug('looking at lib',libname);
         var library = libs.getById(libname.toLowerCase());
         if(!library) {
-            console.log("ERROR. couldn't find library",libname);
+            debug("ERROR. couldn't find library",libname);
             return;
         }
         if(!library.isInstalled()) {
-            console.log("not installed yet. we must install it");
+            debug("not installed yet. we must install it");
             library.install(function(){
-                console.log(libname+' installed now');
+                debug(libname+' installed now');
             });
         } else {
-            console.log(libname + " already installed");
+            debug(libname + " already installed");
         }
-        console.log("include path = ",library.getIncludePath());
+        debug("include path = ",library.getIncludePath());
         includepaths.push(library.getIncludePath());
     });
 
-    console.log("included libs = ", includedLibs);
-    console.log("included patsh = ", includepaths);
+    debug("included libs = ", includedLibs);
+    debug("included patsh = ", includepaths);
 
-    compileFiles(options,outdir,includepaths,[cfile]);
+    compileFiles(options,outdir,includepaths,[cfile],debug);
 
 
     //TODO compile 3rd party libs
@@ -192,29 +201,29 @@ exports.compile = function(sketchPath, outdir,options) {
     var cfiles = fs.readdirSync(options.corepath).map(function(file) {
         return options.corepath+'/'+file;
     });
-    compileFiles(options,outdir,includepaths,cfiles);
-    
+    compileFiles(options,outdir,includepaths,cfiles,debug);
+
     //compile core avr-libc
     var cfiles = fs.readdirSync(options.corepath+'/avr-libc').map(function(file) {
         return options.corepath+'/avr-libc/'+file;
     });
-    compileFiles(options,outdir,includepaths,cfiles);
+    compileFiles(options,outdir,includepaths,cfiles,debug);
 
 
     //link everything into core.a
     fs.readdirSync(outdir).forEach(function(file) {
         if(file.endsWith('.d')) return;
-        console.log("linking",file);
+        debug("linking",file);
         var cmd = [
             options.avrbase+'/avr-ar',
             'rcs',
             outdir+'/core.a',
             outdir+'/'+file,
         ];
-        console.log("execing",cmd.join(' '));
+        debug("execing",cmd.join(' '));
         var result = sh.exec(cmd.join(' '));
         if(result.code != 0) {
-            console.log("there was a problem running",cmd,result);
+            debug("there was a problem running",cmd,result);
             throw new Error("there was a problem running " + cmd.join(" "));
         }
     });
@@ -233,8 +242,8 @@ exports.compile = function(sketchPath, outdir,options) {
         '-lm',
     ];
 
-    console.log("building elf file");
-    console.log(elfcmd.join(' '));
+    debug("building elf file");
+    debug(elfcmd.join(' '));
     var result = sh.exec(elfcmd.join(' '));
     //console.log("elf output = ",result.stdout);
 
@@ -242,7 +251,7 @@ exports.compile = function(sketchPath, outdir,options) {
 
 
     // 5. extract EEPROM data (from EEMEM directive) to .eep file.
-    console.log("extracting EEPROM data");
+    debug("extracting EEPROM data");
     var eepcmd = [
         options.avrbase+'/avr-objcopy',
         '-O',
@@ -257,14 +266,14 @@ exports.compile = function(sketchPath, outdir,options) {
         outdir+'/'+options.name+'.eep',
     ];
 
-    console.log('extracting EEPROM data to .eep file');
-    console.log(eepcmd.join(' '));
+    debug('extracting EEPROM data to .eep file');
+    debug(eepcmd.join(' '));
     var result = sh.exec(eepcmd.join(' '));
     //console.log("output = ",result);
 
 
     // 6. build the .hex file
-    console.log("building .HEX file");
+    debug("building .HEX file");
     var hexcmd = [
         options.avrbase+'/avr-objcopy',
         '-O',
@@ -274,34 +283,31 @@ exports.compile = function(sketchPath, outdir,options) {
         outdir+'/'+options.name+'.elf',
         outdir+'/'+options.name+'.hex',
     ];
-    console.log('building hex file');
-    console.log(hexcmd.join(' '));
+    debug('building hex file');
+    debug(hexcmd.join(' '));
     var result = sh.exec(hexcmd.join(' '));
-    //console.log("output = ",result);
-
-
 }
 
-function compileFiles(options, outdir, includepaths, cfiles) {
+function compileFiles(options, outdir, includepaths, cfiles,debug) {
     cfiles.forEach(function(file) {
         //console.log("looking at file",file);
         if(file.toLowerCase().endsWith('.c')) {
-            compileC(options,outdir, includepaths, file);
+            compileC(options,outdir, includepaths, file,debug);
             return;
         }
         if(file.toLowerCase().endsWith('.cpp')) {
-            compileCPP(options,outdir, includepaths, file);
+            compileCPP(options,outdir, includepaths, file,debug);
             return;
         }
         if(file.toLowerCase().endsWith('.h')) return;
         if(file.toLowerCase().endsWith('/avr-libc')) return;
-        console.log("still need to compile",file);
+        debug("still need to compile",file);
         throw new Error("couldn't compile file: "+file);
     })
 }
 
-function compileCPP(options, outdir, includepaths, cfile) {
-    console.log("compiling ",cfile);//,"to",outdir,"with options",options);
+function compileCPP(options, outdir, includepaths, cfile,debug) {
+    debug("compiling ",cfile);//,"to",outdir,"with options",options);
     //console.log("include files = ",includepaths);
     //console.log("options = ",options);
 
@@ -331,18 +337,18 @@ function compileCPP(options, outdir, includepaths, cfile) {
     var filename = cfile.substring(cfile.lastIndexOf('/')+1);
     var shortname = filename.substring(0,filename.lastIndexOf('.'));
     cmd.push(outdir+'/'+shortname+'.o');
-    console.log(cmd.join(' '));
+    debug(cmd.join(' '));
     var result = sh.exec(cmd.join(' '));
     if(result.code != 0) {
-        console.log("stdout = ",result.stdout);
+        debug("stdout = ",result.stdout);
         var err = new Error("there was an error compiling");
         err.output = result.stdout;
         throw err;
     }
 }
 
-function compileC(options, outdir, includepaths, cfile) {
-    console.log("compiling ",cfile);//,"to",outdir,"with options",options);
+function compileC(options, outdir, includepaths, cfile, debug) {
+    debug("compiling ",cfile);//,"to",outdir,"with options",options);
     var cmd = [
         options.avrbase+'/avr-gcc', //gcc
         "-c", //compile, don't link
@@ -367,11 +373,11 @@ function compileC(options, outdir, includepaths, cfile) {
     var shortname = filename.substring(0,filename.lastIndexOf('.'));
     cmd.push(outdir+'/'+shortname+'.o');
 
-    //console.log('running',cmd.join(' '));
+    debug('running',cmd.join(' '));
     var result = sh.exec(cmd.join(' '));
-    //console.log("result = ",result.code);
+    debug("result = ",result.code);
     if(result.code != 0) {
         throw new Error("there was an error compiling " + cfile);
     }
-    //console.log("stdout = ",result.stdout);
+    debug("stdout = ",result.stdout);
 }
