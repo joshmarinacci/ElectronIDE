@@ -154,6 +154,7 @@ exports.compile = function(sketchPath, outdir,options, publish) {
     debug('scanned for included libs',includedLibs);
 
     var librarypaths = [];
+    var libextra = [];
     //global libs
     debug("arduino libs = ",options.arduinolibs);
     fs.readdirSync(options.arduinolibs).forEach(function(lib) {
@@ -167,6 +168,7 @@ exports.compile = function(sketchPath, outdir,options, publish) {
         options.corepath,
         options.variantpath,
     ];
+
 
     //install libs if needed, and add to the include paths
     includedLibs.forEach(function(libname){
@@ -187,15 +189,27 @@ exports.compile = function(sketchPath, outdir,options, publish) {
         }
         debug("include path = ",library.getIncludePath());
         includepaths.push(library.getIncludePath());
+        libextra.push(library);
     });
 
     debug("included libs = ", includedLibs);
-    debug("included patsh = ", includepaths);
+    debug("included path = ", includepaths);
+    debug("included 3rd party libs objects",libextra);
 
+    //compile sketch files
     compileFiles(options,outdir,includepaths,[cfile],debug);
 
 
     //TODO compile 3rd party libs
+    libextra.forEach(function(lib) {
+        if(lib.id == 'wire') return;
+        var path = lib.getIncludePath();
+        var cfiles = fs.readdirSync(path).map(function(file) {
+            return path+'/'+file;
+        });
+        compileFiles(options, outdir, includepaths, cfiles, debug);
+    })
+
 
     //compile core
     var cfiles = fs.readdirSync(options.corepath).map(function(file) {
@@ -220,7 +234,7 @@ exports.compile = function(sketchPath, outdir,options, publish) {
             outdir+'/core.a',
             outdir+'/'+file,
         ];
-        debug("execing",cmd.join(' '));
+        //debug("execing",cmd.join(' '));
         var result = sh.exec(cmd.join(' '));
         if(result.code != 0) {
             debug("there was a problem running",cmd,result);
@@ -246,6 +260,13 @@ exports.compile = function(sketchPath, outdir,options, publish) {
     debug(elfcmd.join(' '));
     var result = sh.exec(elfcmd.join(' '));
     //console.log("elf output = ",result.stdout);
+    if(result.code != 0) {
+        debug("stdout = ",result.stdout);
+        var err = new Error("there was an error compiling");
+        err.output = result.stdout;
+        throw err;
+    }
+
 
 
 
@@ -299,10 +320,12 @@ function compileFiles(options, outdir, includepaths, cfiles,debug) {
             compileCPP(options,outdir, includepaths, file,debug);
             return;
         }
+        if(file.toLowerCase().endsWith('.txt')) return;
+        if(file.toLowerCase().endsWith('.md')) return;
         if(file.toLowerCase().endsWith('.h')) return;
         if(file.toLowerCase().endsWith('/avr-libc')) return;
         debug("still need to compile",file);
-        throw new Error("couldn't compile file: "+file);
+        //throw new Error("couldn't compile file: "+file);
     })
 }
 
@@ -337,7 +360,7 @@ function compileCPP(options, outdir, includepaths, cfile,debug) {
     var filename = cfile.substring(cfile.lastIndexOf('/')+1);
     var shortname = filename.substring(0,filename.lastIndexOf('.'));
     cmd.push(outdir+'/'+shortname+'.o');
-    debug(cmd.join(' '));
+    //debug(cmd.join(' '));
     var result = sh.exec(cmd.join(' '));
     if(result.code != 0) {
         debug("stdout = ",result.stdout);
@@ -373,11 +396,13 @@ function compileC(options, outdir, includepaths, cfile, debug) {
     var shortname = filename.substring(0,filename.lastIndexOf('.'));
     cmd.push(outdir+'/'+shortname+'.o');
 
-    debug('running',cmd.join(' '));
+    //debug('running',cmd.join(' '));
     var result = sh.exec(cmd.join(' '));
-    debug("result = ",result.code);
+    //debug("result = ",result.code);
     if(result.code != 0) {
-        throw new Error("there was an error compiling " + cfile);
+        debug("stdout = ",result.stdout);
+        var err = new Error("there was an error compiling");
+        err.output = result.stdout;
+        throw err;
     }
-    debug("stdout = ",result.stdout);
 }
