@@ -12,19 +12,20 @@
 }
 .left-pane {
     left: 10px;
-    width: 300px;
+    width: 220px;
 }
 .center-pane {
-    border: 1px solid #cccccc;
-    left: 300px;
-    right: 300px;
+    left: 230px;
+    right: 420px;
+    width: auto;
+    border: 0px solid gray;
 }
 .right-pane {
     right: 10px;
-    width: 300px;
+    width: 400px;
 }
 .tab-content {
-    border: 1px solid gray;
+    border: 0px solid gray;
     position: absolute;
     top: 40px;
     bottom: 0px;
@@ -35,7 +36,8 @@
     position: absolute;
     width: 100%;
     overflow: auto;
-    border: 1px solid green;
+    border: 1px solid gray;
+    padding: 5px;
     top: 0px;
     bottom: 0px;
     font-size: 90%;
@@ -49,7 +51,7 @@
 #sketch-picker {
     position: absolute;
     overflow: auto;
-    border: 1px solid gray;
+    border: 0px solid gray;
     top: 100px;
     bottom: 40px;
     right: 20px;
