@@ -11,6 +11,8 @@ var websocket = require('nodejs-websocket');
 var settings = require('./settings.js');
 var sketches = require('./sketches.js');
 
+var serial = require('./serial.js');
+
 //load up standard boards
 var BOARDS = require('./boards').loadBoards();
 var LIBS   = require('./libraries').loadLibraries();
@@ -199,6 +201,38 @@ app.get('/search',function(req,res){
         res.end();
     })
 })
+
+function serialOutput(data) {
+    var msg = {
+        type:'serial',
+        data:data.toString(),
+    };
+    wslist.forEach(function(conn) {
+        conn.sendText(JSON.stringify(msg));
+    });
+}
+
+app.post('/serial/open', function(req,res) {
+    console.log("opening the serial port",req.body.port);
+    if(!req.body.port) {
+        res.send(JSON.stringify({status:'error', message:'missing serial port'}));
+        res.end();
+        return;
+    }
+    serial.open(req.body.port,serialOutput);
+    res.end(JSON.stringify({status:'okay',message:'opened'}));
+});
+
+app.post('/serial/close', function(req,res) {
+    console.log("closing the serial port",req.body.port);
+    if(!req.body.port) {
+        res.send(JSON.stringify({status:'error', message:'missing serial port'}));
+        res.end();
+        return;
+    }
+    serial.close(req.body.port);
+    res.end(JSON.stringify({status:'okay',message:'closed'}));
+});
 
 var server = app.listen(54329,function() {
     console.log('open your browser to http://localhost:'+server.address().port+'/');

@@ -42,6 +42,19 @@
     bottom: 0px;
     font-size: 90%;
 }
+
+#serial {
+    overflow: auto;
+    position: absolute;
+    width: 100%;
+    overflow: auto;
+    border: 1px solid gray;
+    padding: 5px;
+    top: 50px;
+    bottom: 0px;
+    font-size: 90%;
+}
+
 #console p {
     background-color: #f0f0f0;
 }

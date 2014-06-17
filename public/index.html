@@ -30,7 +30,7 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="#">Electron</a>
+      <span class="navbar-brand">Electron</span>
     </div>
 
 
@@ -139,7 +139,14 @@
                     board info goes here
                 </div>
                 <div id='serial-pane' class='tab-pane'>
-                    <div id='serial'>this is the serial console</div>
+                    <button class='btn btn-default' id='open-serial-button'>open</button>
+                    <input type='text' class='input-control'></input>
+                    <button class='btn btn-default'>send</button>
+                    <button type='button' class='btn btn-default dropdown-toggle btn-xs'  data-toggle="dropdown">
+                        9600 baud <span class="caret"></span>
+                    </button>
+
+                    <pre id='serial'></pre>
                 </div>
             </div>
         </div>
@@ -302,6 +309,34 @@ function compileAndRunCode() {
     });
 }
 
+function toggleSerialConsole() {
+    if(STATE.serial == 'open') {
+        STATE.serial = 'closed';
+        $("#open-serial-button").text('open');
+        $("#serial").text($("#serial").text()+"closed\n");
+        POST('/serial/close',{
+            port:STATE.port,
+        }, function(resp) {
+            console.log("response is",resp);
+            if(resp.status == 'error') {
+                $("#serial").text($("#serial").text()+"error: " + resp.message + "\n");
+            }
+        });
+    } else {
+        STATE.serial = 'open';
+        $("#open-serial-button").text('close');
+        $("#serial").text($("#serial").text()+"opened at 9600 baud\n");
+        POST('/serial/open',{
+            port:STATE.port
+        }, function(resp) {
+            console.log("response is",resp);
+            if(resp.status == 'error') {
+                $("#serial").text($("#serial").text()+"error: " + resp.message + "\n");
+            }
+        });
+    }
+}
+
 
 function appendConsole(str) {
     $("#console").append('<p>'+str+'</p>');
@@ -415,6 +450,12 @@ $("#save-sketch-button").click(function(e) {
 
 })
 
+$("#open-serial-button").click(function(e) {
+    e.preventDefault();
+    toggleSerialConsole();
+});
+
+
 
 var wsurl = "ws:localhost:4203";
 var monitor = new WebSocket(wsurl);
@@ -429,7 +470,11 @@ monitor.onerror = function(e) {
 }
 monitor.onmessage = function(e) {
     var event = JSON.parse(e.data);
-    $("#console").append('<p class="response">'+event.message+'</p>');
+    if(event.type == 'serial') {
+        $("#serial").text($("#serial").text()+event.data);
+    } else {
+        $("#console").append('<p class="response">'+event.message+'</p>');
+    }
 }
 
 
