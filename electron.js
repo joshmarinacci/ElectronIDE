@@ -65,7 +65,7 @@ function makeCleanDir(outpath) {
     return outpath;
 }
 
-function doCompile(code,board) {
+function doCompile(code,board,sketch) {
     //create output dir
     console.log('making build dir');
     if(!fs.existsSync('build')) {
@@ -84,7 +84,7 @@ function doCompile(code,board) {
         if(bd.id == board) foundBoard = bd;
     })
     OPTIONS.device = foundBoard;
-    compile.compile(sketchpath,outpath,OPTIONS, publishEvent);
+    compile.compile(sketchpath,outpath,OPTIONS, publishEvent,settings.usersketches+'/'+sketch);
 }
 
 app.post('/compile',function(req,res) {
@@ -95,7 +95,7 @@ app.post('/compile',function(req,res) {
         return;
     }
     try {
-        doCompile(req.body.code,req.body.board);
+        doCompile(req.body.code,req.body.board,req.body.sketch);
         res.send(JSON.stringify({status:'okay'}));
         res.end();
 
@@ -120,7 +120,7 @@ app.post('/run',function(req,res) {
         return;
     }
 
-    doCompile(req.body.code,req.body.board);
+    doCompile(req.body.code,req.body.board,req.body.sketch);
     console.log('port = ',req.body.port);
     console.log('OPTIONS = ',OPTIONS);
     uploader.upload('build/out/Blink.hex',req.body.port,OPTIONS);
@@ -217,4 +217,4 @@ var wss = websocket.createServer(function(conn) {
     conn.on('close',function(code,reason) {
         console.log("websocket closed",code,reason);
     });
-}).listen(4202);
+}).listen(4203);

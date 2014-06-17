@@ -270,10 +270,11 @@ function populateBoards(boards) {
 fetchBoards(populateBoards);
 
 function compileCode() {
-    appendConsole("compiling");
+    appendConsole("compiling", STATE.sketch.name);
     POST('/compile',{
         code: editor.getValue(),
         board: STATE.board,
+        sketch: STATE.sketch.name,
     }, function(resp) {
         appendConsoleResponse(resp.status);
         if(resp.status == 'error') {
@@ -288,6 +289,7 @@ function compileAndRunCode() {
     data.append('code',editor.getValue());
     data.append('board',STATE.board);
     data.append('port',STATE.port);
+    data.append('sketch',STATE.sketch.name);
     $.ajax({
         url: HOSTNAME+'/run',
         type: "POST",
@@ -414,7 +416,7 @@ $("#save-sketch-button").click(function(e) {
 })
 
 
-var wsurl = "ws:localhost:4202";
+var wsurl = "ws:localhost:4203";
 var monitor = new WebSocket(wsurl);
 monitor.onopen = function(e) {
     console.log("opened the websocket for ",wsurl);

@@ -1,7 +1,7 @@
 var fs = require('fs');
 //var child = require('child_process');
 var sh = require('execSync');
-var libs = require('./libraries').loadLibraries();
+var LIBRARIES = require('./libraries').loadLibraries();
 
 String.prototype.endsWith = function(suffix) {
     return this.indexOf(suffix, this.length - suffix.length) !== -1;
@@ -114,12 +114,39 @@ function generateCPPFile(cfile,sketchPath) {
     //extra newline just in case
     fs.appendFileSync(cfile,"\n");
     //console.log("final code = ", fs.readFileSync(cfile).toString());
-//    throw new Error('foo');
+
 }
 
 
+function calculateLibs(list, paths, libs, debug) {
+    //install libs if needed, and add to the include paths
+    list.forEach(function(libname){
+        if(libname == 'Arduino') return; //already included, skip it
+        debug('looking at lib',libname);
+        var lib = LIBRARIES.getById(libname.toLowerCase());
+        if(!lib) {
+            debug("ERROR. couldn't find library",libname);
+            return;
+        }
+        if(!lib.isInstalled()) {
+            debug("not installed yet. we must install it");
+            lib.install(function(){
+                debug(libname+' installed now');
+            });
+        } else {
+            debug(libname + " already installed");
+        }
+        debug("include path = ",lib.getIncludePath());
+        paths.push(lib.getIncludePath());
+        libs.push(lib);
+        if(lib.dependencies && lib.dependencies.length) {
+            calculateLibs(lib.dependencies, paths, libs, debug);
+        }
+    });
+}
 
-exports.compile = function(sketchPath, outdir,options, publish) {
+
+exports.compile = function(sketchPath, outdir,options, publish, sketchDir) {
 
     function debug(message) {
         var args = Array.prototype.slice.call(arguments);
@@ -128,6 +155,7 @@ exports.compile = function(sketchPath, outdir,options, publish) {
     }
 
     debug("compiling ",sketchPath,"to dir",outdir);
+    debug("root sketch dir = ",sketchDir);
 
     var tmp = "build/tmp";
 
@@ -141,11 +169,22 @@ exports.compile = function(sketchPath, outdir,options, publish) {
 
     debug("options",options);
 
-    var includepaths = [options.corepath,options.variantpath];
     var cfile = tmp+'/'+options.name+'.cpp';
 
     debug("generating",cfile);
     generateCPPFile(cfile,sketchPath);
+    //copy other sketch files over
+    var cfiles = [cfile];
+    //compile sketch files
+    function copyToDir(file, indir, outdir) {
+        var text = fs.readFileSync(indir+'/'+file);
+        fs.writeFileSync(outdir+'/'+file,text);
+    }
+    fs.readdirSync(sketchDir).forEach(function(file) {
+        if(file.toLowerCase().endsWith('.h')) copyToDir(file,sketchDir,tmp);
+        if(file.toLowerCase().endsWith('.cpp')) copyToDir(file,sketchDir,tmp);
+        cfiles.push(tmp+'/'+file);
+    });
 
 
 
@@ -154,6 +193,7 @@ exports.compile = function(sketchPath, outdir,options, publish) {
     debug('scanned for included libs',includedLibs);
 
     var librarypaths = [];
+    var libextra = [];
     //global libs
     debug("arduino libs = ",options.arduinolibs);
     fs.readdirSync(options.arduinolibs).forEach(function(lib) {
@@ -166,36 +206,30 @@ exports.compile = function(sketchPath, outdir,options, publish) {
     var includepaths = [
         options.corepath,
         options.variantpath,
+        sketchDir,
     ];
 
-    //install libs if needed, and add to the include paths
-    includedLibs.forEach(function(libname){
-        if(libname == 'Arduino') return; //already included, skip it
-        debug('looking at lib',libname);
-        var library = libs.getById(libname.toLowerCase());
-        if(!library) {
-            debug("ERROR. couldn't find library",libname);
-            return;
-        }
-        if(!library.isInstalled()) {
-            debug("not installed yet. we must install it");
-            library.install(function(){
-                debug(libname+' installed now');
-            });
-        } else {
-            debug(libname + " already installed");
-        }
-        debug("include path = ",library.getIncludePath());
-        includepaths.push(library.getIncludePath());
-    });
+    console.log("includedlibs = ", includedLibs);
+    calculateLibs(includedLibs,includepaths,libextra, debug);
+
 
     debug("included libs = ", includedLibs);
-    debug("included patsh = ", includepaths);
+    debug("included path = ", includepaths);
+    debug("included 3rd party libs objects",libextra);
 
-    compileFiles(options,outdir,includepaths,[cfile],debug);
+    compileFiles(options,outdir,includepaths,cfiles,debug);
 
 
     //TODO compile 3rd party libs
+    libextra.forEach(function(lib) {
+        if(lib.id == 'wire') return;
+        var path = lib.getIncludePath();
+        var cfiles = fs.readdirSync(path).map(function(file) {
+            return path+'/'+file;
+        });
+        compileFiles(options, outdir, includepaths, cfiles, debug);
+    })
+
 
     //compile core
     var cfiles = fs.readdirSync(options.corepath).map(function(file) {
@@ -220,7 +254,7 @@ exports.compile = function(sketchPath, outdir,options, publish) {
             outdir+'/core.a',
             outdir+'/'+file,
         ];
-        debug("execing",cmd.join(' '));
+        //debug("execing",cmd.join(' '));
         var result = sh.exec(cmd.join(' '));
         if(result.code != 0) {
             debug("there was a problem running",cmd,result);
@@ -246,6 +280,13 @@ exports.compile = function(sketchPath, outdir,options, publish) {
     debug(elfcmd.join(' '));
     var result = sh.exec(elfcmd.join(' '));
     //console.log("elf output = ",result.stdout);
+    if(result.code != 0) {
+        debug("stdout = ",result.stdout);
+        var err = new Error("there was an error compiling");
+        err.output = result.stdout;
+        throw err;
+    }
+
 
 
 
@@ -299,10 +340,13 @@ function compileFiles(options, outdir, includepaths, cfiles,debug) {
             compileCPP(options,outdir, includepaths, file,debug);
             return;
         }
+        if(file.toLowerCase().endsWith('.txt')) return;
+        if(file.toLowerCase().endsWith('.md')) return;
         if(file.toLowerCase().endsWith('.h')) return;
         if(file.toLowerCase().endsWith('/avr-libc')) return;
+        if(file.toLowerCase().endsWith('examples')) return;
         debug("still need to compile",file);
-        throw new Error("couldn't compile file: "+file);
+        //throw new Error("couldn't compile file: "+file);
     })
 }
 
@@ -337,7 +381,7 @@ function compileCPP(options, outdir, includepaths, cfile,debug) {
     var filename = cfile.substring(cfile.lastIndexOf('/')+1);
     var shortname = filename.substring(0,filename.lastIndexOf('.'));
     cmd.push(outdir+'/'+shortname+'.o');
-    debug(cmd.join(' '));
+    //debug(cmd.join(' '));
     var result = sh.exec(cmd.join(' '));
     if(result.code != 0) {
         debug("stdout = ",result.stdout);
@@ -373,11 +417,13 @@ function compileC(options, outdir, includepaths, cfile, debug) {
     var shortname = filename.substring(0,filename.lastIndexOf('.'));
     cmd.push(outdir+'/'+shortname+'.o');
 
-    debug('running',cmd.join(' '));
+    //debug('running',cmd.join(' '));
     var result = sh.exec(cmd.join(' '));
-    debug("result = ",result.code);
+    //debug("result = ",result.code);
     if(result.code != 0) {
-        throw new Error("there was an error compiling " + cfile);
+        debug("stdout = ",result.stdout);
+        var err = new Error("there was an error compiling");
+        err.output = result.stdout;
+        throw err;
     }
-    debug("stdout = ",result.stdout);
 }
