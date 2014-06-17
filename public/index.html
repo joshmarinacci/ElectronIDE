@@ -20,6 +20,32 @@
   </head>
   <body>
 
+
+<!-- new sketch dialog -->
+
+<div id='new-sketch-dialog' class="modal fade">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">New Sketch</h4>
+      </div>
+      <div class="modal-body">
+          <form>
+              <div class='form-group'>
+                  <label>Sketch Name</label>
+                  <input type='text' class='form-control' value='NewSketch'>
+              </div>
+          </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id='create-sketch-button'>Create Sketch</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
 <nav class="navbar navbar-default navbar-fixed-top " role="navigation">
   <div class="container-fluid">
 
@@ -370,6 +396,12 @@ function populateSketches(sketches) {
         e.preventDefault();
         loadSketch($(this).attr('data-name'));
     });
+    $("#sketch-picker .edit-button").click(function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var name = $(this).attr('data-name');
+        console.log('renaming',name);
+    });
     $("#sketch-picker .delete-button").click(function(e) {
         e.preventDefault();
         e.stopPropagation();
@@ -413,9 +445,16 @@ $("#search-button").click(function(e){
 
 $("#new-sketch-button").click(function(e){
     e.preventDefault();
-    console.log("making a new sketch");
     var name = "Sketch"+Math.floor(Math.random()*10000);
-    console.log("name = ",name);
+    $("#new-sketch-dialog input").val(name);
+    $("#new-sketch-dialog").modal('show');
+});
+
+$("#create-sketch-button").click(function(e) {
+    e.preventDefault();
+    $("#new-sketch-dialog").modal('hide');
+    var name = $("#new-sketch-dialog input").val();
+    console.log('name = ',name);
     POST("/new",{name:name},function(res){
         console.log("new sketch = ",res);
         appendConsole('created new sketch '+name);
@@ -425,10 +464,12 @@ $("#new-sketch-button").click(function(e){
             fetchSketches(populateSketches);
         }
     });
+
 });
 
 $("#edit-sketches-button").click(function(e) {
     e.preventDefault();
+    $("#sketch-picker .edit-button").toggleClass('hidden');
     $("#sketch-picker .delete-button").toggleClass('hidden');
 })
 
@@ -521,7 +562,10 @@ monitor.onmessage = function(e) {
     <div class='list-group'>
         {{#.}}
             <a href='#' class='list-group-item' data-name="{{.}}">{{.}}
-                <button data-name='{{.}}' class='btn btn-default btn-xs pull-right hidden delete-button'><span class='glyphicon glyphicon-remove'></span></button>
+                <button data-name='{{.}}' class='btn btn-default btn-xs pull-right hidden delete-button'
+                    ><span class='glyphicon glyphicon-remove'></span></button>
+                <button data-name='{{.}}' class='btn btn-default btn-xs pull-right hidden edit-button'
+                    ><span class='glyphicon glyphicon-pencil'></span></button>
             </a>
         {{/.}}
     </div>
