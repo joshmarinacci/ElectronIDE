@@ -21,8 +21,7 @@ var OPTIONS = {
     userlibs: settings.userlibs,
     root: settings.root,
     hardware: settings.root + '/hardware',
-    avrbase: settings.root + '/hardware/tools/avr/bin',
-    name: 'Blink',
+    avrbase: settings.root + '/hardware/tools/avr/bin'
 }
 
 console.log('settings',settings);
@@ -77,15 +76,16 @@ function doCompile(code,board,sketch) {
     var outpath = makeCleanDir('build/out');
     console.log('making build/tmp dir');
     var sketchpath = makeCleanDir("build/tmp");
-    fs.writeFileSync(sketchpath+'/Blink.ino',code);
+    fs.writeFileSync(sketchpath + '/' + sketch + '.ino', code);
 
-    publishEvent({ type:'compile', message:'writing to ' + sketchpath+'/Blink.ino'});
+    publishEvent({ type:'compile', message:'writing to ' + sketchpath + '/' + sketch });
 
     var foundBoard = null;
     BOARDS.forEach(function(bd) {
         if(bd.id == board) foundBoard = bd;
     })
     OPTIONS.device = foundBoard;
+    OPTIONS.name = sketch
     compile.compile(sketchpath,outpath,OPTIONS, publishEvent,settings.usersketches+'/'+sketch);
 }
 
@@ -102,7 +102,7 @@ app.post('/compile',function(req,res) {
         res.end();
 
     } catch(e) {
-        console.log("compliation error",e);
+        console.log("compilation error",e);
         console.log(e.output);
         res.send(JSON.stringify({status:'error',output:e.output}));
         res.end();
@@ -125,7 +125,7 @@ app.post('/run',function(req,res) {
     doCompile(req.body.code,req.body.board,req.body.sketch);
     console.log('port = ',req.body.port);
     console.log('OPTIONS = ',OPTIONS);
-    uploader.upload('build/out/Blink.hex',req.body.port,OPTIONS);
+    uploader.upload('build/out/'+req.body.sketch+'.hex',req.body.port,OPTIONS);
     res.send(JSON.stringify({status:'okay'}));
     res.end();
 });
