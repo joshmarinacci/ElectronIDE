@@ -16,6 +16,13 @@ To try it out do:
 * run `node electron`
 * open your browser to `http://localhost:54329/`
 
+*A note on Linux*
+
+In theory Electron should *just work* on Linux since it's just javascript underneath.
+However, some users have reported that some Linux distros have an existing program
+called `node` that is actually an ancient packet radio program.  Try running `node --version`
+to make sure you really have NodeJS 10.x and not that other program. Uninstall
+it if you do. NodeJS might also be run as `nodejs` instead of `node`.
 
 ## Want to help?
 
