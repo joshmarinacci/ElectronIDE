@@ -41,6 +41,8 @@ exports.getSketch = function(name, cb) {
         files:[]
     };
     fs.readdirSync(dir).forEach(function(filename) {
+        //skip hidden files
+        if(filename.indexOf('.')==0) return;
         var file = fs.readFileSync(dir+'/'+filename);
         //console.log("file",filename);
         if(filename.toLowerCase() == 'info.json') {
