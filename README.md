@@ -24,6 +24,9 @@ called `node` that is actually an ancient packet radio program.  Try running `no
 to make sure you really have NodeJS 10.x and not that other program. Uninstall
 it if you do. NodeJS might also be run as `nodejs` instead of `node`.
 
+There are many out of date packages on linux distros. We recommend you use the newest
+ones from SID, documented here: http://playground.arduino.cc/Linux/Ubuntu
+
 ## Want to help?
 
 Don't worry. There's *tons* to do.
