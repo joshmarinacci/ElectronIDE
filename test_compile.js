@@ -28,7 +28,7 @@ var sketchPath = 'test/examples/Blink/';
 
 //setup standard options
 var options = {
-    userlibs: "/Users/josh/Documents/Arduino/Libraries",
+    //userlibs: "/Users/josh/Documents/Arduino/Libraries",
     name: 'Blink',
 }
 options.device = LEO;

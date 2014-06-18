@@ -3,7 +3,7 @@ var fs = require('fs');
 function Platform() {
     this.os = process.platform;
     console.log("os = ",this.os);
-    if(this.os == 'macosx') {
+    if(this.os == 'darwin') {
         this.root = "/Applications/Arduino.app/Contents/Resources/Java";
     }
     if(this.os == 'linux') {
