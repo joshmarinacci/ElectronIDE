@@ -1,6 +1,7 @@
 var fs = require('fs');
 var compile = require('./compile');
 var uploader = require('./uploader');
+var platform = require('./platform');
 
 var BOARDS = require('./boards').loadBoards();
 var UNO = null;
@@ -28,17 +29,13 @@ var sketchPath = 'test/examples/Blink/';
 //setup standard options
 var options = {
     userlibs: "/Users/josh/Documents/Arduino/Libraries",
-    root: "/Applications/Arduino.app/Contents/Resources/Java",
     name: 'Blink',
 }
-options.hardware = options.root +'/hardware';
-options.avrbase  = options.root +'/hardware/tools/avr/bin';
 options.device = LEO;
+options.platform = platform.getDefaultPlatform();
+console.log("options = ",options);
 
-//console.log("options = ",options);
-
-compile.compile(sketchPath,outpath,options);
-
+compile.compile(sketchPath,outpath,options, function(){}, sketchPath);
 
 var port = '/dev/cu.usbmodem1421';
-uploader.upload('build/out/Blink.hex',port,options);
+//uploader.upload('build/out/Blink.hex',port,options);
