@@ -19,10 +19,7 @@ var BOARDS = require('./boards').loadBoards();
 var LIBS   = require('./libraries').loadLibraries();
 //standard options
 var OPTIONS = {
-    userlibs: settings.userlibs,
-    root: settings.root,
-    hardware: settings.root + '/hardware',
-    avrbase: settings.root + '/hardware/tools/avr/bin'
+    userlibs: settings.userlibs
 }
 
 console.log('settings',settings);
