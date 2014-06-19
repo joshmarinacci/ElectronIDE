@@ -11,8 +11,8 @@ var path = require('path');
 
 var settings = require('./settings.js');
 var sketches = require('./sketches.js');
-
 var serial = require('./serial.js');
+var platform = require('./platform');
 
 //load up standard boards
 var BOARDS = require('./boards').loadBoards();
@@ -69,13 +69,10 @@ function makeCleanDir(outpath) {
 
 function doCompile(code,board,sketch) {
     //create output dir
-    console.log('making build dir');
     if(!fs.existsSync('build')) {
         fs.mkdirSync('build');
     }
-    console.log('making build/out dir');
     var outpath = makeCleanDir('build/out');
-    console.log('making build/tmp dir');
     var sketchpath = makeCleanDir("build/tmp");
     var inoFile = path.join(sketchpath, sketch + '.ino');
     fs.writeFileSync(inoFile, code);
@@ -87,6 +84,7 @@ function doCompile(code,board,sketch) {
         if(bd.id == board) foundBoard = bd;
     })
     OPTIONS.device = foundBoard;
+    OPTIONS.platform = platform.getDefaultPlatform();
     OPTIONS.name = sketch;
     compile.compile(sketchpath,outpath,OPTIONS, publishEvent, path.join(settings.usersketches, sketch));
 }
@@ -125,8 +123,6 @@ app.post('/run',function(req,res) {
     }
 
     doCompile(req.body.code,req.body.board,req.body.sketch);
-    console.log('port = ',req.body.port);
-    console.log('OPTIONS = ',OPTIONS);
     uploader.upload(path.join('build', 'out', req.body.sketch+'.hex'),req.body.port,OPTIONS);
     res.send(JSON.stringify({status:'okay'}));
     res.end();
@@ -179,10 +175,7 @@ app.get('/sketches',function(req,res) {
 });
 
 app.post('/save',function(req,res) {
-    console.log(req.body.name);
-    console.log(req.body.code);
     sketches.saveSketch(req.body.name,req.body.code,function(results) {
-        console.log(" saved");
         res.send(JSON.stringify({status:'okay', name:req.body.name}));
         res.end();
     });
@@ -196,9 +189,7 @@ app.get('/sketch/:name',function(req,res) {
 });
 
 app.get('/search',function(req,res){
-    console.log("searching for",req.query);
     LIBS.search(req.query.query,function(results) {
-        console.log("found libs",results);
         res.send(results);
         res.end();
     })
@@ -215,7 +206,6 @@ function serialOutput(data) {
 }
 
 app.post('/serial/open', function(req,res) {
-    console.log("opening the serial port",req.body.port);
     if(!req.body.port) {
         res.send(JSON.stringify({status:'error', message:'missing serial port'}));
         res.end();
@@ -226,7 +216,6 @@ app.post('/serial/open', function(req,res) {
 });
 
 app.post('/serial/close', function(req,res) {
-    console.log("closing the serial port",req.body.port);
     if(!req.body.port) {
         res.send(JSON.stringify({status:'error', message:'missing serial port'}));
         res.end();

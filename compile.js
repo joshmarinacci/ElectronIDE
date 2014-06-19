@@ -1,5 +1,10 @@
+/*
+use this as a guide:
+    http://arduino.cc/en/Hacking/BuildProcess
+ */
+
+
 var fs = require('fs');
-//var child = require('child_process');
 var sh = require('execSync');
 var LIBRARIES = require('./libraries').loadLibraries();
 
@@ -7,51 +12,6 @@ String.prototype.endsWith = function(suffix) {
     return this.indexOf(suffix, this.length - suffix.length) !== -1;
 };
 
-    /*
-
-    package
-    verify
-    compile
-    download
-
-    prereqs:
-        sketch directory
-        list of files to include or exclude
-        desired temp dirs
-        desired output dir for the hex file
-        name of the hex file
-        location of the compiler
-        location of standard include files
-        name of the board
-        location of board specific include files
-
-
-    use this as a guide:
-        http://arduino.cc/en/Hacking/BuildProcess
-
-
-
-    assemble:
-        concat all .ino files
-        include #include "WProgram.h"
-
-        create decs for all functions. put before code but after #defines and #includes
-        append target board's main.cxx
-
-        set some vars based on the current board ?
-
-    compile:
-        invoke avr-gcc with proper include dirs
-            build .c .cpp files
-            link .o into static lib
-            generate .hex file
-
-
-    upload:
-
-
-
-     */
 
 function checkfile(path) {
     if(!fs.existsSync(path)) throw new Error("file not found " + path);
@@ -145,6 +105,91 @@ function calculateLibs(list, paths, libs, debug) {
     });
 }
 
+function listdir(path) {
+    return fs.readdirSync(path).map(function(file) {
+        return path+'/'+file;
+    });
+}
+
+function linkFile(options, file, outdir) {
+    var cmd = [
+        options.platform.getCompilerBinaryPath()+'/avr-ar',
+        'rcs',
+        outdir+'/core.a',
+        file,
+    ];
+    //debug("execing",cmd.join(' '));
+    var result = sh.exec(cmd.join(' '));
+    if(result.code != 0) {
+        debug("there was a problem running",cmd,result);
+        throw new Error("there was a problem running " + cmd.join(" "));
+    }
+}
+
+function linkElfFile(options, outdir) {
+
+    //link everything into the .elf file
+    var elfcmd = [
+        options.platform.getCompilerBinaryPath()+'/avr-gcc', //gcc
+        '-Os', //??
+        '-Wl,--gc-sections', //not using relax yet
+        '-mmcu='+options.device.build.mcu, //the mcu, ex: atmega168
+        '-o', //??
+        outdir+'/'+options.name+'.elf',
+        outdir+'/'+options.name+'.o',
+        outdir+'/core.a',
+        '-L'+__dirname+'/'+outdir,
+        '-lm',
+    ];
+
+    //debug(elfcmd.join(' '));
+    var result = sh.exec(elfcmd.join(' '));
+    //console.log("elf output = ",result.stdout);
+    if(result.code != 0) {
+        //debug("stdout = ",result.stdout);
+        var err = new Error("there was an error compiling");
+        err.output = result.stdout;
+        throw err;
+    }
+}
+
+
+function extractEEPROMData(options, outdir) {
+    var eepcmd = [
+        options.platform.getCompilerBinaryPath()+'/avr-objcopy',
+        '-O',
+        'ihex',
+        '-j',
+        '.eeprom',
+        '--set-section-flags=.eeprom=alloc,load',
+        '--no-change-warnings',
+        '--change-section-lma',
+        '.eeprom=0',
+        outdir+'/'+options.name+'.elf',
+        outdir+'/'+options.name+'.eep',
+    ];
+
+    //debug('extracting EEPROM data to .eep file');
+    //debug(eepcmd.join(' '));
+    var result = sh.exec(eepcmd.join(' '));
+    //console.log("output = ",result);
+}
+
+
+
+function buildHexFile(options, outdir) {
+    var hexcmd = [
+        options.platform.getCompilerBinaryPath()+'/avr-objcopy',
+        '-O',
+        'ihex',
+        '-R',
+        '.eeprom',
+        outdir+'/'+options.name+'.elf',
+        outdir+'/'+options.name+'.hex',
+    ];
+//    debug(hexcmd.join(' '));
+    var result = sh.exec(hexcmd.join(' '));
+}
 
 exports.compile = function(sketchPath, outdir,options, publish, sketchDir) {
 
@@ -161,13 +206,6 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir) {
 
     debug("assembling the sketch in the directory",tmp);
     checkfile(tmp);
-
-
-    options.corepath     = options.hardware +'/arduino/cores/'+options.device.build.core;
-    options.variantpath  = options.hardware + '/arduino/variants/'+options.device.build.variant;
-    options.arduinolibs = options.root+'/libraries';
-
-    debug("options",options);
 
     var cfile = tmp+'/'+options.name+'.cpp';
 
@@ -192,23 +230,25 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir) {
     var includedLibs = detectLibs(fs.readFileSync(cfile).toString());
     debug('scanned for included libs',includedLibs);
 
+    //assemble library paths
     var librarypaths = [];
     var libextra = [];
+    var plat = options.platform;
     //global libs
-    debug("arduino libs = ",options.arduinolibs);
-    fs.readdirSync(options.arduinolibs).forEach(function(lib) {
-        librarypaths.push(options.arduinolibs+'/'+lib);
+    debug("arduino libs = ",plat.getStandardLibraryPath());
+    fs.readdirSync(plat.getStandardLibraryPath()).forEach(function(lib) {
+        librarypaths.push(plat.getStandardLibraryPath()+'/'+lib);
     });
 
     //TODO userlibs
 
     //standard global includes for the arduino core itself
     var includepaths = [
-        options.corepath,
-        options.variantpath,
+        plat.getCorePath(options.device),
+        plat.getVariantPath(options.device),
         sketchDir,
     ];
-
+    console.log("include path =",includepaths);
     console.log("includedlibs = ", includedLibs);
     calculateLibs(includedLibs,includepaths,libextra, debug);
 
@@ -219,114 +259,46 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir) {
 
     compileFiles(options,outdir,includepaths,cfiles,debug);
 
-
-    //TODO compile 3rd party libs
     libextra.forEach(function(lib) {
         if(lib.id == 'wire') return;
         var path = lib.getIncludePath();
-        var cfiles = fs.readdirSync(path).map(function(file) {
-            return path+'/'+file;
-        });
+        var cfiles = listdir(path);
         compileFiles(options, outdir, includepaths, cfiles, debug);
     })
 
 
     //compile core
-    var cfiles = fs.readdirSync(options.corepath).map(function(file) {
-        return options.corepath+'/'+file;
-    });
+    var cfiles = listdir(plat.getCorePath(options.device));
     compileFiles(options,outdir,includepaths,cfiles,debug);
 
     //compile core avr-libc
-    var cfiles = fs.readdirSync(options.corepath+'/avr-libc').map(function(file) {
-        return options.corepath+'/avr-libc/'+file;
-    });
+    var cfiles = listdir(plat.getCorePath(options.device)+'/avr-libc');
     compileFiles(options,outdir,includepaths,cfiles,debug);
 
 
     //link everything into core.a
-    fs.readdirSync(outdir).forEach(function(file) {
-        if(file.endsWith('.d')) return;
-        debug("linking",file);
-        var cmd = [
-            options.avrbase+'/avr-ar',
-            'rcs',
-            outdir+'/core.a',
-            outdir+'/'+file,
-        ];
-        //debug("execing",cmd.join(' '));
-        var result = sh.exec(cmd.join(' '));
-        if(result.code != 0) {
-            debug("there was a problem running",cmd,result);
-            throw new Error("there was a problem running " + cmd.join(" "));
-        }
-    });
-
-    //link everything into the .elf file
-    var elfcmd = [
-        options.avrbase+'/avr-gcc', //gcc
-        '-Os', //??
-        '-Wl,--gc-sections', //not using relax yet
-        '-mmcu='+options.device.build.mcu, //the mcu, ex: atmega168
-        '-o', //??
-        outdir+'/'+options.name+'.elf',
-        outdir+'/'+options.name+'.o',
-        outdir+'/core.a',
-        '-L'+__dirname+'/'+outdir,
-        '-lm',
-    ];
+    listdir(outdir)
+        .filter(function(file){
+            if(file.endsWith('.d')) return false;
+            return true;
+        })
+        .forEach(function(file) {
+            debug("linking",file);
+            linkFile(options,file,outdir);
+        });
 
     debug("building elf file");
-    debug(elfcmd.join(' '));
-    var result = sh.exec(elfcmd.join(' '));
-    //console.log("elf output = ",result.stdout);
-    if(result.code != 0) {
-        debug("stdout = ",result.stdout);
-        var err = new Error("there was an error compiling");
-        err.output = result.stdout;
-        throw err;
-    }
-
-
-
+    linkElfFile(options,outdir);
 
 
     // 5. extract EEPROM data (from EEMEM directive) to .eep file.
     debug("extracting EEPROM data");
-    var eepcmd = [
-        options.avrbase+'/avr-objcopy',
-        '-O',
-        'ihex',
-        '-j',
-        '.eeprom',
-        '--set-section-flags=.eeprom=alloc,load',
-        '--no-change-warnings',
-        '--change-section-lma',
-        '.eeprom=0',
-        outdir+'/'+options.name+'.elf',
-        outdir+'/'+options.name+'.eep',
-    ];
-
-    debug('extracting EEPROM data to .eep file');
-    debug(eepcmd.join(' '));
-    var result = sh.exec(eepcmd.join(' '));
-    //console.log("output = ",result);
+    extractEEPROMData(options,outdir);
 
 
     // 6. build the .hex file
     debug("building .HEX file");
-    var hexcmd = [
-        options.avrbase+'/avr-objcopy',
-        '-O',
-        'ihex',
-        '-R',
-        '.eeprom',
-        outdir+'/'+options.name+'.elf',
-        outdir+'/'+options.name+'.hex',
-    ];
-    debug('building hex file');
-    debug(hexcmd.join(' '));
-    var result = sh.exec(hexcmd.join(' '));
+    buildHexFile(options,outdir);
 }
 
 function compileFiles(options, outdir, includepaths, cfiles,debug) {
@@ -356,7 +328,7 @@ function compileCPP(options, outdir, includepaths, cfile,debug) {
     //console.log("options = ",options);
 
     var cmd = [
-        options.avrbase+"/avr-g++",
+        options.platform.getCompilerBinaryPath(options.device)+"/avr-g++",
         "-c", //compile, don't link
         '-g', //include debug info and line numbers
         '-Os', //optimize for size
@@ -381,7 +353,7 @@ function compileCPP(options, outdir, includepaths, cfile,debug) {
     var filename = cfile.substring(cfile.lastIndexOf('/')+1);
     var shortname = filename.substring(0,filename.lastIndexOf('.'));
     cmd.push(outdir+'/'+shortname+'.o');
-    //debug(cmd.join(' '));
+    debug(cmd.join(' '));
     var result = sh.exec(cmd.join(' '));
     if(result.code != 0) {
         debug("stdout = ",result.stdout);
@@ -394,7 +366,7 @@ function compileCPP(options, outdir, includepaths, cfile,debug) {
 function compileC(options, outdir, includepaths, cfile, debug) {
     debug("compiling ",cfile);//,"to",outdir,"with options",options);
     var cmd = [
-        options.avrbase+'/avr-gcc', //gcc
+    options.platform.getCompilerBinaryPath(options.device)+"/avr-gcc", //gcc
         "-c", //compile, don't link
         '-g', //include debug info and line numbers
         '-Os', //optimize for size

@@ -223,6 +223,7 @@ editor.setOptions({
 editor.getSession().setMode('ace/mode/c_cpp');
 editor.getSession().setUseWrapMode(true);
 
+var BOARDS = [];
 
 var STATE = {
     port:'',
@@ -236,6 +237,10 @@ function setPort(port) {
 function setBoard(board) {
     STATE.board = board;
     $("#board-selector .data").text(board);
+
+    var match = BOARDS.filter(function(board) {  return board.id == STATE.board;  });
+    var tmpl = $("#board-info-template").text();
+    $("#board-info-pane").empty().append(Mustache.render(tmpl,match[0]));
 }
 
 function setSketch(sketch) {
@@ -290,6 +295,7 @@ function fetchBoards(cb) {
 }
 
 function populateBoards(boards) {
+    BOARDS = boards;
     var template = $("#board-selector-template").text();
     $("#board-selector .dropdown-menu")
         .empty()
@@ -573,22 +579,31 @@ monitor.onmessage = function(e) {
 
 <script id='board-info-template' type='text/mustache'>
     <h3>{{name}}</h3>
+
     <dl class='dl-horizontal'>
-    <dt>platform</dt><dd>{{platform}}</dd>
-    <dt>mcu</dt><dd>{{mcu}}</dd>
-    <dt>voltage</dt><dd>{{voltage}}</dd>
-    <dt>memory</dt><dd>{{memory}}</dd>
-    <dt>sram</dt><dd>{{sram}}</dd>
-    <dt>eeprom</dt><dd>{{eeprom}}</dd>
+        <dt>vendor</dt><dd>{{vendor}}</dd>
+        <dt>homepage</dt><dd><a href='{{homepage}}' target='_blank'>homepage</a></dd>
+        <dt>platform</dt><dd>{{build.core}}</dd>
+        <dt>mcu</dt><dd>{{build.mcu}}</dd>
+        <dt>operating voltage</dt><dd>{{info.power.operating}}V</dd>
+        <dt>input voltage</dt><dd>{{info.power.inputmin}}V - {{info.power.inputmax}}V</dd>
+        <dt>flash memory</dt><dd>{{info.memory.flash}} KB</dd>
+        <dt>sram</dt><dd>{{info.memory.sram}} KB</dd>
+        <dt>eeprom</dt><dd>{{info.memory.eeprom}} KB</dd>
+        <dt>digital pins</dt><dd>{{info.io.digital}}</dd>
+        <dt>analog pins</dt><dd>{{info.io.analogin}}</dd>
+        <dt>pwm pins</dt><dd>{{info.io.pwm}}</dd>
+        <dt>clock speed</dt><dd>{{info.clockspeed}} MHz</dd>
     </dl>
 
-
+    <!--
     <h3>PINS</h3>
     <dl class='dl-horizontal'>
     {{#pins}}
       <dt>{{name}}</dt>
       <dd>{{desc}}, {{type}} <b>{{altname}} {{alttype}}</b></dd>
     {{/pins}}
+    -->
 </script>
 
 <script id='sketch-info-template' type='text/mustache'>

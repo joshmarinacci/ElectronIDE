@@ -24,6 +24,9 @@ called `node` that is actually an ancient packet radio program.  Try running `no
 to make sure you really have NodeJS 10.x and not that other program. Uninstall
 it if you do. NodeJS might also be run as `nodejs` instead of `node`.
 
+There are many out of date packages on linux distros. We recommend you use the newest
+ones from SID, documented here: http://playground.arduino.cc/Linux/Ubuntu
+
 ## Want to help?
 
 Don't worry. There's *tons* to do.
@@ -68,3 +71,18 @@ as well as all on disk tasks like installing libraries and opening sketches.
 * A metadata repo containing lists of all known
 boards and libraries, in machine readable form (JSON files).
 [repo](https://github.com/joshmarinacci/arduino-data)
+
+
+----
+arch notes:
+
+Platform: a platform is an object that represents the toolchain required to build code for a particular target architecture.
+Most arduinos use ATmel chips, so their platform is AVR. Some use ARM variants, so their platform is ARM. Presumably
+we will have others in the future. A 'platform' is more than just the chip architecture. Some AVR variants require their
+own modifications to the gcc toolchain, so they would be a new platform (perhaps a subclass of the standard one?).  
+The platform object will provide paths and other settings to the complier object to correctly build
+(compile, link, genenerate hex, etc) a sketch.  Current settings include:
+The platform is also in charge of ensuring that the platform actually works, or at the very least that
+the required binaries are actually installed where they should be. The platform will have to handle
+host OS differences, such as the location of gcc on linux vs mac vs windows. Also the avrdude conf may be
+different, or in different places, across host OSes.
