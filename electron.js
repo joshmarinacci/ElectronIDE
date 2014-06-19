@@ -76,7 +76,7 @@ function doCompile(code,board,sketch) {
     var outpath = makeCleanDir('build/out');
     console.log('making build/tmp dir');
     var sketchpath = makeCleanDir("build/tmp");
-    var inoFile = path.join(sketchpath, sketch + '.ino')
+    var inoFile = path.join(sketchpath, sketch + '.ino');
     fs.writeFileSync(inoFile, code);
 
     publishEvent({ type:'compile', message:'writing to ' + inoFile });
@@ -86,7 +86,7 @@ function doCompile(code,board,sketch) {
         if(bd.id == board) foundBoard = bd;
     })
     OPTIONS.device = foundBoard;
-    OPTIONS.name = sketch
+    OPTIONS.name = sketch;
     compile.compile(sketchpath,outpath,OPTIONS, publishEvent, path.join(settings.usersketches, sketch));
 }
 
