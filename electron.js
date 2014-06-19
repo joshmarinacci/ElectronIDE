@@ -76,9 +76,10 @@ function doCompile(code,board,sketch) {
     var outpath = makeCleanDir('build/out');
     console.log('making build/tmp dir');
     var sketchpath = makeCleanDir("build/tmp");
-    fs.writeFileSync(sketchpath + '/' + sketch + '.ino', code);
+    var inoFile = path.join(sketchpath, sketch + '.ino')
+    fs.writeFileSync(inoFile, code);
 
-    publishEvent({ type:'compile', message:'writing to ' + sketchpath + '/' + sketch });
+    publishEvent({ type:'compile', message:'writing to ' + inoFile });
 
     var foundBoard = null;
     BOARDS.forEach(function(bd) {
@@ -86,7 +87,7 @@ function doCompile(code,board,sketch) {
     })
     OPTIONS.device = foundBoard;
     OPTIONS.name = sketch
-    compile.compile(sketchpath,outpath,OPTIONS, publishEvent,settings.usersketches+'/'+sketch);
+    compile.compile(sketchpath,outpath,OPTIONS, publishEvent, path.join(settings.usersketches, sketch));
 }
 
 app.post('/compile',function(req,res) {
@@ -125,7 +126,7 @@ app.post('/run',function(req,res) {
     doCompile(req.body.code,req.body.board,req.body.sketch);
     console.log('port = ',req.body.port);
     console.log('OPTIONS = ',OPTIONS);
-    uploader.upload('build/out/'+req.body.sketch+'.hex',req.body.port,OPTIONS);
+    uploader.upload(path.join('build', 'out', req.body.sketch+'.hex'),req.body.port,OPTIONS);
     res.send(JSON.stringify({status:'okay'}));
     res.end();
 });
