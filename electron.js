@@ -7,6 +7,7 @@ var sp = require('serialport');
 var compile = require('./compile');
 var uploader = require('./uploader');
 var websocket = require('nodejs-websocket');
+var path = require('path');
 
 var settings = require('./settings.js');
 var sketches = require('./sketches.js');
