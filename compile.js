@@ -111,6 +111,20 @@ function listdir(path) {
     });
 }
 
+
+function exec(cmd, cb) {
+    //console.log(cmd.join(' '));
+    var result = sh.exec(cmd.join(' '));
+    if(result.code != 0) {
+        //debug("there was a problem running",cmd,result);
+        var err = new Error("there was a problem running " + cmd.join(" "));
+        err.cmd = cmd;
+        err.output = result.stdout;
+        throw err;
+    }
+    if(cb) cb();
+}
+
 function linkFile(options, file, outdir) {
     var cmd = [
         options.platform.getCompilerBinaryPath()+'/avr-ar',
@@ -118,12 +132,7 @@ function linkFile(options, file, outdir) {
         outdir+'/core.a',
         file,
     ];
-    //debug("execing",cmd.join(' '));
-    var result = sh.exec(cmd.join(' '));
-    if(result.code != 0) {
-        debug("there was a problem running",cmd,result);
-        throw new Error("there was a problem running " + cmd.join(" "));
-    }
+    exec(cmd,function() { console.log('linked'); });
 }
 
 function linkElfFile(options, outdir) {
@@ -142,17 +151,8 @@ function linkElfFile(options, outdir) {
         '-lm',
     ];
 
-    //debug(elfcmd.join(' '));
-    var result = sh.exec(elfcmd.join(' '));
-    //console.log("elf output = ",result.stdout);
-    if(result.code != 0) {
-        //debug("stdout = ",result.stdout);
-        var err = new Error("there was an error compiling");
-        err.output = result.stdout;
-        throw err;
-    }
+    exec(elfcmd, function() { console.log("elfed"); });
 }
-
 
 function extractEEPROMData(options, outdir) {
     var eepcmd = [
@@ -169,13 +169,8 @@ function extractEEPROMData(options, outdir) {
         outdir+'/'+options.name+'.eep',
     ];
 
-    //debug('extracting EEPROM data to .eep file');
-    //debug(eepcmd.join(' '));
-    var result = sh.exec(eepcmd.join(' '));
-    //console.log("output = ",result);
+    exec(eepcmd, function() { console.log("eed");});
 }
-
-
 
 function buildHexFile(options, outdir) {
     var hexcmd = [
@@ -187,8 +182,7 @@ function buildHexFile(options, outdir) {
         outdir+'/'+options.name+'.elf',
         outdir+'/'+options.name+'.hex',
     ];
-//    debug(hexcmd.join(' '));
-    var result = sh.exec(hexcmd.join(' '));
+    exec(hexcmd, function() { console.log("hexed"); });
 }
 
 exports.compile = function(sketchPath, outdir,options, publish, sketchDir) {
@@ -354,13 +348,8 @@ function compileCPP(options, outdir, includepaths, cfile,debug) {
     var shortname = filename.substring(0,filename.lastIndexOf('.'));
     cmd.push(outdir+'/'+shortname+'.o');
     debug(cmd.join(' '));
-    var result = sh.exec(cmd.join(' '));
-    if(result.code != 0) {
-        debug("stdout = ",result.stdout);
-        var err = new Error("there was an error compiling");
-        err.output = result.stdout;
-        throw err;
-    }
+
+    exec(cmd, function() { console.log("compiled c"); });
 }
 
 function compileC(options, outdir, includepaths, cfile, debug) {
@@ -389,13 +378,5 @@ function compileC(options, outdir, includepaths, cfile, debug) {
     var shortname = filename.substring(0,filename.lastIndexOf('.'));
     cmd.push(outdir+'/'+shortname+'.o');
 
-    //debug('running',cmd.join(' '));
-    var result = sh.exec(cmd.join(' '));
-    //debug("result = ",result.code);
-    if(result.code != 0) {
-        debug("stdout = ",result.stdout);
-        var err = new Error("there was an error compiling");
-        err.output = result.stdout;
-        throw err;
-    }
+    exec(cmd, function() { console.log("compiled c"); });
 }

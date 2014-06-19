@@ -2,14 +2,8 @@ var fs = require('fs');
 var compile = require('./compile');
 var uploader = require('./uploader');
 var platform = require('./platform');
+var boards = require('./boards');
 
-var BOARDS = require('./boards').loadBoards();
-var UNO = null;
-var LEO = null;
-BOARDS.forEach(function(board) {
-    if(board.id == 'uno') UNO = board;
-    if(board.id == 'leonardo') LEO = board;
-});
 
 
 
@@ -31,7 +25,7 @@ var options = {
     //userlibs: "/Users/josh/Documents/Arduino/Libraries",
     name: 'Blink',
 }
-options.device = LEO;
+options.device = boards.getBoard('uno');
 options.platform = platform.getDefaultPlatform();
 console.log("options = ",options);
 
