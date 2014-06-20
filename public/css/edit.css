@@ -37,10 +37,17 @@
     width: 100%;
     overflow: auto;
     border: 1px solid gray;
+    border-radius: 4px;
     padding: 5px;
-    top: 0px;
-    bottom: 0px;
+    top: 5px;
+    bottom: 30px;
     font-size: 90%;
+}
+
+#console-tools {
+    position: absolute;
+    width: 100%;
+    bottom: 0px;
 }
 
 #serial {
@@ -50,7 +57,7 @@
     overflow: auto;
     border: 1px solid gray;
     padding: 5px;
-    top: 50px;
+    top: 60px;
     bottom: 0px;
     font-size: 90%;
 }

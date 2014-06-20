@@ -157,6 +157,9 @@
             <div class='tab-content'>
                 <div id='console-pane' class='tab-pane active'>
                     <div id='console'>this is the console</div>
+                    <div id='console-tools'>
+                        <button class='btn btn-default btn-xs' id='clear-debug-pane'>clear</button>
+                    </div>
                 </div>
                 <div id='docs-pane' class='tab-pane'>
                     some docs go here
@@ -165,12 +168,21 @@
                     board info goes here
                 </div>
                 <div id='serial-pane' class='tab-pane'>
-                    <button class='btn btn-default' id='open-serial-button'>open</button>
-                    <input type='text' class='input-control'></input>
-                    <button class='btn btn-default'>send</button>
-                    <button type='button' class='btn btn-default dropdown-toggle btn-xs'  data-toggle="dropdown">
-                        9600 baud <span class="caret"></span>
-                    </button>
+                    <div class='row'>
+                        <div class='col-xs-12'>
+                            <button type='button' class='btn btn-default dropdown-toggle btn-xs'  data-toggle="dropdown">
+                                9600 baud <span class="caret"></span>
+                            </button>
+                            <button class='btn btn-default btn-xs' id='open-serial-button'>open</button>
+                            <button class='btn btn-default btn-xs' id='clear-serial-pane'>clear</button>
+                        </div>
+                    </div>
+                    <div class='row'>
+                        <div class='col-xs-12'>
+                            <input type='text' class='input-control'></input>
+                            <button class='btn btn-default'>send</button>
+                        </div>
+                    </div>
 
                     <pre id='serial'></pre>
                 </div>
@@ -502,6 +514,15 @@ $("#open-serial-button").click(function(e) {
     toggleSerialConsole();
 });
 
+$("#clear-debug-pane").click(function(e) {
+    e.preventDefault();
+    $("#console").empty();
+});
+
+$("#clear-serial-pane").click(function(e) {
+    e.preventDefault();
+    $("#serial").empty();
+});
 
 
 var wsurl = "ws:localhost:4203";
