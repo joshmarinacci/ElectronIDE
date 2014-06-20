@@ -27,6 +27,29 @@ it if you do. NodeJS might also be run as `nodejs` instead of `node`.
 There are many out of date packages on linux distros. We recommend you use the newest
 ones from SID, documented here: http://playground.arduino.cc/Linux/Ubuntu
 
+## What's New?
+
+# Version 0.1 released
+
+I'm happy to announce Electron v0.1. This release has a ton of fixes to the toolchain.
+It should support 3rd party libs properly, and has preliminary support for Linux.  I've
+also made a bunch of small GUI tweaks and the first attempt at a serial console.
+
+
+Note that on Linux you should use the arduino-core package provided by your OS, and
+make sure that `node --version` returns something valid. You might have another program
+called node in it's place.  
+
+For this release please test compiling all of your sketches to see where it breaks.
+Undoubtedly we will have more libraries and compiler fixes to add.  File issues on
+the github project
+
+https://github.com/joshmarinacci/ElectronIDE
+
+Thanks,
+    Josh
+
+
 ## Want to help?
 
 Don't worry. There's *tons* to do.
