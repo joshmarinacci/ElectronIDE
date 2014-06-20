@@ -196,16 +196,29 @@ function buildHexFile(options, outdir) {
     exec(hexcmd, function() { console.log("hexed"); });
 }
 
-function processList(list, cb) {
+function processList(list, cb, publish) {
     if(list.length <= 0) {
         cb();
         return;
     }
     var item = list.shift();
-    item(function() {
-        console.log("--------------------");
-        processList(list,cb);
-    })
+    try {
+        item(function() {
+            console.log("--------------------");
+            processList(list,cb, publish);
+        });
+    } catch(err) {
+        console.log("there was an error");
+        console.log(err.toString());
+        console.log("publish = ", publish);
+        publish({
+            type:'error',
+            message:err.toString(),
+            path:err.path,
+            errno: err.errno,
+            code: err.code,
+        });
+    }
 }
 
 exports.compile = function(sketchPath, outdir,options, publish, sketchDir, finalcb) {
@@ -351,7 +364,7 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
         buildHexFile(options,outdir);
         cb();
     });
-    processList(tasks,finalcb);
+    processList(tasks,finalcb, publish);
     return;
 
 
