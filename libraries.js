@@ -7,7 +7,6 @@ var settings = require('./settings.js');
 var master = null;
 var libs = null;
 
-console.log("inside of the libraries");
 
 function isInstalled() {
     //console.log('checking if',this.id,'is installed');
@@ -16,9 +15,9 @@ function isInstalled() {
     return false;
 }
 
-function getIncludePath() {
+function getIncludePath(platform) {
     if(this.source == 'ide') {
-        return settings.root+'/libraries/'+this.location;
+        return platform.getArduinoLibrariesPath()+'/'+this.location;
     }
     if(this.path) {
         return settings.repos+'/'+this.id+'/'+this.path;

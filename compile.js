@@ -76,7 +76,7 @@ function generateCPPFile(cfile,sketchPath) {
 }
 
 
-function calculateLibs(list, paths, libs, debug, cb) {
+function calculateLibs(list, paths, libs, debug, cb, plat) {
     console.log('the list is',list);
     LIBRARIES.install(list,function() {
         console.log('done installing libraries');
@@ -94,8 +94,8 @@ function calculateLibs(list, paths, libs, debug, cb) {
                 debug("not installed yet. we must install it");
                 throw new Error("library should alredy be installed! " + libname);
             }
-            debug("include path = ",lib.getIncludePath());
-            paths.push(lib.getIncludePath());
+            debug("include path = ",lib.getIncludePath(plat));
+            paths.push(lib.getIncludePath(plat));
             libs.push(lib);
             if(lib.dependencies) {
                 console.log("deps = ",lib.dependencies);
@@ -103,7 +103,8 @@ function calculateLibs(list, paths, libs, debug, cb) {
                     return LIBRARIES.getById(libname);
                 }).map(function(lib){
                     console.log("looking at lib",lib);
-                    paths.push(lib.getIncludePath());
+                    debug("include path = ",lib.getIncludePath(plat));
+                    paths.push(lib.getIncludePath(plat));
                     libs.push(lib);
                 })
             }
@@ -291,7 +292,7 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
 
         console.log("include path =",includepaths);
         console.log("includedlibs = ", includedLibs);
-        calculateLibs(includedLibs,includepaths,libextra, debug, cb);
+        calculateLibs(includedLibs,includepaths,libextra, debug, cb, plat);
     });
 
     //actually compile code
@@ -310,7 +311,7 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
         libextra.forEach(function(lib) {
             if(lib.id == 'wire') return;
             debug('compiling library: ',lib.id);
-            var path = lib.getIncludePath();
+            var path = lib.getIncludePath(plat);
             var cfiles = listdir(path);
             compileFiles(options, outdir, includepaths, cfiles, debug);
         });

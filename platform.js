@@ -31,6 +31,10 @@ function Platform() {
     this.getAvrDudeConf = function(device) {
         return this.root + '/hardware/tools/avr/etc/avrdude.conf';
     }
+
+    this.getArduinoLibrariesPath = function() {
+        return this.root + '/libraries';
+    }
 }
 var _default = new Platform();
 
