@@ -19,10 +19,17 @@ function Platform() {
         return this.root + '/hardware/arduino/variants/'+device.build.variant;
     }
     this.getCompilerBinaryPath = function(device) {
-	if(this.os == 'linux') {
-	    return '/usr/bin';
-	}
+        if(this.os == 'linux') {
+            return '/usr/bin';
+        }
         return this.root + '/hardware/tools/avr/bin';
+    }
+    this.getAvrDudeBinary = function(device) {
+        console.log("root = ",this.root);
+        return this.root + '/hardware/tools/avr/bin/avrdude';
+    }
+    this.getAvrDudeConf = function(device) {
+        return this.root + '/hardware/tools/avr/etc/avrdude.conf';
     }
 }
 var _default = new Platform();

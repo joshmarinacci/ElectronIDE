@@ -4,9 +4,6 @@ var uploader = require('./uploader');
 var platform = require('./platform');
 var boards = require('./boards');
 
-
-
-
 //clean the build path
 var outpath = "build/out";
 if(fs.existsSync(outpath)) {

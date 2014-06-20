@@ -9,8 +9,8 @@ sp.list(function(err,list) {
 
 function runAVRDude(hexfile, portpath, options) {
     var uploadcmd = [
-        options.root+'/hardware/tools/avr/bin/avrdude',
-        '-C'+options.root+'/hardware/tools/avr/etc/avrdude.conf',
+        options.platform.getAvrDudeBinary(options.device),
+        '-C'+options.platform.getAvrDudeConf(options.device),
         '-v','-v','-v', //super verbose
         '-p'+options.device.build.mcu,
         '-c'+options.device.upload.protocol,
