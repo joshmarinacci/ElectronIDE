@@ -7,6 +7,7 @@ var sp = require('serialport');
 var compile = require('./compile');
 var uploader = require('./uploader');
 var websocket = require('nodejs-websocket');
+var path = require('path');
 
 var settings = require('./settings.js');
 var sketches = require('./sketches.js');
@@ -18,8 +19,7 @@ var BOARDS = require('./boards').loadBoards();
 var LIBS   = require('./libraries').loadLibraries();
 //standard options
 var OPTIONS = {
-    userlibs: settings.userlibs,
-    name: 'Blink',
+    userlibs: settings.userlibs
 }
 
 console.log('settings',settings);
@@ -71,9 +71,10 @@ function doCompile(code,board,sketch) {
     }
     var outpath = makeCleanDir('build/out');
     var sketchpath = makeCleanDir("build/tmp");
-    fs.writeFileSync(sketchpath+'/Blink.ino',code);
+    var inoFile = path.join(sketchpath, sketch + '.ino');
+    fs.writeFileSync(inoFile, code);
 
-    publishEvent({ type:'compile', message:'writing to ' + sketchpath+'/Blink.ino'});
+    publishEvent({ type:'compile', message:'writing to ' + inoFile });
 
     var foundBoard = null;
     BOARDS.forEach(function(bd) {
@@ -81,7 +82,8 @@ function doCompile(code,board,sketch) {
     })
     OPTIONS.device = foundBoard;
     OPTIONS.platform = platform.getDefaultPlatform();
-    compile.compile(sketchpath,outpath,OPTIONS, publishEvent,settings.usersketches+'/'+sketch);
+    OPTIONS.name = sketch;
+    compile.compile(sketchpath,outpath,OPTIONS, publishEvent, path.join(settings.usersketches, sketch));
 }
 
 app.post('/compile',function(req,res) {
@@ -97,7 +99,7 @@ app.post('/compile',function(req,res) {
         res.end();
 
     } catch(e) {
-        console.log("compliation error",e);
+        console.log("compilation error",e);
         console.log(e.output);
         res.send(JSON.stringify({status:'error',output:e.output}));
         res.end();
@@ -118,7 +120,7 @@ app.post('/run',function(req,res) {
     }
 
     doCompile(req.body.code,req.body.board,req.body.sketch);
-    uploader.upload('build/out/Blink.hex',req.body.port,OPTIONS);
+    uploader.upload(path.join('build', 'out', req.body.sketch+'.hex'),req.body.port,OPTIONS);
     res.send(JSON.stringify({status:'okay'}));
     res.end();
 });
