@@ -112,3 +112,17 @@ The platform is also in charge of ensuring that the platform actually works, or 
 the required binaries are actually installed where they should be. The platform will have to handle
 host OS differences, such as the location of gcc on linux vs mac vs windows. Also the avrdude conf may be
 different, or in different places, across host OSes.
+
+### Roadmap
+
+
+* v0.1  work on the build toolchain. work on linux. properly async. autoinstall libs recursively.
+* v0.2  switch to downloading platform toolchains on demand from git repos. support linux and windows fully.
+* v0.3  work on new gui: better filepicker, library picker, serial port auto-connect,
+* v0.4  support RFDuino, Teensyduino, Trinket, other alt-platforms.
+
+future features
+
+* firmata console
+* code completion
+* measurement console
