@@ -46,6 +46,9 @@ the github project
 
 https://github.com/joshmarinacci/ElectronIDE
 
+Special thanks to friends of the show Sean McCarthy, HippyJake, and Dean Iverson
+for their patches.
+
 Thanks,
     Josh
 
