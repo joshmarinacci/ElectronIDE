@@ -1,4 +1,4 @@
-var libs = require('./libraries').loadLibraries();
+var libs = require('./libraries');
 
 //is lib installed
 //install lib
@@ -9,6 +9,7 @@ var libs = require('./libraries').loadLibraries();
 
 //console.log("libs",libs);
 
+/*
 console.log("searching for the wire lib by name");
 libs.search("wire",function(results) {
     console.log("returned",results);
@@ -21,7 +22,7 @@ console.log("is installed",lib.isInstalled());
 console.log("installing");
 lib.install();
 console.log("is installed",lib.isInstalled());
-
+*/
 
 /*
 console.log("searching for the NESPad lib by tag 'input'");
@@ -38,6 +39,7 @@ if(!lib.isInstalled()) {
     });
 }
 */
+/*
 var lib = libs.getById('accelstepper');
 if(!lib.isInstalled()) {
     console.log("not installed");
@@ -48,13 +50,21 @@ if(!lib.isInstalled()) {
 } else {
     console.log("already installed");
 }
+*/
 
 
-var lib = libs.getById('rbl_nrf8001');
+//var lib = libs.getById('rbl_nrf8001');
+libs.install(['accelstepper','afmotor','nespad','rbl_nrf8001'], function(err) {
+    console.log('fully installed? ', err);
+});
+/*
+
 if(!lib.isInstalled()) {
     console.log("not installed");
+    return;
     lib.install(function(status) {
         console.log("now it should be installed");
         console.log("accel installed?",lib.isInstalled());
     })
 }
+*/

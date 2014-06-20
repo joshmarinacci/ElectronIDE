@@ -18,18 +18,22 @@ if(fs.existsSync(outpath)) {
 fs.mkdirSync(outpath);
 
 
-var sketchPath = 'test/examples/Blink/';
+var sketchPath = 'test/examples/NESTest/';
 
 //setup standard options
 var options = {
     //userlibs: "/Users/josh/Documents/Arduino/Libraries",
-    name: 'Blink',
+    name: 'NESTest',
 }
 options.device = boards.getBoard('uno');
 options.platform = platform.getDefaultPlatform();
 console.log("options = ",options);
 
-compile.compile(sketchPath,outpath,options, function(){}, sketchPath);
+compile.compile(sketchPath,outpath,options, function(res){
+    console.log("LOG",res.message);
+}, sketchPath, function() {
+    console.log("done with compiling");
+});
 
 var port = '/dev/cu.usbmodem1421';
 //uploader.upload('build/out/Blink.hex',port,options);

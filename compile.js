@@ -6,7 +6,7 @@ use this as a guide:
 
 var fs = require('fs');
 var sh = require('execSync');
-var LIBRARIES = require('./libraries').loadLibraries();
+var LIBRARIES = require('./libraries');
 
 String.prototype.endsWith = function(suffix) {
     return this.indexOf(suffix, this.length - suffix.length) !== -1;
@@ -53,7 +53,6 @@ function generateCPPFile(cfile,sketchPath) {
     fs.readdirSync(sketchPath).forEach(function(file){
         if(file.toLowerCase().endsWith('.ino')) {
             var code = fs.readFileSync(sketchPath+'/'+file).toString();
-            console.log("code = ");
             generateDecs(code).forEach(function(dec){
                 funcdecs.push(dec);
             });
@@ -73,36 +72,47 @@ function generateCPPFile(cfile,sketchPath) {
 
     //extra newline just in case
     fs.appendFileSync(cfile,"\n");
-    //console.log("final code = ", fs.readFileSync(cfile).toString());
 
 }
 
 
-function calculateLibs(list, paths, libs, debug) {
-    //install libs if needed, and add to the include paths
-    list.forEach(function(libname){
-        if(libname == 'Arduino') return; //already included, skip it
-        debug('looking at lib',libname);
-        var lib = LIBRARIES.getById(libname.toLowerCase());
-        if(!lib) {
-            debug("ERROR. couldn't find library",libname);
-            return;
-        }
-        if(!lib.isInstalled()) {
-            debug("not installed yet. we must install it");
-            lib.install(function(){
-                debug(libname+' installed now');
-            });
-        } else {
-            debug(libname + " already installed");
-        }
-        debug("include path = ",lib.getIncludePath());
-        paths.push(lib.getIncludePath());
-        libs.push(lib);
-        if(lib.dependencies && lib.dependencies.length) {
-            calculateLibs(lib.dependencies, paths, libs, debug);
-        }
+function calculateLibs(list, paths, libs, debug, cb) {
+    console.log('the list is',list);
+    LIBRARIES.install(list,function() {
+        console.log('done installing libraries');
+
+        //install libs if needed, and add to the include paths
+        list.forEach(function(libname){
+            if(libname == 'Arduino') return; //already included, skip it
+            debug('looking at lib',libname);
+            var lib = LIBRARIES.getById(libname.toLowerCase());
+            if(!lib) {
+                debug("ERROR. couldn't find library",libname);
+                return;
+            }
+            if(!lib.isInstalled()) {
+                debug("not installed yet. we must install it");
+                throw new Error("library should alredy be installed! " + libname);
+            }
+            debug("include path = ",lib.getIncludePath());
+            paths.push(lib.getIncludePath());
+            libs.push(lib);
+            if(lib.dependencies) {
+                console.log("deps = ",lib.dependencies);
+                lib.dependencies.map(function(libname) {
+                    return LIBRARIES.getById(libname);
+                }).map(function(lib){
+                    console.log("looking at lib",lib);
+                    paths.push(lib.getIncludePath());
+                    libs.push(lib);
+                })
+            }
+        });
+
+        cb();
     });
+    return;
+
 }
 
 function listdir(path) {
@@ -120,6 +130,7 @@ function exec(cmd, cb) {
         var err = new Error("there was a problem running " + cmd.join(" "));
         err.cmd = cmd;
         err.output = result.stdout;
+        console.log(err.output);
         throw err;
     }
     if(cb) cb();
@@ -132,7 +143,7 @@ function linkFile(options, file, outdir) {
         outdir+'/core.a',
         file,
     ];
-    exec(cmd,function() { console.log('linked'); });
+    exec(cmd);
 }
 
 function linkElfFile(options, outdir) {
@@ -151,7 +162,7 @@ function linkElfFile(options, outdir) {
         '-lm',
     ];
 
-    exec(elfcmd, function() { console.log("elfed"); });
+    exec(elfcmd);
 }
 
 function extractEEPROMData(options, outdir) {
@@ -185,11 +196,23 @@ function buildHexFile(options, outdir) {
     exec(hexcmd, function() { console.log("hexed"); });
 }
 
-exports.compile = function(sketchPath, outdir,options, publish, sketchDir) {
+function processList(list, cb) {
+    if(list.length <= 0) {
+        cb();
+        return;
+    }
+    var item = list.shift();
+    item(function() {
+        console.log("--------------------");
+        processList(list,cb);
+    })
+}
+
+exports.compile = function(sketchPath, outdir,options, publish, sketchDir, finalcb) {
 
     function debug(message) {
         var args = Array.prototype.slice.call(arguments);
-        console.log(args.join(' '));
+        //console.log(args.join(' '));
         publish({type:"compile", message:args.join(" ")});
     }
 
@@ -201,98 +224,137 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir) {
     debug("assembling the sketch in the directory",tmp);
     checkfile(tmp);
 
+
+    var tasks = [];
+
     var cfile = tmp+'/'+options.name+'.cpp';
-
-    debug("generating",cfile);
-    generateCPPFile(cfile,sketchPath);
-    //copy other sketch files over
-    var cfiles = [cfile];
-    //compile sketch files
-    function copyToDir(file, indir, outdir) {
-        var text = fs.readFileSync(indir+'/'+file);
-        fs.writeFileSync(outdir+'/'+file,text);
-    }
-    fs.readdirSync(sketchDir).forEach(function(file) {
-        if(file.toLowerCase().endsWith('.h')) copyToDir(file,sketchDir,tmp);
-        if(file.toLowerCase().endsWith('.cpp')) copyToDir(file,sketchDir,tmp);
-        cfiles.push(tmp+'/'+file);
-    });
-
-
-
-
-    var includedLibs = detectLibs(fs.readFileSync(cfile).toString());
-    debug('scanned for included libs',includedLibs);
-
-    //assemble library paths
-    var librarypaths = [];
+    var cfiles = [];
+    var includepaths = [];
     var libextra = [];
     var plat = options.platform;
-    //global libs
-    debug("arduino libs = ",plat.getStandardLibraryPath());
-    fs.readdirSync(plat.getStandardLibraryPath()).forEach(function(lib) {
-        librarypaths.push(plat.getStandardLibraryPath()+'/'+lib);
-    });
 
-    //TODO userlibs
+    //generate the CPP file and copy all files to the output directory
+    tasks.push(function(cb) {
+        debug("generating",cfile);
+        generateCPPFile(cfile,sketchPath);
 
-    //standard global includes for the arduino core itself
-    var includepaths = [
-        plat.getCorePath(options.device),
-        plat.getVariantPath(options.device),
-        sketchDir,
-    ];
-    console.log("include path =",includepaths);
-    console.log("includedlibs = ", includedLibs);
-    calculateLibs(includedLibs,includepaths,libextra, debug);
-
-
-    debug("included libs = ", includedLibs);
-    debug("included path = ", includepaths);
-    debug("included 3rd party libs objects",libextra);
-
-    compileFiles(options,outdir,includepaths,cfiles,debug);
-
-    libextra.forEach(function(lib) {
-        if(lib.id == 'wire') return;
-        var path = lib.getIncludePath();
-        var cfiles = listdir(path);
-        compileFiles(options, outdir, includepaths, cfiles, debug);
+        cfiles.push(cfile);
+        //compile sketch files
+        function copyToDir(file, indir, outdir) {
+            console.log("copying ",file);
+            var text = fs.readFileSync(indir+'/'+file);
+            fs.writeFileSync(outdir+'/'+file,text);
+        }
+        fs.readdirSync(sketchDir).forEach(function(file) {
+            if(file.toLowerCase().endsWith('.h')) copyToDir(file,sketchDir,tmp);
+            if(file.toLowerCase().endsWith('.cpp')) copyToDir(file,sketchDir,tmp);
+            cfiles.push(tmp+'/'+file);
+        });
+        cb();
     })
 
+    // scan for the included libs
+    // make sure they are all installed
+    // collect their include paths
+    tasks.push(function(cb) {
 
-    //compile core
-    var cfiles = listdir(plat.getCorePath(options.device));
-    compileFiles(options,outdir,includepaths,cfiles,debug);
+        var includedLibs = detectLibs(fs.readFileSync(cfile).toString());
+        debug('scanned for included libs',includedLibs);
 
-    //compile core avr-libc
-    var cfiles = listdir(plat.getCorePath(options.device)+'/avr-libc');
-    compileFiles(options,outdir,includepaths,cfiles,debug);
-
-
-    //link everything into core.a
-    listdir(outdir)
-        .filter(function(file){
-            if(file.endsWith('.d')) return false;
-            return true;
-        })
-        .forEach(function(file) {
-            debug("linking",file);
-            linkFile(options,file,outdir);
+        //assemble library paths
+        var librarypaths = [];
+        //global libs
+        debug("standard arduino libs = ",plat.getStandardLibraryPath());
+        fs.readdirSync(plat.getStandardLibraryPath()).forEach(function(lib) {
+            librarypaths.push(plat.getStandardLibraryPath()+'/'+lib);
         });
 
-    debug("building elf file");
-    linkElfFile(options,outdir);
+        //TODO userlibs
+
+        //standard global includes for the arduino core itself
+        includepaths.push(plat.getCorePath(options.device));
+        includepaths.push(plat.getVariantPath(options.device));
+        includepaths.push(sketchDir);
+
+        console.log("include path =",includepaths);
+        console.log("includedlibs = ", includedLibs);
+        calculateLibs(includedLibs,includepaths,libextra, debug, cb);
+    });
+
+    //actually compile code
+    tasks.push(function(cb) {
+        console.log("moving on now");
+        //debug("included libs = ", includedLibs);
+        debug("include paths = ", includepaths);
+        debug("using 3rd party libraries",libextra.map(function(lib) { return lib.id }).join(', '));
+        compileFiles(options,outdir,includepaths,cfiles,debug);
+        cb();
+    });
+
+    //compile the 3rd party libs
+    tasks.push(function(cb) {
+        debug("compiling 3rd party libs");
+        libextra.forEach(function(lib) {
+            if(lib.id == 'wire') return;
+            debug('compiling library: ',lib.id);
+            var path = lib.getIncludePath();
+            var cfiles = listdir(path);
+            compileFiles(options, outdir, includepaths, cfiles, debug);
+        });
+        cb();
+    });
+
+    //compile core
+    tasks.push(function(cb) {
+        debug("compiling core files");
+        var cfiles = listdir(plat.getCorePath(options.device));
+        compileFiles(options,outdir,includepaths,cfiles,debug);
+        cb();
+    });
+
+    //compile core avr-libc
+    tasks.push(function(cb) {
+        var cfiles = listdir(plat.getCorePath(options.device)+'/avr-libc');
+        compileFiles(options,outdir,includepaths,cfiles,debug);
+        cb();
+    });
+
+    //link everything into core.a
+    tasks.push(function(cb) {
+        listdir(outdir)
+            .filter(function(file){
+                if(file.endsWith('.d')) return false;
+                return true;
+            })
+            .forEach(function(file) {
+                debug("linking",file);
+                linkFile(options,file,outdir);
+            });
+
+        debug("building elf file");
+        linkElfFile(options,outdir);
+        cb();
+    });
 
 
     // 5. extract EEPROM data (from EEMEM directive) to .eep file.
-    debug("extracting EEPROM data");
-    extractEEPROMData(options,outdir);
+    tasks.push(function(cb) {
+        debug("extracting EEPROM data");
+        extractEEPROMData(options,outdir);
+        cb();
+    });
 
 
     // 6. build the .hex file
-    debug("building .HEX file");
-    buildHexFile(options,outdir);
+    tasks.push(function(cb) {
+        debug("building .HEX file");
+        buildHexFile(options,outdir);
+        cb();
+    });
+    processList(tasks,finalcb);
+    return;
+
+
 }
 
 function compileFiles(options, outdir, includepaths, cfiles,debug) {
@@ -349,7 +411,7 @@ function compileCPP(options, outdir, includepaths, cfile,debug) {
     cmd.push(outdir+'/'+shortname+'.o');
     debug(cmd.join(' '));
 
-    exec(cmd, function() { console.log("compiled c"); });
+    exec(cmd);
 }
 
 function compileC(options, outdir, includepaths, cfile, debug) {
@@ -378,5 +440,5 @@ function compileC(options, outdir, includepaths, cfile, debug) {
     var shortname = filename.substring(0,filename.lastIndexOf('.'));
     cmd.push(outdir+'/'+shortname+'.o');
 
-    exec(cmd, function() { console.log("compiled c"); });
+    exec(cmd);
 }

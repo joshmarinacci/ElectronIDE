@@ -5,11 +5,12 @@ var unzip = require('unzip');
 
 var settings = require('./settings.js');
 var master = null;
+var libs = null;
 
 console.log("inside of the libraries");
 
 function isInstalled() {
-    console.log('checking if',this.id,'is installed');
+    //console.log('checking if',this.id,'is installed');
     if(this.source == 'ide') return true;
     if(fs.existsSync(settings.repos+'/'+this.id)) return true;
     return false;
@@ -24,28 +25,10 @@ function getIncludePath() {
     }
     return settings.repos+'/'+this.id;
 }
+
 function install(cb) {
     if(!fs.existsSync(settings.repos)) {
         fs.mkdirSync(settings.repos);
-    }
-
-
-    if(this.dependencies) {
-        console.log("we have deps first",this.dependencies);
-        var self = this;
-        for(var i=0; i<this.dependencies.length; i++) {
-            var dep = this.dependencies[i];
-            var lib = master.getById(dep);
-            console.log("dep lib = ",dep,lib);
-            if(lib && !lib.isInstalled()) {
-                console.log("installing dependency");
-                lib.install(function() {
-                    console.log("now, trying to install main lib again");
-                    self.install(cb);
-                });
-                return;
-            }
-        }
     }
 
     console.log('installing',this.id);
@@ -95,8 +78,7 @@ function install(cb) {
 
 }
 
-var libs = null;
-exports.loadLibraries = function() {
+function init() {
     if(libs == null) {
         libs = [];
         fs.readdirSync(settings.datapath).forEach(function(file){
@@ -108,33 +90,83 @@ exports.loadLibraries = function() {
             libs.push(lib);
         });
     }
-    master = {
-        search: function(str,cb) {
-            str = str.toLowerCase();
-            var results = [];
-            libs.forEach(function(lib) {
-                if(lib.name.toLowerCase().indexOf(str)>=0) {
-                    results.push(lib);
-                    return;
-                }
-                for(var i=0; i<lib.tags.length; i++) {
-                    if(lib.tags[i].toLowerCase().indexOf(str)>=0) {
-                        results.push(lib);
-                        return;
-                    }
-                }
-            });
-            cb(results);
-        },
+}
 
-        getById: function(id) {
-            for(var i=0; i<libs.length; i++) {
-                if(libs[i].id == id) {
-                    return libs[i];
-                }
+init();
+
+function collectdeps(lib,deps) {
+    if(lib.dependencies) {
+        for(var i=0; i<lib.dependencies.length; i++) {
+            var dep = lib.dependencies[i];
+            var deplib = exports.getById(dep);
+            console.log("dep lib = ",dep,deplib);
+            if(deplib && !deplib.isInstalled()) {
+                deps.push(deplib);
+            };
+            collectdeps(deplib,deps);
+        }
+    }
+}
+
+exports.install = function(targets, cb) {
+    console.log("installing libraries: ", targets);
+    var toinstall = targets
+        .map(function(libname) {
+            console.log("looking at libname", libname);
+            return exports.getById(libname);   })
+        .filter(function(lib)  {
+            if(lib == null) return false;
+            return !lib.isInstalled();
+          });
+    //console.log("need to install", toinstall);
+    var deps = [];
+    toinstall.forEach(function(lib) {
+        collectdeps(lib,deps);
+    });
+    //console.log('deps = ',deps);
+    toinstall = toinstall.concat(deps);
+
+    function installit(list) {
+        //console.log('list to install',list);
+        if(list.length <= 0) {
+            //console.log("done with the list");
+            cb(null);
+            return;
+        }
+        var lib = list.shift();
+        //console.log("installing",lib);
+        lib.install(function() {
+            console.log("installed lib");
+            installit(list);
+        })
+    }
+    installit(toinstall);
+    //cb(null);
+}
+
+exports.search = function(str,cb) {
+    str = str.toLowerCase();
+    var results = [];
+    libs.forEach(function(lib) {
+        if(lib.name.toLowerCase().indexOf(str)>=0) {
+            results.push(lib);
+            return;
+        }
+        for(var i=0; i<lib.tags.length; i++) {
+            if(lib.tags[i].toLowerCase().indexOf(str)>=0) {
+                results.push(lib);
+                return;
             }
-            return null;
-        },
-    };
-    return master;
+        }
+    });
+    cb(results);
+}
+
+exports.getById = function(id) {
+    for(var i=0; i<libs.length; i++) {
+        if(libs[i].id == id.toLowerCase()) {
+            return libs[i];
+        }
+    }
+    return null;
 }

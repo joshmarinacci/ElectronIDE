@@ -16,7 +16,7 @@ var platform = require('./platform');
 
 //load up standard boards
 var BOARDS = require('./boards').loadBoards();
-var LIBS   = require('./libraries').loadLibraries();
+var LIBS   = require('./libraries');
 //standard options
 var OPTIONS = {
     userlibs: settings.userlibs
@@ -64,7 +64,7 @@ function makeCleanDir(outpath) {
     return outpath;
 }
 
-function doCompile(code,board,sketch) {
+function doCompile(code,board,sketch, cb) {
     //create output dir
     if(!fs.existsSync('build')) {
         fs.mkdirSync('build');
@@ -83,7 +83,7 @@ function doCompile(code,board,sketch) {
     OPTIONS.device = foundBoard;
     OPTIONS.platform = platform.getDefaultPlatform();
     OPTIONS.name = sketch;
-    compile.compile(sketchpath,outpath,OPTIONS, publishEvent, path.join(settings.usersketches, sketch));
+    compile.compile(sketchpath,outpath,OPTIONS, publishEvent, path.join(settings.usersketches, sketch), cb);
 }
 
 app.post('/compile',function(req,res) {
@@ -94,9 +94,10 @@ app.post('/compile',function(req,res) {
         return;
     }
     try {
-        doCompile(req.body.code,req.body.board,req.body.sketch);
-        res.send(JSON.stringify({status:'okay'}));
-        res.end();
+        doCompile(req.body.code,req.body.board,req.body.sketch, function() {
+            res.send(JSON.stringify({status:'okay'}));
+            res.end();
+        });
 
     } catch(e) {
         console.log("compilation error",e);
@@ -119,10 +120,12 @@ app.post('/run',function(req,res) {
         return;
     }
 
-    doCompile(req.body.code,req.body.board,req.body.sketch);
-    uploader.upload(path.join('build', 'out', req.body.sketch+'.hex'),req.body.port,OPTIONS);
-    res.send(JSON.stringify({status:'okay'}));
-    res.end();
+    doCompile(req.body.code,req.body.board,req.body.sketch, function() {
+        console.log("compile is done. now on to uploading to hardware");
+        uploader.upload(path.join('build', 'out', req.body.sketch+'.hex'),req.body.port,OPTIONS);
+        res.send(JSON.stringify({status:'okay'}));
+        res.end();
+    });
 });
 
 app.post('/new',function(req,res) {
