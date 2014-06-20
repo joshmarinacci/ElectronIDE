@@ -15,14 +15,26 @@ function isInstalled() {
     return false;
 }
 
-function getIncludePath(platform) {
+function getIncludePaths(platform) {
     if(this.source == 'ide') {
-        return platform.getArduinoLibrariesPath()+'/'+this.location;
+        var path = platform.getArduinoLibrariesPath()+'/'+this.location;
+        //console.log("files = ",fs.readdirSync(path));
+        var paths = [];
+        paths.push(path);
+        fs.readdirSync(path).forEach(function(filename) {
+            if(fs.statSync(path+'/'+filename).isDirectory()) {
+                if(filename != 'examples') {
+                    //console.log("found a subdir of files. use it",filename);
+                    paths.push(path+'/'+filename);
+                }
+            }
+        });
+        return paths;
     }
     if(this.path) {
-        return settings.repos+'/'+this.id+'/'+this.path;
+        return [settings.repos+'/'+this.id+'/'+this.path];
     }
-    return settings.repos+'/'+this.id;
+    return [settings.repos+'/'+this.id];
 }
 
 function install(cb) {
@@ -85,7 +97,7 @@ function init() {
             var lib = JSON.parse(str);
             lib.isInstalled = isInstalled;
             lib.install = install;
-            lib.getIncludePath = getIncludePath;
+            lib.getIncludePaths = getIncludePaths;
             libs.push(lib);
         });
     }

@@ -10,6 +10,7 @@
     "multer": "^0.1.0",
     "nodejs-websocket": "^0.1.5",
     "serialport": "^1.4.0",
-    "unzip": "^0.1.9"
+    "unzip": "^0.1.9",
+    "wrench": "^1.5.8"
   }
 }

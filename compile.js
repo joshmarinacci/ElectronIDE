@@ -6,10 +6,14 @@ use this as a guide:
 
 var fs = require('fs');
 var sh = require('execSync');
+var wrench = require('wrench');
 var LIBRARIES = require('./libraries');
 
 String.prototype.endsWith = function(suffix) {
     return this.indexOf(suffix, this.length - suffix.length) !== -1;
+};
+String.prototype.startsWith = function(suffix) {
+    return this.indexOf(suffix) == 0;
 };
 
 
@@ -94,8 +98,8 @@ function calculateLibs(list, paths, libs, debug, cb, plat) {
                 debug("not installed yet. we must install it");
                 throw new Error("library should alredy be installed! " + libname);
             }
-            debug("include path = ",lib.getIncludePath(plat));
-            paths.push(lib.getIncludePath(plat));
+            debug("include path = ",lib.getIncludePaths(plat));
+            lib.getIncludePaths(plat).forEach(function(path) { paths.push(path); });
             libs.push(lib);
             if(lib.dependencies) {
                 console.log("deps = ",lib.dependencies);
@@ -103,8 +107,8 @@ function calculateLibs(list, paths, libs, debug, cb, plat) {
                     return LIBRARIES.getById(libname);
                 }).map(function(lib){
                     console.log("looking at lib",lib);
-                    debug("include path = ",lib.getIncludePath(plat));
-                    paths.push(lib.getIncludePath(plat));
+                    debug("include path = ",lib.getIncludePaths(plat));
+                    lib.getIncludePaths(plat).forEach(function(path) { paths.push(path); });
                     libs.push(lib);
                 })
             }
@@ -147,7 +151,7 @@ function linkFile(options, file, outdir) {
     exec(cmd);
 }
 
-function linkElfFile(options, outdir) {
+function linkElfFile(options, libofiles, outdir) {
 
     //link everything into the .elf file
     var elfcmd = [
@@ -156,12 +160,17 @@ function linkElfFile(options, outdir) {
         '-Wl,--gc-sections', //not using relax yet
         '-mmcu='+options.device.build.mcu, //the mcu, ex: atmega168
         '-o', //??
-        outdir+'/'+options.name+'.elf',
-        outdir+'/'+options.name+'.o',
+        outdir+'/'+options.name+'.cpp.elf',
+        outdir+'/'+options.name+'.cpp.o',
+    ];
+
+    elfcmd = elfcmd.concat(libofiles);
+    elfcmd = elfcmd.concat([
         outdir+'/core.a',
         '-L'+__dirname+'/'+outdir,
         '-lm',
-    ];
+    ]);
+
 
     exec(elfcmd);
 }
@@ -177,7 +186,7 @@ function extractEEPROMData(options, outdir) {
         '--no-change-warnings',
         '--change-section-lma',
         '.eeprom=0',
-        outdir+'/'+options.name+'.elf',
+        outdir+'/'+options.name+'.cpp.elf',
         outdir+'/'+options.name+'.eep',
     ];
 
@@ -191,7 +200,7 @@ function buildHexFile(options, outdir) {
         'ihex',
         '-R',
         '.eeprom',
-        outdir+'/'+options.name+'.elf',
+        outdir+'/'+options.name+'.cpp.elf',
         outdir+'/'+options.name+'.hex',
     ];
     exec(hexcmd, function() { console.log("hexed"); });
@@ -309,10 +318,22 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
     tasks.push(function(cb) {
         debug("compiling 3rd party libs");
         libextra.forEach(function(lib) {
-            if(lib.id == 'wire') return;
             debug('compiling library: ',lib.id);
-            var path = lib.getIncludePath(plat);
-            var cfiles = listdir(path);
+            var paths = lib.getIncludePaths(plat);
+            var cfiles = [];
+            paths.forEach(function(path) {
+                wrench.readdirSyncRecursive(path)
+                    .filter(function(filename) {
+                        if(filename.startsWith('examples/')) return false;
+                        if(filename.toLowerCase().endsWith('.c')) return true;
+                        if(filename.toLowerCase().endsWith('.cpp')) return true;
+                        return false;
+                    })
+                    .forEach(function(filename) {
+                        cfiles.push(path+'/'+filename);
+                    })
+                ;
+            });
             compileFiles(options, outdir, includepaths, cfiles, debug);
         });
         cb();
@@ -346,7 +367,21 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
             });
 
         debug("building elf file");
-        linkElfFile(options,outdir);
+
+        var libofiles = [];
+        libextra.forEach(function(lib) {
+            var paths = lib.getIncludePaths(plat);
+            paths.forEach(function(path) {
+                listdir(path).filter(function(file) {
+                    if(file.endsWith('.cpp')) return true;
+                    return false;
+                }).map(function(filename) {
+                    libofiles.push('build/out/'+filename.substring(filename.lastIndexOf('/')+1) + '.o');
+                });
+            });
+        });
+
+        linkElfFile(options,libofiles,outdir);
         cb();
     });
 
@@ -421,14 +456,14 @@ function compileCPP(options, outdir, includepaths, cfile,debug) {
     cmd.push(cfile); //add the actual c++ file
     cmd.push('-o'); //output object file
     var filename = cfile.substring(cfile.lastIndexOf('/')+1);
-    var shortname = filename.substring(0,filename.lastIndexOf('.'));
-    cmd.push(outdir+'/'+shortname+'.o');
+    cmd.push(outdir+'/'+filename+'.o');
     debug(cmd.join(' '));
 
     exec(cmd);
 }
 
 function compileC(options, outdir, includepaths, cfile, debug) {
+    console.log(cfile);
     debug("compiling ",cfile);//,"to",outdir,"with options",options);
     var cmd = [
     options.platform.getCompilerBinaryPath(options.device)+"/avr-gcc", //gcc
@@ -451,8 +486,7 @@ function compileC(options, outdir, includepaths, cfile, debug) {
     cmd.push(cfile); //add the actual c file
     cmd.push('-o');
     var filename = cfile.substring(cfile.lastIndexOf('/')+1);
-    var shortname = filename.substring(0,filename.lastIndexOf('.'));
-    cmd.push(outdir+'/'+shortname+'.o');
+    cmd.push(outdir+'/'+filename+'.o');
 
     exec(cmd);
 }
