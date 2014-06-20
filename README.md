@@ -27,9 +27,9 @@ it if you do. NodeJS might also be run as `nodejs` instead of `node`.
 There are many out of date packages on linux distros. We recommend you use the newest
 ones from SID, documented here: http://playground.arduino.cc/Linux/Ubuntu
 
-## What's New?
+# What's New?
 
-# Version 0.1 released
+## Version 0.1 released
 
 I'm happy to announce Electron v0.1. This release has a ton of fixes to the toolchain.
 It should support 3rd party libs properly, and has preliminary support for Linux.  I've
