@@ -99,19 +99,6 @@ boards and libraries, in machine readable form (JSON files).
 [repo](https://github.com/joshmarinacci/arduino-data)
 
 
-----
-arch notes:
-
-Platform: a platform is an object that represents the toolchain required to build code for a particular target architecture.
-Most arduinos use ATmel chips, so their platform is AVR. Some use ARM variants, so their platform is ARM. Presumably
-we will have others in the future. A 'platform' is more than just the chip architecture. Some AVR variants require their
-own modifications to the gcc toolchain, so they would be a new platform (perhaps a subclass of the standard one?).  
-The platform object will provide paths and other settings to the complier object to correctly build
-(compile, link, genenerate hex, etc) a sketch.  Current settings include:
-The platform is also in charge of ensuring that the platform actually works, or at the very least that
-the required binaries are actually installed where they should be. The platform will have to handle
-host OS differences, such as the location of gcc on linux vs mac vs windows. Also the avrdude conf may be
-different, or in different places, across host OSes.
 
 ### Roadmap
 
@@ -126,3 +113,50 @@ future features
 * firmata console
 * code completion
 * measurement console
+
+
+----
+arch notes:
+
+
+
+platform design:
+
+Phe platform abstraction encompasses both the host operating system and the target
+platform. The target platform is larger than just a board. It is the
+architecture and surrounding details. Initally we have one platform: AVR.  
+With the Due we have two AVR and SAM, which is ARM based.  Some Arduino
+derivatives are based on the AVR or ARM platforms, but have their own
+variations that we must account for.  This may involve adding extra files,
+or modifying existing ones, or modifying the upload process.  So, all of this
+needs to be accounted for in the ‘platform’ abstraction. that’s a tall order.
+
+Since we probably won’t get it right the first time, the platform
+abstraction will be internal initially. It will not be in the arduino-data
+repo. updating the platforms will require updating the IDE.
+
+A key feature of platforms is that they can be downloaded on demand, and only
+the parts needed for the target host are required. Eventually they will be
+fully versioned as well, but until we find definitive sources and version
+information, it will just come from static zips that I host.
+
+
+The official Arduino IDE consists of the following parts:
+
+
+* exe, not needed for us
+* drivers, for now we assume that the user has installed drivers already. really only needed on windows.
+* examples,  we don’t include example code yet, so don’t worry about it.
+* hardware:
+  * arduino: board defs, boot loaders, cores, variants. basically a bunch of hex files and C++ code
+  * tools: the AVR toolchain
+* java: the core of the IDE. we don’t use it.
+* lib: support libs for the java IDE. don’t need
+* libraries: source for the standard arduino libs. we *do* need theses
+* reference: copy of the web HTML docs. we aren’t doing docs yet, so don’t need it.
+* tools: a java based code mangler. I don’t think we need it.
+
+
+This means we really just need the hardware dir and the libraries dir.
+Everything else can go. While there is some shared between platforms,
+(like the libraries dir) for now it will be just one big zip that gets downloaded.
