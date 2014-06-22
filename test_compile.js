@@ -24,13 +24,14 @@ var options = {
 }
 options.device = boards.getBoard('uno');
 options.platform = platform.getDefaultPlatform();
-console.log("options = ",options);
+options.platform.installIfNeeded(function() {
+    console.log("options = ",options);
+    compile.compile(sketchPath,outpath,options, function(res){
+        console.log("LOG",res.message);
+    }, sketchPath, function() {
+        console.log("done with compiling");
+    });
 
-compile.compile(sketchPath,outpath,options, function(res){
-    console.log("LOG",res.message);
-}, sketchPath, function() {
-    console.log("done with compiling");
+    //var port = '/dev/cu.usbmodem1421';
+    //uploader.upload('build/out/Blink.hex',port,options);
 });
-
-var port = '/dev/cu.usbmodem1421';
-//uploader.upload('build/out/Blink.hex',port,options);

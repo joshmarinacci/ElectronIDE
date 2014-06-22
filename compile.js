@@ -121,7 +121,12 @@ function calculateLibs(list, paths, libs, debug, cb, plat) {
 }
 
 function listdir(path) {
-    return fs.readdirSync(path).map(function(file) {
+    return fs.readdirSync(path)
+    .filter(function(file) {
+        if(file.startsWith('.')) return false;
+        return true;
+    })
+    .map(function(file) {
         return path+'/'+file;
     });
 }
@@ -408,7 +413,14 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
 
 function compileFiles(options, outdir, includepaths, cfiles,debug) {
     cfiles.forEach(function(file) {
-        //console.log("looking at file",file);
+        var fname = file.substring(file.lastIndexOf('/')+1);
+        if(fname.startsWith('.')) return;
+        if(file.toLowerCase().endsWith('.txt')) return;
+        if(file.toLowerCase().endsWith('.md')) return;
+        if(file.toLowerCase().endsWith('.h')) return;
+        if(file.toLowerCase().endsWith('examples')) return;
+        if(file.toLowerCase().endsWith('/avr-libc')) return;
+        console.log("looking at file",file);
         if(file.toLowerCase().endsWith('.c')) {
             compileC(options,outdir, includepaths, file,debug);
             return;
@@ -417,11 +429,6 @@ function compileFiles(options, outdir, includepaths, cfiles,debug) {
             compileCPP(options,outdir, includepaths, file,debug);
             return;
         }
-        if(file.toLowerCase().endsWith('.txt')) return;
-        if(file.toLowerCase().endsWith('.md')) return;
-        if(file.toLowerCase().endsWith('.h')) return;
-        if(file.toLowerCase().endsWith('/avr-libc')) return;
-        if(file.toLowerCase().endsWith('examples')) return;
         debug("still need to compile",file);
         //throw new Error("couldn't compile file: "+file);
     })
