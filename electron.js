@@ -82,8 +82,10 @@ function doCompile(code,board,sketch, cb) {
     })
     OPTIONS.device = foundBoard;
     OPTIONS.platform = platform.getDefaultPlatform();
-    OPTIONS.name = sketch;
-    compile.compile(sketchpath,outpath,OPTIONS, publishEvent, path.join(settings.usersketches, sketch), cb);
+    OPTIONS.platform.installIfNeeded(function() {
+        OPTIONS.name = sketch;
+        compile.compile(sketchpath,outpath,OPTIONS, publishEvent, path.join(settings.usersketches, sketch), cb);
+    });
 }
 
 app.post('/compile',function(req,res) {
