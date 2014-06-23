@@ -26,6 +26,21 @@ exports.deleteSketch = function(name, cb) {
     if(cb) cb(name);
 }
 
+exports.renameSketch = function(oldname, newname, cb) {
+    fs.rename(
+        plat.getUserSketchesDir()+'/'+oldname,
+        plat.getUserSketchesDir()+'/'+newname, function(err) {
+        console.log("rename error = ",err);
+
+        fs.rename(
+            plat.getUserSketchesDir()+'/'+newname+'/'+oldname+'.ino',
+            plat.getUserSketchesDir()+'/'+newname+'/'+newname+'.ino', function(err) {
+                console.log("rename error = ",err);
+                cb(newname);
+            });
+    });
+}
+
 exports.listSketches = function(cb) {
     var list = fs.readdirSync(plat.getUserSketchesDir());
     list = list.filter(function(file) {

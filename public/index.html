@@ -46,6 +46,33 @@
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 
+
+
+<!-- rename sketch dialog -->
+<div id='rename-sketch-dialog' class="modal fade">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">Rename Sketch</h4>
+      </div>
+      <div class="modal-body">
+          <form>
+              <div class='form-group'>
+                  <label>Sketch Name</label>
+                  <input type='hidden' class='form-control old-name' value='NewSketch'>
+                  <input type='text' class='form-control new-name' value='NewSketch'>
+              </div>
+          </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id='rename-sketch-button'>Create Sketch</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
 <nav class="navbar navbar-default navbar-fixed-top " role="navigation">
   <div class="container-fluid">
 
@@ -419,6 +446,11 @@ function populateSketches(sketches) {
         e.stopPropagation();
         var name = $(this).attr('data-name');
         console.log('renaming',name);
+
+        $("#rename-sketch-dialog .old-name").val(name);
+        $("#rename-sketch-dialog .new-name").val(name);
+
+        $("#rename-sketch-dialog").modal('show');
     });
     $("#sketch-picker .delete-button").click(function(e) {
         e.preventDefault();
@@ -483,6 +515,22 @@ $("#create-sketch-button").click(function(e) {
         }
     });
 
+});
+
+$("#rename-sketch-button").click(function(e) {
+    e.preventDefault();
+    $("#rename-sketch-dialog").modal('hide');
+    var oldname = $("#rename-sketch-dialog .old-name").val();
+    var newname = $("#rename-sketch-dialog .new-name").val();
+    console.log('renaming name = ',oldname, 'to',newname);
+    POST('/rename', {oldname:oldname, newname:newname}, function(res) {
+        console.log("response from rename is ",res);
+        if(res.status == 'error') {
+            appendConsoleResponse(res.output);
+        } else {
+            fetchSketches(populateSketches);
+        }
+    })
 });
 
 $("#edit-sketches-button").click(function(e) {

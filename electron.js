@@ -151,6 +151,33 @@ app.post('/new',function(req,res) {
     }
 });
 
+app.post('/rename',function(req,res) {
+    console.log(req.body.name);
+    if(!req.body.oldname) {
+        res.send(JSON.stringify({status:'missing sketch old name'}));
+        res.end();
+        return;
+    }
+    if(!req.body.newname) {
+        res.send(JSON.stringify({status:'missing sketch new name'}));
+        res.end();
+        return;
+    }
+
+    try {
+        var oldname = req.body.oldname;
+        var newname = req.body.newname;
+        sketches.renameSketch(oldname,newname, function(name) {
+            res.send(JSON.stringify({status:'okay', name:name}));
+            res.end();
+        })
+    } catch(err) {
+        console.log(err);
+        err.printStackTrace();
+        res.end(JSON.stringify({status:'error',output:err.toString()}));
+    }
+});
+
 app.post('/sketches/delete', function(req,res){
     console.log(req.body.name);
     if(!req.body.name) {
