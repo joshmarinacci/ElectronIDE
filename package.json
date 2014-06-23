@@ -1,9 +1,9 @@
 {
-  "name": "arduinox2",
+  "name": "ElectronIDE",
   "description": "new arduino ide",
   "version": "0.0.1",
   "dependencies": {
-    "arduinodata": "^0.1.0",
+    "arduinodata": ">=0.1.0",
     "execSync": "^1.0.1-pre",
     "express": "^4.4.2",
     "moment": "^2.6.0",

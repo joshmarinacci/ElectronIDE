@@ -7,7 +7,8 @@ sp.list(function(err,list) {
 });
 */
 
-function runAVRDude(hexfile, portpath, options) {
+function runAVRDude(hexfile, portpath, options, debug) {
+    debug("running AVR dude");
     var uploadcmd = [
         options.platform.getAvrDudeBinary(options.device),
         '-C'+options.platform.getAvrDudeConf(options.device),
@@ -22,6 +23,7 @@ function runAVRDude(hexfile, portpath, options) {
 
     console.log("running", uploadcmd.join(' '));
     var result = sh.exec(uploadcmd.join(' '));
+    debug("uploaded");
     console.log(result.stdout);
 }
 
@@ -44,7 +46,13 @@ function scanForPortReturn(list1,cb) {
     });
 }
 
-exports.upload = function(hexfile,portpath,options) {
+exports.upload = function(hexfile,portpath,options, publish) {
+    function debug(message) {
+        var args = Array.prototype.slice.call(arguments);
+        //console.log(args.join(' '));
+        publish({type:"upload", message:args.join(" ")});
+    }
+
     console.log("uploading to device using ",options.device);
 //    var serialpath = "/tty/foobar";
     //var serialpath = '/dev/cu.usbserial-AH019ZWX';
@@ -69,7 +77,7 @@ exports.upload = function(hexfile,portpath,options) {
                             //scan for ports again
                             scanForPortReturn(list1,function(ppath) {
                                 console.log("got new path",ppath);
-                                runAVRDude(hexfile,ppath,options);
+                                runAVRDude(hexfile,ppath,options, debug);
                             })
                         },300);
                     })
@@ -79,6 +87,6 @@ exports.upload = function(hexfile,portpath,options) {
 
         });
     } else {
-        runAVRDude(hexfile,portpath,options);
+        runAVRDude(hexfile,portpath,options, debug);
     }
 }
