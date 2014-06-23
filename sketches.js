@@ -1,21 +1,23 @@
 var fs = require('fs');
 
 var settings = require('./settings.js');
+var platform = require('./platform');
+var plat = platform.getDefaultPlatform();
 
 exports.makeNewSketch = function(name,cb) {
-    var dir = settings.usersketches+'/'+name;
+    var dir = plat.getUserSketchesDir()+'/'+name;
     if(fs.existsSync(dir)) {
         if(cb)cb(null);
         return;
     }
     fs.mkdirSync(dir);
     var example = fs.readFileSync(settings.sketchtemplate).toString();
-    fs.writeFileSync(settings.usersketches+'/'+name+'/'+name+'.ino',example);
+    fs.writeFileSync(plat.getUserSketchesDir()+'/'+name+'/'+name+'.ino',example);
     if(cb) cb(name,example);
 }
 
 exports.deleteSketch = function(name, cb) {
-    var dir = settings.usersketches+'/'+name;
+    var dir = plat.getUserSketchesDir()+'/'+name;
     fs.readdirSync(dir).forEach(function(file) {
         console.log("deleting file = ",file);
         fs.unlinkSync(dir+'/'+file);
@@ -25,7 +27,7 @@ exports.deleteSketch = function(name, cb) {
 }
 
 exports.listSketches = function(cb) {
-    var list = fs.readdirSync(settings.usersketches);
+    var list = fs.readdirSync(plat.getUserSketchesDir());
     list = list.filter(function(file) {
         if(file.toLowerCase() == 'libraries') return false;
         if(file.toLowerCase() == '.ds_store') return false;
@@ -35,7 +37,7 @@ exports.listSketches = function(cb) {
 }
 
 exports.getSketch = function(name, cb) {
-    var dir = settings.usersketches + '/' + name;
+    var dir = plat.getUserSketchesDir() + '/' + name;
     var obj = {
         name:name,
         files:[]
@@ -63,7 +65,7 @@ exports.getSketch = function(name, cb) {
 
 exports.saveSketch = function(name, code, cb) {
     console.log("saving to ",name);
-    var dir = settings.usersketches + '/' + name;
+    var dir = plat.getUserSketchesDir() + '/' + name;
     console.log("dir = ",dir);
     var file = dir+'/'+name+'.ino';
     console.log("file = ",file);

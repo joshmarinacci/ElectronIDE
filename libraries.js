@@ -2,26 +2,28 @@ var fs = require('fs');
 var spawn = require('child_process').spawn;
 var http = require('http');
 var AdmZip = require('adm-zip');
+var platform = require('./platform');
 
 
 
 var settings = require('./settings.js');
 var master = null;
 var libs = null;
+var plat = platform.getDefaultPlatform();
 
 
 function isInstalled() {
     console.log('checking if',this.id,'is installed');
     if(this.source == 'ide') return true;
-    var path = settings.repos+'/'+this.id;
+    var path = plat.getReposPath()+'/'+this.id;
     console.log('checking if path exists',path);
-    if(fs.existsSync(settings.repos+'/'+this.id)) return true;
+    if(fs.existsSync(plat.getReposPath()+'/'+this.id)) return true;
     return false;
 }
 
 function getIncludePaths(platform) {
     if(this.source == 'ide') {
-        var path = platform.getArduinoLibrariesPath()+'/'+this.location;
+        var path = platform.getStandardLibraryPath()+'/'+this.location;
         //console.log("files = ",fs.readdirSync(path));
         var paths = [];
         paths.push(path);
@@ -36,14 +38,14 @@ function getIncludePaths(platform) {
         return paths;
     }
     if(this.path) {
-        return [settings.repos+'/'+this.id+'/'+this.path];
+        return [plat.getReposPath()+'/'+this.id+'/'+this.path];
     }
-    return [settings.repos+'/'+this.id];
+    return [plat.getReposPath()+'/'+this.id];
 }
 
 function install(cb) {
-    if(!fs.existsSync(settings.repos)) {
-        fs.mkdirSync(settings.repos);
+    if(!fs.existsSync(plat.getReposPath())) {
+        fs.mkdirSync(plat.getReposPath());
     }
 
     console.log('installing',this.id);
@@ -52,7 +54,7 @@ function install(cb) {
         var cmd = [
             'clone',
             this.location,
-            settings.repos+'/'+this.id,
+            plat.getReposPath()+'/'+this.id,
         ];
         console.log("execing",bin,cmd);
         var proc = spawn(bin,cmd);
@@ -70,8 +72,8 @@ function install(cb) {
 
     if(this.source == 'http'){
         console.log("source is http",this.location);
-        var outpath = settings.repos;
-        var outfile = settings.repos+'/'+this.location.substring(this.location.lastIndexOf('/')+1);
+        var outpath = plat.getReposPath();
+        var outfile = plat.getReposPath()+'/'+this.location.substring(this.location.lastIndexOf('/')+1);
         console.log("output file = ",outfile);
         var req = http.get(this.location)
             .on('response',function(res){
@@ -83,9 +85,9 @@ function install(cb) {
                     var rootpath = zipEntries[0].entryName;
                     rootpath = rootpath.substring(0,rootpath.indexOf('/'));
                     console.log("rootpath of the zip is",rootpath);
-                    zip.extractAllTo(settings.repos,true);
-                    console.log('done extracting from ',outfile, 'to',settings.repos);
-                    fs.renameSync(settings.repos+'/'+rootpath, settings.repos+'/'+rootpath.toLowerCase());
+                    zip.extractAllTo(plat.getReposPath(),true);
+                    console.log('done extracting from ',outfile, 'to',plat.getReposPath());
+                    fs.renameSync(plat.getReposPath()+'/'+rootpath, plat.getReposPath()+'/'+rootpath.toLowerCase());
                     if(cb) cb(null);
                 });
             });

@@ -84,7 +84,7 @@ function doCompile(code,board,sketch, cb) {
     OPTIONS.platform = platform.getDefaultPlatform();
     OPTIONS.platform.installIfNeeded(function() {
         OPTIONS.name = sketch;
-        compile.compile(sketchpath,outpath,OPTIONS, publishEvent, path.join(settings.usersketches, sketch), cb);
+        compile.compile(sketchpath,outpath,OPTIONS, publishEvent, path.join(OPTIONS.platform.getUserSketchesDir(), sketch), cb);
     });
 }
 

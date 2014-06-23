@@ -13,7 +13,31 @@ function Platform() {
     this.os = process.platform;
     console.log("os = ",this.os);
 
-    this.root = settings.repos + '/platforms/1.0.5/'+this.os;
+
+    this.getUserHome = function() {
+        return process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
+    }
+
+    this.getReposPath = function() {
+        if(this.os == 'darwin') {
+            return this.getUserHome() + '/Library/ElectronIDE/downloads';
+        }
+        return this.getUserHome() + '/ElectronIDE/downloads';
+    }
+
+    this.getUserSketchesDir = function() {
+        if(settings.usersketches) return settings.usersketches;
+
+        if(this.os == 'darwin') {
+            return this.getUserHome()+'/Documents/Arduino';
+        }
+        if(this.os == 'window') {
+            return this.getUserHome()+'/My Documents/Arduino';
+        }
+        return this.getUserHome() + '/Sketchbook';
+    }
+
+    this.root = this.getReposPath() + '/platforms/1.0.5/'+this.os;
     console.log("root should be ", this.root);
 
     this.getStandardLibraryPath = function() {
@@ -33,9 +57,6 @@ function Platform() {
     }
     this.getAvrDudeConf = function(device) {
         return this.root + '/hardware/tools/avr/etc/avrdude.conf';
-    }
-    this.getArduinoLibrariesPath = function() {
-        return this.root + '/libraries';
     }
     this.isInstalled = function() {
         return fs.existsSync(this.root);
