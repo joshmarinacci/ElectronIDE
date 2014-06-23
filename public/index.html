@@ -411,9 +411,13 @@ function toggleSerialConsole() {
 
 function appendConsole(str) {
     $("#console").append('<p>'+str+'</p>');
+    var objDiv = document.getElementById("console");
+    objDiv.scrollTop = objDiv.scrollHeight;
 }
 function appendConsoleResponse(str) {
     $("#console").append('<p class="response">'+str+'</p>');
+    var objDiv = document.getElementById("console");
+    objDiv.scrollTop = objDiv.scrollHeight;
 }
 $("#compile").click(function(e) {
     e.preventDefault();
@@ -588,8 +592,13 @@ monitor.onmessage = function(e) {
     var event = JSON.parse(e.data);
     if(event.type == 'serial') {
         $("#serial").text($("#serial").text()+event.data);
+        var objDiv = document.getElementById("serial");
+        objDiv.scrollTop = objDiv.scrollHeight;
     } else {
         $("#console").append('<p class="response">'+event.message+'</p>');
+        var objDiv = document.getElementById("console");
+        objDiv.scrollTop = objDiv.scrollHeight;
+
     }
 }
 
