@@ -244,6 +244,8 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
         //console.log(args.join(' '));
         publish({type:"compile", message:args.join(" ")});
     }
+    
+    checkfile(options.platform.getCompilerBinaryPath());
 
     debug("compiling ",sketchPath,"to dir",outdir);
     debug("root sketch dir = ",sketchDir);

@@ -104,7 +104,8 @@ app.post('/compile',function(req,res) {
     } catch(e) {
         console.log("compilation error",e);
         console.log(e.output);
-        res.send(JSON.stringify({status:'error',output:e.output}));
+        res.send(JSON.stringify({status:'error',output:e.output, message: e.toString()}));
+        publishEvent({ type:'error', message: e.toString(), output: e.output});
         res.end();
     }
 });
