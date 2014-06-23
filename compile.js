@@ -249,7 +249,7 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
     debug("root sketch dir = ",sketchDir);
 
     var tmp = "build/tmp";
-    //wrench.rmdirSyncRecursive(outpath, true);
+    wrench.rmdirSyncRecursive(outdir, true);
     wrench.mkdirSyncRecursive(tmp);
     wrench.mkdirSyncRecursive(outdir);
 
