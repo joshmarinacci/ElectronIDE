@@ -1,7 +1,9 @@
 var fs = require('fs');
 var spawn = require('child_process').spawn;
 var http = require('http');
-var unzip = require('unzip');
+var AdmZip = require('adm-zip');
+
+
 
 var settings = require('./settings.js');
 var master = null;
@@ -9,8 +11,10 @@ var libs = null;
 
 
 function isInstalled() {
-    //console.log('checking if',this.id,'is installed');
+    console.log('checking if',this.id,'is installed');
     if(this.source == 'ide') return true;
+    var path = settings.repos+'/'+this.id;
+    console.log('checking if path exists',path);
     if(fs.existsSync(settings.repos+'/'+this.id)) return true;
     return false;
 }
@@ -67,22 +71,23 @@ function install(cb) {
     if(this.source == 'http'){
         console.log("source is http",this.location);
         var outpath = settings.repos;
+        var outfile = settings.repos+'/'+this.location.substring(this.location.lastIndexOf('/')+1);
+        console.log("output file = ",outfile);
         var req = http.get(this.location)
             .on('response',function(res){
-                //console.log("response");
-                /*
-                res.on('error',function(err){
-                    console.log('err');
-                })
-                .on('end',function(){
-                    console.log("fisinshed download");
-                })
-                */
-                res.pipe(unzip.Extract({path:outpath}))
-                .on('close',function() {
-                    console.log("finished inflating");
+                console.log("response");
+                res.pipe(fs.createWriteStream(outfile)).on('close',function(){
+                    console.log('finished downloading');
+                    var zip = new AdmZip(outfile);
+                    var zipEntries = zip.getEntries();
+                    var rootpath = zipEntries[0].entryName;
+                    rootpath = rootpath.substring(0,rootpath.indexOf('/'));
+                    console.log("rootpath of the zip is",rootpath);
+                    zip.extractAllTo(settings.repos,true);
+                    console.log('done extracting from ',outfile, 'to',settings.repos);
+                    fs.renameSync(settings.repos+'/'+rootpath, settings.repos+'/'+rootpath.toLowerCase());
                     if(cb) cb(null);
-                })
+                });
             });
         req.end();
     }

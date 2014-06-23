@@ -5,7 +5,7 @@ var tar = require('tar');
 var http = require('http');
 
 //var CLOUDPATH = "/Users/josh/projects/ArduinoZips";
-var CLOUDPATH = 'http://joshondesign.com/p/apps/electron/platforms/';
+var CLOUDPATH = 'http://joshondesign.com/p/apps/electron/platforms';
 var VERSION = "1.0.5";
 
 
