@@ -11,6 +11,7 @@
     "nodejs-websocket": "^0.1.5",
     "serialport": "^1.4.0",
     "unzip": "^0.1.9",
-    "wrench": "^1.5.8"
+    "wrench": "^1.5.8",
+    "tar": "^0.1.19"
   }
 }

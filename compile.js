@@ -5,6 +5,7 @@ use this as a guide:
 
 
 var fs = require('fs');
+var wrench = require('wrench');
 var sh = require('execSync');
 var wrench = require('wrench');
 var LIBRARIES = require('./libraries');
@@ -248,6 +249,12 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
     debug("root sketch dir = ",sketchDir);
 
     var tmp = "build/tmp";
+    //wrench.rmdirSyncRecursive(outpath, true);
+    wrench.mkdirSyncRecursive(tmp);
+    wrench.mkdirSyncRecursive(outdir);
+
+
+
 
     debug("assembling the sketch in the directory",tmp);
     checkfile(tmp);
