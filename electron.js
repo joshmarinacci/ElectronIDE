@@ -85,6 +85,8 @@ function doCompile(code,board,sketch, cb) {
     OPTIONS.platform.installIfNeeded(function() {
         OPTIONS.name = sketch;
         compile.compile(sketchpath,outpath,OPTIONS, publishEvent, path.join(OPTIONS.platform.getUserSketchesDir(), sketch), cb);
+    }, function(per) {
+        //console.log("percentage = ",per);
     });
 }
 

@@ -18,14 +18,13 @@ var options = {
 }
 options.device = boards.getBoard('uno');
 options.platform = platform.getDefaultPlatform();
+
+var debug = function(res) {
+    console.log("LOG",res.message);
+}
 options.platform.installIfNeeded(function() {
     console.log("options = ",options);
-    compile.compile(sketchPath,outpath,options, function(res){
-        console.log("LOG",res.message);
-    }, sketchPath, function() {
+    compile.compile(sketchPath,outpath,options, debug, sketchPath, function() {
         console.log("done with compiling");
     });
-
-    //var port = '/dev/cu.usbmodem1421';
-    //uploader.upload('build/out/Blink.hex',port,options);
-});
+},debug);

@@ -62,7 +62,7 @@ function Platform() {
         return fs.existsSync(this.root);
     }
 
-    this.installIfNeeded = function(cb) {
+    this.installIfNeeded = function(cb,update) {
         if(this.isInstalled()) {
             cb();
             return;
@@ -75,7 +75,13 @@ function Platform() {
         console.log('unziping to ',outpath);
         var req = http.get(zippath);
         req.on('response', function(res) {
+            var total = res.headers['content-length']; //total byte length
+            var count = 0;
             res
+                .on('data', function(data) {
+                    count += data.length;
+                    if(update) update( {message:count/total});
+                })
                 .pipe(zlib.createGunzip())
                 .pipe(tar.Extract({path:outpath, strip: 1}))
                 .on('error',function() {
