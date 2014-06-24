@@ -243,7 +243,12 @@ app.post('/serial/open', function(req,res) {
         res.end();
         return;
     }
-    serial.open(req.body.port,serialOutput);
+    if(!req.body.rate) {
+        res.send(JSON.stringify({status:'error', message:'missing serial port'}));
+        res.end();
+        return;
+    }
+    serial.open(req.body.port,req.body.rate,serialOutput);
     res.end(JSON.stringify({status:'okay',message:'opened'}));
 });
 

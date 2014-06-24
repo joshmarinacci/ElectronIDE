@@ -197,9 +197,10 @@
                 <div id='serial-pane' class='tab-pane'>
                     <div class='row'>
                         <div class='col-xs-12'>
-                            <button type='button' class='btn btn-default dropdown-toggle btn-xs'  data-toggle="dropdown">
-                                9600 baud <span class="caret"></span>
+                            <button type='button' class='btn btn-default dropdown-toggle btn-xs' id='serial-selection-button'  data-toggle="dropdown">
+                                <span class='data'>9600</span> baud <span class="caret"></span>
                             </button>
+                            <ul class='dropdown-menu' role='menu' id='serial-selection-menu'></ul>
                             <button class='btn btn-default btn-xs' id='open-serial-button'>open</button>
                             <button class='btn btn-default btn-xs' id='clear-serial-pane'>clear</button>
                         </div>
@@ -268,6 +269,7 @@ var STATE = {
     port:'',
     board:'',
     sketch:'',
+    rate:9600,
 }
 function setPort(port) {
     STATE.port = port;
@@ -280,6 +282,10 @@ function setBoard(board) {
     var match = BOARDS.filter(function(board) {  return board.id == STATE.board;  });
     var tmpl = $("#board-info-template").text();
     $("#board-info-pane").empty().append(Mustache.render(tmpl,match[0]));
+}
+function setRate(rate) {
+    STATE.rate = rate;
+    $("#serial-selection-button .data").text(rate);
 }
 
 function setSketch(sketch) {
@@ -396,9 +402,10 @@ function toggleSerialConsole() {
     } else {
         STATE.serial = 'open';
         $("#open-serial-button").text('close');
-        $("#serial").text($("#serial").text()+"opened at 9600 baud\n");
+        $("#serial").text($("#serial").text()+"opened at " + STATE.rate + " baud\n");
         POST('/serial/open',{
-            port:STATE.port
+            port:STATE.port,
+            rate:STATE.rate,
         }, function(resp) {
             console.log("response is",resp);
             if(resp.status == 'error') {
@@ -577,6 +584,16 @@ $("#clear-serial-pane").click(function(e) {
 });
 
 
+var templ = $("#serial-selection-menu-template").text();
+$("#serial-selection-menu").empty().append(Mustache.render(templ,
+    [300,1200,2400,4800,9600,14400,19200,28800,38400,57600,115200]));
+$("#serial-selection-menu a").click(function(e) {
+        e.preventDefault();
+        setRate($(this).attr('data-speed'));
+    })
+
+
+
 var wsurl = "ws:localhost:4203";
 var monitor = new WebSocket(wsurl);
 monitor.onopen = function(e) {
@@ -719,6 +736,13 @@ monitor.onmessage = function(e) {
           <h4 class="list-group-item-heading">{{name}}</h4>
           <p class="list-group-item-text">{{description}}</p>
         </a>
+    {{/.}}
+</script>
+
+
+<script id='serial-selection-menu-template' type='text/mustache'>
+    {{#.}}
+        <li role="presentation"><a role="menuitem" tabindex="-1" href="#" data-speed='{{.}}'>{{.}}</a></li>
     {{/.}}
 </script>
 

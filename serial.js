@@ -1,10 +1,10 @@
 var SerialPort = require('serialport').SerialPort;
 
 var sp = null;
-exports.open = function(port, cb) {
-    console.log('opening the serial port',port);
+exports.open = function(port, rate, cb) {
+    console.log('opening the serial port',port,'at rate',rate);
     sp = new SerialPort(port,{
-        baudrate:9600
+        baudrate:rate
     });
     sp.on('open',function() {
         console.log('port finally opened');
