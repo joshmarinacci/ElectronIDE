@@ -1,5 +1,4 @@
 var sp = require('serialport');
-var sh = require('execSync');
 
 /*
 sp.list(function(err,list) {

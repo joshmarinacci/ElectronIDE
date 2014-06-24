@@ -5,9 +5,9 @@ use this as a guide:
 
 
 var fs = require('fs');
+var async = require('async');
 var wrench = require('wrench');
-var sh = require('execSync');
-var wrench = require('wrench');
+var child_process = require('child_process');
 var LIBRARIES = require('./libraries');
 
 String.prototype.endsWith = function(suffix) {
@@ -82,10 +82,7 @@ function generateCPPFile(cfile,sketchPath) {
 
 
 function calculateLibs(list, paths, libs, debug, cb, plat) {
-    console.log('the list is',list);
     LIBRARIES.install(list,function() {
-        console.log('done installing libraries');
-
         //install libs if needed, and add to the include paths
         list.forEach(function(libname){
             if(libname == 'Arduino') return; //already included, skip it
@@ -117,8 +114,6 @@ function calculateLibs(list, paths, libs, debug, cb, plat) {
 
         cb();
     });
-    return;
-
 }
 
 function listdir(path) {
@@ -134,30 +129,29 @@ function listdir(path) {
 
 
 function exec(cmd, cb) {
-    //console.log(cmd.join(' '));
-    var result = sh.exec(cmd.join(' '));
-    if(result.code != 0) {
-        //debug("there was a problem running",cmd,result);
-        var err = new Error("there was a problem running " + cmd.join(" "));
-        err.cmd = cmd;
-        err.output = result.stdout;
-        console.log(err.output);
-        throw err;
-    }
-    if(cb) cb();
+    var result = child_process.exec(cmd.join(' '), function(err, stdout, stderr) {
+        if(err) {
+            var err = new Error("there was a problem running " + cmd.join(" "));
+            err.cmd = cmd;
+            err.output = stdout;
+            console.log(err.output);
+            throw err;
+        }
+        if(cb) cb();
+    });
 }
 
-function linkFile(options, file, outdir) {
+function linkFile(options, file, outdir, cb) {
     var cmd = [
         options.platform.getCompilerBinaryPath()+'/avr-ar',
         'rcs',
         outdir+'/core.a',
         file,
     ];
-    exec(cmd);
+    exec(cmd, cb);
 }
 
-function linkElfFile(options, libofiles, outdir) {
+function linkElfFile(options, libofiles, outdir, cb) {
 
     //link everything into the .elf file
     var elfcmd = [
@@ -178,10 +172,10 @@ function linkElfFile(options, libofiles, outdir) {
     ]);
 
 
-    exec(elfcmd);
+    exec(elfcmd, cb);
 }
 
-function extractEEPROMData(options, outdir) {
+function extractEEPROMData(options, outdir, cb) {
     var eepcmd = [
         options.platform.getCompilerBinaryPath()+'/avr-objcopy',
         '-O',
@@ -196,10 +190,10 @@ function extractEEPROMData(options, outdir) {
         outdir+'/'+options.name+'.eep',
     ];
 
-    exec(eepcmd, function() { console.log("eed");});
+    exec(eepcmd, cb);
 }
 
-function buildHexFile(options, outdir) {
+function buildHexFile(options, outdir, cb) {
     var hexcmd = [
         options.platform.getCompilerBinaryPath()+'/avr-objcopy',
         '-O',
@@ -209,7 +203,7 @@ function buildHexFile(options, outdir) {
         outdir+'/'+options.name+'.cpp.elf',
         outdir+'/'+options.name+'.hex',
     ];
-    exec(hexcmd, function() { console.log("hexed"); });
+    exec(hexcmd, cb);
 }
 
 function processList(list, cb, publish) {
@@ -244,7 +238,7 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
         //console.log(args.join(' '));
         publish({type:"compile", message:args.join(" ")});
     }
-    
+
     checkfile(options.platform.getCompilerBinaryPath());
 
     debug("compiling ",sketchPath,"to dir",outdir);
@@ -288,7 +282,7 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
             cfiles.push(tmp+'/'+file);
         });
         cb();
-    })
+    });
 
     // scan for the included libs
     // make sure they are all installed
@@ -324,14 +318,13 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
         //debug("included libs = ", includedLibs);
         debug("include paths = ", includepaths);
         debug("using 3rd party libraries",libextra.map(function(lib) { return lib.id }).join(', '));
-        compileFiles(options,outdir,includepaths,cfiles,debug);
-        cb();
+        compileFiles(options,outdir,includepaths,cfiles,debug, cb);
     });
 
     //compile the 3rd party libs
     tasks.push(function(cb) {
         debug("compiling 3rd party libs");
-        libextra.forEach(function(lib) {
+        async.map(libextra, function(lib,cb) {
             debug('compiling library: ',lib.id);
             var paths = lib.getIncludePaths(plat);
             var cfiles = [];
@@ -348,40 +341,37 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
                     })
                 ;
             });
-            compileFiles(options, outdir, includepaths, cfiles, debug);
-        });
-        cb();
+            compileFiles(options, outdir, includepaths, cfiles, debug,cb);
+        },cb);
     });
 
     //compile core
     tasks.push(function(cb) {
         debug("compiling core files");
         var cfiles = listdir(plat.getCorePath(options.device));
-        compileFiles(options,outdir,includepaths,cfiles,debug);
-        cb();
+        compileFiles(options,outdir,includepaths,cfiles,debug,cb);
     });
 
     //compile core avr-libc
     tasks.push(function(cb) {
         var cfiles = listdir(plat.getCorePath(options.device)+'/avr-libc');
-        compileFiles(options,outdir,includepaths,cfiles,debug);
-        cb();
+        compileFiles(options,outdir,includepaths,cfiles,debug,cb);
     });
 
     //link everything into core.a
     tasks.push(function(cb) {
-        listdir(outdir)
+        var dfiles = listdir(outdir)
             .filter(function(file){
                 if(file.endsWith('.d')) return false;
                 return true;
-            })
-            .forEach(function(file) {
-                debug("linking",file);
-                linkFile(options,file,outdir);
             });
-
+        async.mapSeries(dfiles, function(file, cb) {
+                debug("linking",file);
+                linkFile(options,file,outdir, cb);
+            }, cb);
+        });
+    tasks.push(function(cb) {
         debug("building elf file");
-
         var libofiles = [];
         libextra.forEach(function(lib) {
             var paths = lib.getIncludePaths(plat);
@@ -395,58 +385,48 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
             });
         });
 
-        linkElfFile(options,libofiles,outdir);
-        cb();
+        linkElfFile(options,libofiles,outdir,cb);
     });
 
 
     // 5. extract EEPROM data (from EEMEM directive) to .eep file.
     tasks.push(function(cb) {
         debug("extracting EEPROM data");
-        extractEEPROMData(options,outdir);
-        cb();
+        extractEEPROMData(options,outdir,cb);
     });
 
 
     // 6. build the .hex file
     tasks.push(function(cb) {
         debug("building .HEX file");
-        buildHexFile(options,outdir);
-        cb();
+        buildHexFile(options,outdir,cb);
     });
     processList(tasks,finalcb, publish);
-    return;
-
-
 }
 
-function compileFiles(options, outdir, includepaths, cfiles,debug) {
-    cfiles.forEach(function(file) {
+function compileFiles(options, outdir, includepaths, cfiles,debug, cb) {
+    function comp(file,cb) {
         var fname = file.substring(file.lastIndexOf('/')+1);
-        if(fname.startsWith('.')) return;
-        if(file.toLowerCase().endsWith('.txt')) return;
-        if(file.toLowerCase().endsWith('.md')) return;
-        if(file.toLowerCase().endsWith('.h')) return;
-        if(file.toLowerCase().endsWith('examples')) return;
-        if(file.toLowerCase().endsWith('/avr-libc')) return;
-        console.log("looking at file",file);
+        if(fname.startsWith('.')) return cb(null, null);
+        if(file.toLowerCase().endsWith('examples')) return cb(null,null);
+        if(file.toLowerCase().endsWith('/avr-libc')) return cb(null,null);
         if(file.toLowerCase().endsWith('.c')) {
-            compileC(options,outdir, includepaths, file,debug);
+            compileC(options,outdir, includepaths, file,debug, cb);
             return;
         }
         if(file.toLowerCase().endsWith('.cpp')) {
-            compileCPP(options,outdir, includepaths, file,debug);
+            compileCPP(options,outdir, includepaths, file,debug, cb);
             return;
         }
-        debug("still need to compile",file);
-        //throw new Error("couldn't compile file: "+file);
-    })
+        //debug("still need to compile",file);
+        cb(null,null);
+    }
+
+    async.mapSeries(cfiles, comp, cb);
 }
 
-function compileCPP(options, outdir, includepaths, cfile,debug) {
-    debug("compiling ",cfile);//,"to",outdir,"with options",options);
-    //console.log("include files = ",includepaths);
-    //console.log("options = ",options);
+function compileCPP(options, outdir, includepaths, cfile,debug, cb) {
+    debug("compiling ",cfile);
 
     var cmd = [
         options.platform.getCompilerBinaryPath(options.device)+"/avr-g++",
@@ -473,16 +453,14 @@ function compileCPP(options, outdir, includepaths, cfile,debug) {
     cmd.push('-o'); //output object file
     var filename = cfile.substring(cfile.lastIndexOf('/')+1);
     cmd.push(outdir+'/'+filename+'.o');
-    debug(cmd.join(' '));
 
-    exec(cmd);
+    exec(cmd,cb);
 }
 
-function compileC(options, outdir, includepaths, cfile, debug) {
-    console.log(cfile);
+function compileC(options, outdir, includepaths, cfile, debug, cb) {
     debug("compiling ",cfile);//,"to",outdir,"with options",options);
     var cmd = [
-    options.platform.getCompilerBinaryPath(options.device)+"/avr-gcc", //gcc
+        options.platform.getCompilerBinaryPath(options.device)+"/avr-gcc", //gcc
         "-c", //compile, don't link
         '-g', //include debug info and line numbers
         '-Os', //optimize for size
@@ -504,5 +482,5 @@ function compileC(options, outdir, includepaths, cfile, debug) {
     var filename = cfile.substring(cfile.lastIndexOf('/')+1);
     cmd.push(outdir+'/'+filename+'.o');
 
-    exec(cmd);
+    exec(cmd, cb);
 }
