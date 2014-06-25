@@ -33,7 +33,7 @@ function detectLibs(code) {
     return libs;
 }
 
-var FUNCTION_DEFINITION_REGEX =  /(void)\s+(\w+)\((.*)\)/;
+var FUNCTION_DEFINITION_REGEX =  /(unsigned )*\s*(void|short|long|char|int)\s+(\w+)\((.*)\)/;
 
 function generateDecs(code) {
     var decs = [];
@@ -41,9 +41,10 @@ function generateDecs(code) {
         var def = line.match(FUNCTION_DEFINITION_REGEX);
         if(def) {
             var dec = def[1]+' '+def[2]+'('+def[3]+');\n';
-            decs.push(dec);
+            decs.push(def[0]+';\n');
         }
     });
+
     return decs;
 }
 
