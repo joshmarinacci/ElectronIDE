@@ -127,9 +127,11 @@ app.post('/run',function(req,res) {
 
     doCompile(req.body.code,req.body.board,req.body.sketch, function() {
         console.log("compile is done. now on to uploading to hardware");
-        uploader.upload(path.join('build', 'out', req.body.sketch+'.hex'), req.body.port, OPTIONS, publishEvent);
-        res.send(JSON.stringify({status:'okay'}));
-        res.end();
+        uploader.upload(path.join('build', 'out', req.body.sketch+'.hex'), req.body.port, OPTIONS, publishEvent, function() {
+            console.log("fully done with upload");
+            res.send(JSON.stringify({status:'okay'}));
+            res.end();
+        });
     });
 });
 

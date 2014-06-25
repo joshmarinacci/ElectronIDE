@@ -1,4 +1,5 @@
 var sp = require('serialport');
+var child_process = require('child_process');
 
 /*
 sp.list(function(err,list) {
@@ -6,7 +7,7 @@ sp.list(function(err,list) {
 });
 */
 
-function runAVRDude(hexfile, portpath, options, debug) {
+function runAVRDude(hexfile, portpath, options, debug, cb) {
     debug("running AVR dude");
     var uploadcmd = [
         options.platform.getAvrDudeBinary(options.device),
@@ -21,9 +22,19 @@ function runAVRDude(hexfile, portpath, options, debug) {
     ];
 
     console.log("running", uploadcmd.join(' '));
-    var result = sh.exec(uploadcmd.join(' '));
-    debug("uploaded");
-    console.log(result.stdout);
+    var result = child_process.exec(uploadcmd.join(' '), function(error,stdout,stderr) {
+        if(error) {
+            console.log(error);
+            var err = new Error("there was a problem running " + uploadcmd.join(" "));
+            err.cmd = uploadcmd;
+            err.output = stdout + stderr;
+            console.log(stdout);
+            console.log(stderr)
+            throw err;
+        }
+        debug("uploaded");
+        if(cb) cb();
+    })
 }
 
 function scanForPortReturn(list1,cb) {
@@ -39,13 +50,10 @@ function scanForPortReturn(list1,cb) {
             console.log('we are back to normal!');
             cb(list1[list1.length-1].comName);
         }
-        //the new port is the right one
-        //now run avrdude
-        //runAVRDude(hexfile,portpath,options);
     });
 }
 
-exports.upload = function(hexfile,portpath,options, publish) {
+exports.upload = function(hexfile,portpath,options, publish, callback) {
     function debug(message) {
         var args = Array.prototype.slice.call(arguments);
         //console.log(args.join(' '));
@@ -76,7 +84,7 @@ exports.upload = function(hexfile,portpath,options, publish) {
                             //scan for ports again
                             scanForPortReturn(list1,function(ppath) {
                                 console.log("got new path",ppath);
-                                runAVRDude(hexfile,ppath,options, debug);
+                                runAVRDude(hexfile,ppath,options, debug, callback);
                             })
                         },300);
                     })
@@ -86,6 +94,6 @@ exports.upload = function(hexfile,portpath,options, publish) {
 
         });
     } else {
-        runAVRDude(hexfile,portpath,options, debug);
+        runAVRDude(hexfile,portpath,options, debug, callback);
     }
 }
