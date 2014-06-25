@@ -86,7 +86,17 @@ function calculateLibs(list, paths, libs, debug, cb, plat) {
         //install libs if needed, and add to the include paths
         list.forEach(function(libname){
             if(libname == 'Arduino') return; //already included, skip it
-            debug('looking at lib',libname);
+            debug('scanning lib',libname);
+            if(LIBRARIES.isUserLib(libname,plat)) {
+                console.log("it's a user lib");
+                var lib = LIBRARIES.getUserLib(libname,plat);
+                lib.getIncludePaths(plat).forEach(function(path) {
+                    paths.push(path);
+                });
+                libs.push(lib);
+                return;
+            }
+
             var lib = LIBRARIES.getById(libname.toLowerCase());
             if(!lib) {
                 debug("ERROR. couldn't find library",libname);
@@ -128,14 +138,17 @@ function listdir(path) {
 }
 
 
-function exec(cmd, cb) {
-    var result = child_process.exec(cmd.join(' '), function(err, stdout, stderr) {
-        if(err) {
+function exec(cmd, cb, debug) {
+    var result = child_process.exec(cmd.join(' '), function(error, stdout, stderr) {
+        if(error) {
+            console.log(error);
+            console.log("code = ",error.code);
+            console.log(stdout);
+            console.log(stderr);
             var err = new Error("there was a problem running " + cmd.join(" "));
             err.cmd = cmd;
-            err.output = stdout;
-            console.log(err.output);
-            throw err;
+            err.output = stdout + stderr;
+            if(debug) debug(err);
         }
         if(cb) cb();
     });
@@ -300,7 +313,10 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
             librarypaths.push(plat.getStandardLibraryPath()+'/'+lib);
         });
 
-        //TODO userlibs
+        //userlibs
+        listdir(plat.getUserLibraryDir()).forEach(function(lib) {
+            librarypaths.push(lib);
+        });
 
         //standard global includes for the arduino core itself
         includepaths.push(plat.getCorePath(options.device));
@@ -454,7 +470,7 @@ function compileCPP(options, outdir, includepaths, cfile,debug, cb) {
     var filename = cfile.substring(cfile.lastIndexOf('/')+1);
     cmd.push(outdir+'/'+filename+'.o');
 
-    exec(cmd,cb);
+    exec(cmd,cb, debug);
 }
 
 function compileC(options, outdir, includepaths, cfile, debug, cb) {
@@ -482,5 +498,5 @@ function compileC(options, outdir, includepaths, cfile, debug, cb) {
     var filename = cfile.substring(cfile.lastIndexOf('/')+1);
     cmd.push(outdir+'/'+filename+'.o');
 
-    exec(cmd, cb);
+    exec(cmd, cb, debug);
 }

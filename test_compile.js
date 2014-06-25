@@ -9,14 +9,15 @@ var outpath = "build/out";
 
 
 
-var sketchPath = 'test/examples/NESTest/';
+//var sketchPath = 'test/examples/NESTest/';
+var sketchPath = '/Users/josh/Documents/Arduino/BetterName2';
 
 //setup standard options
 var options = {
     //userlibs: "/Users/josh/Documents/Arduino/Libraries",
-    name: 'NESTest',
+    name: 'BetterName2',
 }
-options.device = boards.getBoard('uno');
+options.device = boards.getBoard('xadow');
 options.platform = platform.getDefaultPlatform();
 
 var debug = function(res) {

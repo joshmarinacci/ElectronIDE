@@ -98,7 +98,7 @@ app.post('/compile',function(req,res) {
         return;
     }
     try {
-        doCompile(req.body.code,req.body.board,req.body.sketch, function() {
+        doCompile(req.body.code, req.body.board, req.body.sketch, function() {
             res.send(JSON.stringify({status:'okay'}));
             res.end();
         });

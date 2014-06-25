@@ -188,3 +188,23 @@ exports.getById = function(id) {
     }
     return null;
 }
+
+exports.isUserLib = function(libname, plat) {
+    console.log("is user lib? = ",libname);
+    var dir = plat.getUserLibraryDir()+'/'+libname;
+    console.log('dir = ',dir);
+    if(fs.existsSync(dir)) {
+        console.log('exists. its a user lib');
+        return true;
+    }
+    return false;
+}
+
+exports.getUserLib = function(libname, plat) {
+    return {
+        isInstalled : function() { return true; },
+        getIncludePaths: function(plat) {
+            return [plat.getUserLibraryDir()+'/'+libname];
+        },
+    }
+}

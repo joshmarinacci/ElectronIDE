@@ -37,6 +37,10 @@ function Platform() {
         return this.getUserHome() + '/Sketchbook';
     }
 
+    this.getUserLibraryDir = function() {
+        return this.getUserSketchesDir() + '/libraries';
+    }
+
     this.root = this.getReposPath() + '/platforms/1.0.5/'+this.os;
     console.log("root should be ", this.root);
 
