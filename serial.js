@@ -13,19 +13,20 @@ exports.open = function(port, rate, cb) {
             cb(data);
         });
         sp.on('close',function(err) {
-            console.log('port closed from the other end');
+            console.log('port closed from the other end',err);
             cb(err);
         });
         sp.on('error',function(err) {
-            console.log('serial port error');
+            console.log('serial port error',err);
             cb(err);
         });
     });
 }
 
-exports.close = function(port) {
+exports.close = function(port, cb) {
     console.log("closing the serial port",port);
     sp.close(function(err) {
         console.log("the port is really closed now");
+        if(cb) cb();
     });
 }

@@ -30,10 +30,10 @@ function runAVRDude(hexfile, portpath, options, debug, cb) {
             err.output = stdout + stderr;
             console.log(stdout);
             console.log(stderr)
-            throw err;
+            //throw err;
         }
         debug("uploaded");
-        if(cb) cb();
+        if(cb) setTimeout(cb,1000);
     })
 }
 
@@ -45,10 +45,12 @@ function scanForPortReturn(list1,cb) {
             console.log("we need to rescan");
             setTimeout(function() {
                 scanForPortReturn(list1, cb);
-            },300);
+            },700);
         } else {
             console.log('we are back to normal!');
-            cb(list1[list1.length-1].comName);
+            setTimeout(function() {
+                cb(list1[list1.length-1].comName);
+            },500);
         }
     });
 }
@@ -86,7 +88,7 @@ exports.upload = function(hexfile,portpath,options, publish, callback) {
                                 console.log("got new path",ppath);
                                 runAVRDude(hexfile,ppath,options, debug, callback);
                             })
-                        },300);
+                        },500);
                     })
                 });
 

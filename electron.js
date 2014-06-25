@@ -127,11 +127,30 @@ app.post('/run',function(req,res) {
 
     doCompile(req.body.code,req.body.board,req.body.sketch, function() {
         console.log("compile is done. now on to uploading to hardware");
-        uploader.upload(path.join('build', 'out', req.body.sketch+'.hex'), req.body.port, OPTIONS, publishEvent, function() {
-            console.log("fully done with upload");
-            res.send(JSON.stringify({status:'okay'}));
-            res.end();
-        });
+        var sketch = path.join('build', 'out', req.body.sketch+'.hex');
+        var port = req.body.port;
+
+        function doUpload() {
+            uploader.upload(sketch,port, OPTIONS, publishEvent, function() {
+                console.log("fully done with upload");
+                res.send(JSON.stringify({status:'okay'}));
+                res.end();
+                //wait 500ms before reopening to let everything settle down a bit.
+                if(SERIAL.open) {
+                    console.log('waiting 1000ms');
+                    setTimeout(function() {
+                        console.log("finished waiting");
+                        serial.open(SERIAL.port, SERIAL.rate, SERIAL.callback);
+                    },1500);
+                }
+            })
+        }
+        if(SERIAL.open) {
+            console.log("closing serial port and waiting 1000ms");
+            serial.close(SERIAL.port, function() { setTimeout(doUpload,1500) });
+        } else {
+            doUpload();
+        }
     });
 });
 
@@ -229,15 +248,29 @@ app.get('/search',function(req,res){
     })
 })
 
-function serialOutput(data) {
-    var msg = {
-        type:'serial',
-        data:data.toString(),
-    };
-    wslist.forEach(function(conn) {
-        conn.sendText(JSON.stringify(msg));
-    });
+
+var SERIAL = {
+    port: "-1",
+    open: false,
+    rate: -1,
+    callback: function(data) {
+        if(data) {
+            var msg = {
+                type:'serial',
+                data:data.toString(),
+            };
+            wslist.forEach(function(conn) {
+                conn.sendText(JSON.stringify(msg));
+            });
+        } else {
+            console.log("ERR: callback called with no data!")
+        }
+
+    }
 }
+
+
+
 
 app.post('/serial/open', function(req,res) {
     if(!req.body.port) {
@@ -250,7 +283,10 @@ app.post('/serial/open', function(req,res) {
         res.end();
         return;
     }
-    serial.open(req.body.port,req.body.rate,serialOutput);
+    SERIAL.port = req.body.port;
+    SERIAL.rate = req.body.rate;
+    serial.open(SERIAL.port, SERIAL.rate, SERIAL.callback);
+    SERIAL.open = true;
     res.end(JSON.stringify({status:'okay',message:'opened'}));
 });
 
@@ -260,8 +296,10 @@ app.post('/serial/close', function(req,res) {
         res.end();
         return;
     }
-    serial.close(req.body.port);
-    res.end(JSON.stringify({status:'okay',message:'closed'}));
+    SERIAL.open = false;
+    serial.close(SERIAL.port, function() {
+        res.end(JSON.stringify({status:'okay',message:'closed'}));
+    });
 });
 
 var server = app.listen(54329,function() {
