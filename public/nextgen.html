@@ -1,5 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+<!--
+
+
+
+using tree view from
+    https://github.com/jonmiles/bootstrap-treeview
+
+using font awesome
+
+
+
+
+
+
+-->
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -16,6 +31,10 @@
     <!-- source code font -->
     <link href='http://fonts.googleapis.com/css?family=Source+Code+Pro:200,300,400,500,600,700,900' rel='stylesheet' type='text/css'>
 
+
+    <!-- for the tree view -->
+    <link href='treeview/src/css/bootstrap-treeview.css' rel='stylesheet' type='text/css'>
+
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -27,11 +46,6 @@
         #editor {
             font-family: 'Source Code Pro', monospace;
         }
-        #editor {
-            height: 100%;
-            border: 1px solid #eee;
-        }
-
         ul.tabs {
             padding:0;
             margin:0;
@@ -67,24 +81,82 @@
             font-family: 'Source Code Pro', monospace;
         }
 
-        #sketches li {
-            list-style-type:none;
-            padding-left:0;
-        }
-        #sketches {
-            padding-left: 0;
-        }
-        #sketches ul {
-            padding-left: 2em;
-        }
+
 
 
     html, body {
         height: 100%;
+        padding:0;
+        margin:0;
     }
     .vfill {
         height: 100%;
+        padding:0;
     }
+
+    .scrollpane {
+        position: fixed;
+        background-color: #f0f0f0;
+        padding: 0;
+        margin: 0;
+    }
+    .header {
+        background-color: #e0e0e0;
+        margin: 0;
+        padding: 10px;
+    }
+
+    #sketch-info {
+        left: 0;
+        top: 50px;
+        height: 270px;
+        width: 300px;
+    }
+    #info-sidebar {
+        right: 0;
+        width: 400px;
+        top: 50px;
+        bottom: 0px;
+        border-radius: 0px;
+    }
+    #serial {
+        overflow: auto;
+        margin:0;
+        padding:5px;
+    }
+    #main {
+        top: 50px;
+        right: 400px;
+        left: 300px;
+        bottom: 0px;
+        width: auto;
+        border:1px solid #ddd;
+    }
+    #editor {
+        width: 100%;
+        height: 100%;
+    }
+    #filebrowser {
+        top: 320px;
+        left: 0px;
+        bottom: 0px;
+        width: 300px;
+    }
+
+    #tree {
+        top:40px;
+        bottom:0px;
+        left:0;
+        right:0;
+        position: absolute;
+        overflow: auto;
+        border-radius: 0px;
+    }
+
+    .nav-tabs li a{
+        border-radius: 0px;
+    }
+
     </style>
 
   </head>
@@ -96,6 +168,7 @@
 <script src="./ace-builds-master/src-noconflict/ext-language_tools.js"></script>
 <!-- Include all compiled plugins (below), or include individual files as needed -->
 <script src="bootstrap/js/bootstrap.min.js"></script>
+<script src='treeview/src/js/bootstrap-treeview.js'></script>
 
 
 
@@ -116,7 +189,7 @@
                       <li><a href="#">Leonardo</a></li>
                       <li><a href="#">Xadow</a></li>
                       <li class="divider"></li>
-                      <li><a href="#">Add More</a></li>
+                      <li><a href="#">Other...</a></li>
                     </ul>
 
                 </div>
@@ -143,77 +216,30 @@
     </div>
 </nav>
 
-<!--
-        add library/search
--->
-<div class='container-fluid vfill'>
-    <div class='row vfill'>
-        <div class='col-md-3 vfill'>
+<div class='scrollpane' id='sketch-info'>
+    <h4 class='header'>YourSketch</h4>
+    <h5>Libraries</h5>
+    <ul class='list-group' style='margin:3px'>
+        <li class='list-group-item'><a href='#'>AccelStepper</a></li>
+        <li class='list-group-item'><a href='#'>Servo</a></li>
+        <li class='list-group-item'><a href='#'>Adafruit BLE</a></li>
+    </ul>
+    <button class='btn btn-default btn-xs' data-toggle='modal' data-target='#add-library-modal'>Add Library</button>
+    <button class='btn btn-default btn-xs'>Remove</button>
+</div>
+<div class='col-md-12 scrollpane' id='filebrowser'>
+    <h4 class='header'>Sketches</h4>
+    <div id='tree'></div>
+</div>
 
-            <div class='row'>
-                <div class='col-md-12'>
-                    <div id='sketch-sidebar' class='panel panel-default'>
-                        <div class='panel-heading'>
-                            <i class='fa fa-caret-left'></i>
-                            Your Sketch.ino
-                        </div>
-                        <div class='panel-body'>
-                            <strong>libraries</strong>
+<div class='scrollpane' id='main'>
 
-
-                            <ul class='list-group'>
-                                <li class='list-group-item'><a href='#'>AccelStepper</a></li>
-                                <li class='list-group-item'><a href='#'>Servo</a></li>
-                                <li class='list-group-item'><a href='#'>Wire</a></li>
-                                <li class='list-group-item'><a href='#'>Adafruit BLE</a></li>
-                            </ul>
-                            <button class='btn btn-default' data-toggle='modal' data-target='#add-library-modal'>Add Library</button>
-                            <button class='btn btn-default'>Remove</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class='row'>
-                <div class='col-md-12'>
-                    <div class='panel panel-default'>
-                        <div class='panel-heading'>
-                            <i class='fa fa-caret-left'></i>
-                            Sketches
-                        </div>
-                        <div class='panel-body'>
-                            <ul id='sketches'>
-                                <li><i class='fa fa-file-code-o'></i> Sketch1</li>
-                                <li class='folder'><i class='fa fa-folder-o'></i> Sensors
-                                    <ul>
-                                        <li><i class='fa fa-file-code-o'></i> AccelTest</li>
-                                        <li><i class='fa fa-file-code-o'></i> Sprinkler System</li>
-                                    </ul>
-                                </li>
-                                <li><i class='fa fa-file-code-o'></i> SmartWatch</li>
-                                <li><i class='fa fa-file-code-o'></i> Blink1</li>
-                                <li><i class='fa fa-file-code-o'></i> SuperBlink</li>
-                                <li class='folder'><i class='fa fa-folder-o'></i> Examples
-                                    <ul>
-                                        <li><i class='fa fa-file-code-o'></i> Led1</li>
-                                        <li><i class='fa fa-file-code-o'></i> Blink</li>
-                                    </ul>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-        <div class='col-md-6 vfill'>
-
-                    <ul class='nav nav-tabs'>
-                        <li class='active'><a href='#'>Your Sketch.ino</a></li>
-                        <li><a href='#'>support.h</a></li>
-                        <li><a href='#'>support.cpp</a></li>
-                    </ul>
-                    <div id='editor'>/*
+    <ul class='nav nav-tabs'>
+        <li class='active'><a href='#'>Your Sketch.ino</a></li>
+        <li><a href='#'>support.h</a></li>
+        <li><a href='#'>support.cpp</a></li>
+    </ul>
+    <div id='editor'>/*
   Blink
   Turns on an LED on for one second, then off for one second, repeatedly.
 
@@ -245,48 +271,203 @@ void loop() {
 void TESTIO(void)
 {
     Serial.println("dummy function. needs a prototype above");
-}                    </div>
-        </div>
-        <div class='col-md-3 vfill' >
-            <div id='info-sidebar' class='panel panel-default vfill'>
-                <div class='panel-heading'>
-                    <i class='fa fa-caret-right pull-right'></i>
-                    <ul class='tabs'>
-                        <li class='active'><a href='#serial'>console</a></li>
-                        <li><a href='#board-info'>board info</a></li>
-                        <li><a href='#docs'>docs</a></li>
-                    </ul>
-                </div>
-                <div class='panel-body vfill'>
-                    <div id='serial' class='tabpane active vfill'>reporting...
+}
+void setup() {
+  // initialize the digital pin as an output.
+  pinMode(led, OUTPUT);
+  Serial.begin(9600);
+}
+
+// the loop routine runs over and over again forever:
+void loop() {
+  digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
+  delay(100);               // wait for a second
+  digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
+  delay(100);               // wait for a second
+  Serial.println("foo");
+  TESTIO();
+}
+
+
+void TESTIO(void)
+{
+    Serial.println("dummy function. needs a prototype above");
+}
+void setup() {
+  // initialize the digital pin as an output.
+  pinMode(led, OUTPUT);
+  Serial.begin(9600);
+}
+
+// the loop routine runs over and over again forever:
+void loop() {
+  digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
+  delay(100);               // wait for a second
+  digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
+  delay(100);               // wait for a second
+  Serial.println("foo");
+  TESTIO();
+}
+
+
+void TESTIO(void)
+{
+    Serial.println("dummy function. needs a prototype above");
+}
+void setup() {
+  // initialize the digital pin as an output.
+  pinMode(led, OUTPUT);
+  Serial.begin(9600);
+}
+
+// the loop routine runs over and over again forever:
+void loop() {
+  digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
+  delay(100);               // wait for a second
+  digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
+  delay(100);               // wait for a second
+  Serial.println("foo");
+  TESTIO();
+}
+
+
+void TESTIO(void)
+{
+    Serial.println("dummy function. needs a prototype above");
+}
+void setup() {
+  // initialize the digital pin as an output.
+  pinMode(led, OUTPUT);
+  Serial.begin(9600);
+}
+
+// the loop routine runs over and over again forever:
+void loop() {
+  digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
+  delay(100);               // wait for a second
+  digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
+  delay(100);               // wait for a second
+  Serial.println("foo");
+  TESTIO();
+}
+
+
+void TESTIO(void)
+{
+    Serial.println("dummy function. needs a prototype above");
+}
+void setup() {
+  // initialize the digital pin as an output.
+  pinMode(led, OUTPUT);
+  Serial.begin(9600);
+}
+
+// the loop routine runs over and over again forever:
+void loop() {
+  digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
+  delay(100);               // wait for a second
+  digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
+  delay(100);               // wait for a second
+  Serial.println("foo");
+  TESTIO();
+}
+
+
+void TESTIO(void)
+{
+    Serial.println("dummy function. needs a prototype above");
+}
+    </div>
+</div>
+
+<div id='info-sidebar' class='panel panel-default scrollpane'>
+    <div class='panel-heading'>
+        <ul class='tabs'>
+            <li class='active'><a href='#serial'>console</a></li>
+            <li><a href='#board-info'>board info</a></li>
+        </ul>
+    </div>
+    <div id='serial' class='tabpane active vfill'>reporting...
 reporting...
 Temp: 45C
-                    </div>
-                    <div id='board-info' class='tabpane'>
-                        <h4>Arduino Uno</h4>
-                        <dl class='dl-horizontal'>
-                            <dt>CPU</dt> <dd>ATMega328p</dd>
-                            <dt>Operating Voltage</dt><dd>5V</dd>
-                            <dt>Flash Memory</dt><dd>32 KB</dd>
-                            <dt>SRAM</dt> <dd>2 KB</dd>
-                        </dl>
-                        <h4>PINS</h4>
-                        <dl class='dl-horizontal'>
-                            <dt>D0</dt><dd>Digital 1</dd>
-                            <dt>A0</dt><dd>Analog 0, D14</dd>
-                            <dt>A1</dt><dd>Analog 1, D15</dd>
-                        </dl>
-
-                    </div>
-                    <div id='docs' class='tabpane'>
-                        <h4>Serial</h4>
-                        <p>begin(9600)</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
+reporting...
+Temp: 45C
     </div>
 
+    <div id='board-info' class='tabpane'>
+        <h4>Arduino Uno</h4>
+        <dl class='dl-horizontal'>
+            <dt>CPU</dt> <dd>ATMega328p</dd>
+            <dt>Operating Voltage</dt><dd>5V</dd>
+            <dt>Flash Memory</dt><dd>32 KB</dd>
+            <dt>SRAM</dt> <dd>2 KB</dd>
+        </dl>
+        <h4>PINS</h4>
+        <dl class='dl-horizontal'>
+            <dt>D0</dt><dd>Digital 1</dd>
+            <dt>A0</dt><dd>Analog 0, D14</dd>
+            <dt>A1</dt><dd>Analog 1, D15</dd>
+        </dl>
+
+    </div>
 </div>
 
 <div class="modal fade" id='settings-modal'>
@@ -381,6 +562,90 @@ Temp: 45C
         editor.getSession().setMode('ace/mode/c_cpp');
         editor.getSession().setUseWrapMode(true);
 
+
+        //setup the file browser for sketches
+        function getTree() {
+            return [
+                {
+                    text:'ASCIITable',
+                    nodes: [
+                        {
+                            text:'ASCIITable.ino',
+                            icon: 'fa fa-file-code-o',
+                            tags:['sketch'],
+                        },
+                    ],
+                },
+                {
+                    text:'DrawBot2',
+                    nodes: [
+                        {
+                            text:'DrawBot2.ino',
+                            icon: 'fa fa-file-code-o',
+                            tags:['sketch'],
+                        },
+                    ],
+                },
+                {
+                    text:'SmartWatchDemo',
+                    nodes: [
+                        { text: 'blemodule.cpp' },
+                        { text: 'blemodule.h' },
+                        { text: 'EEPROMAnything.h' },
+                        { text: 'ledmodule.cpp' },
+                        { text: 'ledmodule.h' },
+                        { text: 'userled.cpp' },
+                        { text: 'userled.h' },
+                        { text: 'SmartWatchDemo.ino', tags:['sketch']},
+                    ]
+                },
+
+                {
+                    text:'SensorTests',
+                    nodes: [
+                        {
+                            text:'PressureTest1',
+                            nodes: [
+                                {
+                                    text:'PressureTest1.ino',
+                                    icon: 'fa fa-file-code-o',
+                                    tags:['sketch'],
+                                }
+                            ]
+                        },
+                        {
+                            text:'TempMon',
+                            nodes: [
+                                {
+                                    text:'TempMon.ino',
+                                    icon: 'fa fa-file-code-o',
+                                    tags:['sketch'],
+                                }
+                            ]
+                        },
+                        {
+                            text:'Lightastic',
+                            nodes: [
+                                {
+                                    text:'Lightastic.ino',
+                                    icon: 'fa fa-file-code-o',
+                                    tags:['sketch'],
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+        $("#tree").treeview({
+            data: getTree(),
+            collapseIcon: 'fa fa-caret-down fa-2x',
+            expandIcon: 'fa fa-caret-right fa-2x',
+            nodeIcon: null,
+            showTags: true,
+            showBorder: false,
+            levels: 1,
+            });
     });
 </script>
 
