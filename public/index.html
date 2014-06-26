@@ -227,7 +227,7 @@
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="bootstrap/js/bootstrap.min.js"></script>
 <script type='text/javascript'>
-var HOSTNAME = 'http://localhost:54329';
+var HOSTNAME = location.protocol + '//' + location.host;
 
 function POST(url,payload,cb) {
     var data = new FormData();
@@ -594,7 +594,7 @@ $("#serial-selection-menu a").click(function(e) {
 
 
 
-var wsurl = "ws:localhost:4203";
+var wsurl = "ws:" + location.hostname + ":4203";
 var monitor = new WebSocket(wsurl);
 monitor.onopen = function(e) {
     console.log("opened the websocket for ",wsurl);
