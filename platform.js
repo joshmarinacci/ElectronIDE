@@ -31,7 +31,7 @@ function Platform() {
         if(this.os == 'darwin') {
             return this.getUserHome()+'/Documents/Arduino';
         }
-        if(this.os == 'window') {
+        if(this.os == 'win32') {
             return this.getUserHome()+'/My Documents/Arduino';
         }
         return this.getUserHome() + '/Sketchbook';
