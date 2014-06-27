@@ -264,6 +264,7 @@ editor.getSession().setMode('ace/mode/c_cpp');
 editor.getSession().setUseWrapMode(true);
 
 var BOARDS = [];
+var PORTS = [];
 
 var STATE = {
     port:'',
@@ -274,6 +275,25 @@ var STATE = {
 function setPort(port) {
     STATE.port = port;
     $("#port-selector .data").text(port);
+
+    // attempt to determine which board is connected at this port
+    // find port in PORTS
+    var fullPort = PORTS.filter(function(portData){
+        return port === portData.comName;
+    })[0];
+
+    if(fullPort){
+        var boardMatched = BOARDS.filter(function(board, ind){
+            if(board && board.build && board.build.pid){
+                return board.build.pid === fullPort.productId && board.build.vid === fullPort.vendorId;
+            }
+        })[0];
+
+        if(boardMatched){
+            setBoard(boardMatched.id);
+        }
+    }
+
 }
 function setBoard(board) {
     STATE.board = board;
@@ -317,7 +337,8 @@ function loadSketch(name) {
 
 function fetchSerialports(cb) {
     $.get(HOSTNAME+"/ports",function(res) {
-        cb(JSON.parse(res));
+        PORTS = JSON.parse(res);
+        cb(PORTS);
     })
 }
 function populateSerialports(ports) {
