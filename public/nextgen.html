@@ -84,81 +84,92 @@ using font awesome
 
 
 
-    html, body {
-        height: 100%;
-        padding:0;
-        margin:0;
-    }
-    .vfill {
-        height: 100%;
-        padding:0;
-    }
+        html, body {
+            padding:0;
+            margin:0;
+        }
+        /*
+        .vfill {
+            height: 100%;
+            padding:0;
+        }
 
-    .scrollpane {
-        position: fixed;
-        background-color: #f0f0f0;
-        padding: 0;
-        margin: 0;
-    }
-    .header {
-        background-color: #e0e0e0;
-        margin: 0;
-        padding: 10px;
-    }
 
-    #sketch-info {
-        left: 0;
-        top: 50px;
-        height: 270px;
-        width: 300px;
-    }
-    #info-sidebar {
-        right: 0;
-        width: 400px;
-        top: 50px;
-        bottom: 0px;
-        border-radius: 0px;
-    }
-    #serial {
-        overflow: auto;
-        margin:0;
-        padding:5px;
-    }
-    #main {
-        top: 50px;
-        right: 400px;
-        left: 300px;
-        bottom: 0px;
-        width: auto;
-        border:1px solid #ddd;
-    }
-    #editor {
-        width: 100%;
-        height: 100%;
-    }
-    #filebrowser {
-        top: 320px;
-        left: 0px;
-        bottom: 0px;
-        width: 300px;
-    }
+        #sketch-info {
+            left: 0;
+            top: 50px;
+            height: 270px;
+            width: 300px;
+        }
+        #info-sidebar {
+            right: 0;
+            width: 400px;
+            top: 50px;
+            bottom: 0px;
+            border-radius: 0px;
+        }
+        #serial {
+            overflow: auto;
+            margin:0;
+            padding:5px;
+        }
+        #main {
+            top: 50px;
+            right: 400px;
+            left: 300px;
+            bottom: 0px;
+            width: auto;
+            border:1px solid #ddd;
+        }
+        #filebrowser {
+            top: 320px;
+            left: 0px;
+            bottom: 0px;
+            width: 300px;
+        }
 
-    #tree {
-        top:40px;
-        bottom:0px;
-        left:0;
-        right:0;
-        position: absolute;
-        overflow: auto;
-        border-radius: 0px;
-    }
+        #tree {
+            top:40px;
+            bottom:0px;
+            left:0;
+            right:0;
+            position: absolute;
+            overflow: auto;
+            border-radius: 0px;
+        }
 
-    .nav-tabs li a{
-        border-radius: 0px;
-    }
+        */
+.header {
+    background-color: #e0e0e0;
+    margin: 0;
+    padding: 10px;
+}
+#editor {
+    width: 100%;
+    height: 100%;
+}
 
+.nav-tabs li a{
+    border-radius: 0px;
+}
+        #wrapper {
+            border: 0px solid gray;
+            top: 50px;
+            left: 0px;
+            right: 0px;
+            bottom: 0px;
+            position: absolute;
+        }
+
+        .scrollpane {
+            /*position: fixed;*/
+            background-color: #f0f0f0;
+            padding: 0;
+            margin: 0;
+        }
     </style>
 
+<link href="splitter.css" rel="stylesheet"/>
   </head>
   <body>
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
@@ -169,6 +180,7 @@ using font awesome
 <!-- Include all compiled plugins (below), or include individual files as needed -->
 <script src="bootstrap/js/bootstrap.min.js"></script>
 <script src='treeview/src/js/bootstrap-treeview.js'></script>
+<script src="splitter.js"></script>
 
 
 
@@ -216,170 +228,175 @@ using font awesome
     </div>
 </nav>
 
-<div class='scrollpane' id='sketch-info'>
-    <h4 class='header'>YourSketch</h4>
-    <h5>Libraries</h5>
-    <ul class='list-group' style='margin:3px'>
-        <li class='list-group-item'><a href='#'>AccelStepper</a></li>
-        <li class='list-group-item'><a href='#'>Servo</a></li>
-        <li class='list-group-item'><a href='#'>Adafruit BLE</a></li>
-    </ul>
-    <button class='btn btn-default btn-xs' data-toggle='modal' data-target='#add-library-modal'>Add Library</button>
-    <button class='btn btn-default btn-xs'>Remove</button>
-</div>
-<div class='col-md-12 scrollpane' id='filebrowser'>
-    <h4 class='header'>Sketches</h4>
-    <div id='tree'></div>
-</div>
+<div id='wrapper'>
 
-<div class='scrollpane' id='main'>
+<div id='leftmiddle'>
+    <div id='left'>
+        <div id='sketch-info' class='scrollpane'>
+            <h4 class='header'>YourSketch</h4>
+            <h5>Libraries</h5>
+            <ul class='list-group' style='margin:3px'>
+                <li class='list-group-item'><a href='#'>AccelStepper</a></li>
+                <li class='list-group-item'><a href='#'>Servo</a></li>
+                <li class='list-group-item'><a href='#'>Adafruit BLE</a></li>
+            </ul>
+            <button class='btn btn-default btn-xs' data-toggle='modal' data-target='#add-library-modal'>Add Library</button>
+            <button class='btn btn-default btn-xs'>Remove</button>
+        </div>
+        <div id='filebrowser' class='col-md-12 scrollpane'>
+            <h4 class='header'>Sketches</h4>
+            <div id='tree'></div>
+        </div>
+    </div>
 
+<div id='main' class='scrollpane'>
     <ul class='nav nav-tabs'>
         <li class='active'><a href='#'>Your Sketch.ino</a></li>
         <li><a href='#'>support.h</a></li>
         <li><a href='#'>support.cpp</a></li>
     </ul>
     <div id='editor'>/*
-  Blink
-  Turns on an LED on for one second, then off for one second, repeatedly.
+          Blink
+          Turns on an LED on for one second, then off for one second, repeatedly.
 
-  This example code is in the public domain.
- */
+          This example code is in the public domain.
+         */
 
-// Pin 13 has an LED connected on most Arduino boards.
-// give it a name:
-int led = 13;
+        // Pin 13 has an LED connected on most Arduino boards.
+        // give it a name:
+        int led = 13;
 
-// the setup routine runs once when you press reset:
-void setup() {
-  // initialize the digital pin as an output.
-  pinMode(led, OUTPUT);
-  Serial.begin(9600);
-}
+        // the setup routine runs once when you press reset:
+        void setup() {
+          // initialize the digital pin as an output.
+          pinMode(led, OUTPUT);
+          Serial.begin(9600);
+        }
 
-// the loop routine runs over and over again forever:
-void loop() {
-  digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
-  delay(100);               // wait for a second
-  digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
-  delay(100);               // wait for a second
-  Serial.println("foo");
-  TESTIO();
-}
-
-
-void TESTIO(void)
-{
-    Serial.println("dummy function. needs a prototype above");
-}
-void setup() {
-  // initialize the digital pin as an output.
-  pinMode(led, OUTPUT);
-  Serial.begin(9600);
-}
-
-// the loop routine runs over and over again forever:
-void loop() {
-  digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
-  delay(100);               // wait for a second
-  digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
-  delay(100);               // wait for a second
-  Serial.println("foo");
-  TESTIO();
-}
+        // the loop routine runs over and over again forever:
+        void loop() {
+          digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
+          delay(100);               // wait for a second
+          digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
+          delay(100);               // wait for a second
+          Serial.println("foo");
+          TESTIO();
+        }
 
 
-void TESTIO(void)
-{
-    Serial.println("dummy function. needs a prototype above");
-}
-void setup() {
-  // initialize the digital pin as an output.
-  pinMode(led, OUTPUT);
-  Serial.begin(9600);
-}
+        void TESTIO(void)
+        {
+            Serial.println("dummy function. needs a prototype above");
+        }
+        void setup() {
+          // initialize the digital pin as an output.
+          pinMode(led, OUTPUT);
+          Serial.begin(9600);
+        }
 
-// the loop routine runs over and over again forever:
-void loop() {
-  digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
-  delay(100);               // wait for a second
-  digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
-  delay(100);               // wait for a second
-  Serial.println("foo");
-  TESTIO();
-}
-
-
-void TESTIO(void)
-{
-    Serial.println("dummy function. needs a prototype above");
-}
-void setup() {
-  // initialize the digital pin as an output.
-  pinMode(led, OUTPUT);
-  Serial.begin(9600);
-}
-
-// the loop routine runs over and over again forever:
-void loop() {
-  digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
-  delay(100);               // wait for a second
-  digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
-  delay(100);               // wait for a second
-  Serial.println("foo");
-  TESTIO();
-}
+        // the loop routine runs over and over again forever:
+        void loop() {
+          digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
+          delay(100);               // wait for a second
+          digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
+          delay(100);               // wait for a second
+          Serial.println("foo");
+          TESTIO();
+        }
 
 
-void TESTIO(void)
-{
-    Serial.println("dummy function. needs a prototype above");
-}
-void setup() {
-  // initialize the digital pin as an output.
-  pinMode(led, OUTPUT);
-  Serial.begin(9600);
-}
+        void TESTIO(void)
+        {
+            Serial.println("dummy function. needs a prototype above");
+        }
+        void setup() {
+          // initialize the digital pin as an output.
+          pinMode(led, OUTPUT);
+          Serial.begin(9600);
+        }
 
-// the loop routine runs over and over again forever:
-void loop() {
-  digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
-  delay(100);               // wait for a second
-  digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
-  delay(100);               // wait for a second
-  Serial.println("foo");
-  TESTIO();
-}
-
-
-void TESTIO(void)
-{
-    Serial.println("dummy function. needs a prototype above");
-}
-void setup() {
-  // initialize the digital pin as an output.
-  pinMode(led, OUTPUT);
-  Serial.begin(9600);
-}
-
-// the loop routine runs over and over again forever:
-void loop() {
-  digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
-  delay(100);               // wait for a second
-  digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
-  delay(100);               // wait for a second
-  Serial.println("foo");
-  TESTIO();
-}
+        // the loop routine runs over and over again forever:
+        void loop() {
+          digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
+          delay(100);               // wait for a second
+          digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
+          delay(100);               // wait for a second
+          Serial.println("foo");
+          TESTIO();
+        }
 
 
-void TESTIO(void)
-{
-    Serial.println("dummy function. needs a prototype above");
-}
+        void TESTIO(void)
+        {
+            Serial.println("dummy function. needs a prototype above");
+        }
+        void setup() {
+          // initialize the digital pin as an output.
+          pinMode(led, OUTPUT);
+          Serial.begin(9600);
+        }
+
+        // the loop routine runs over and over again forever:
+        void loop() {
+          digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
+          delay(100);               // wait for a second
+          digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
+          delay(100);               // wait for a second
+          Serial.println("foo");
+          TESTIO();
+        }
+
+
+        void TESTIO(void)
+        {
+            Serial.println("dummy function. needs a prototype above");
+        }
+        void setup() {
+          // initialize the digital pin as an output.
+          pinMode(led, OUTPUT);
+          Serial.begin(9600);
+        }
+
+        // the loop routine runs over and over again forever:
+        void loop() {
+          digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
+          delay(100);               // wait for a second
+          digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
+          delay(100);               // wait for a second
+          Serial.println("foo");
+          TESTIO();
+        }
+
+
+        void TESTIO(void)
+        {
+            Serial.println("dummy function. needs a prototype above");
+        }
+        void setup() {
+          // initialize the digital pin as an output.
+          pinMode(led, OUTPUT);
+          Serial.begin(9600);
+        }
+
+        // the loop routine runs over and over again forever:
+        void loop() {
+          digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
+          delay(100);               // wait for a second
+          digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
+          delay(100);               // wait for a second
+          Serial.println("foo");
+          TESTIO();
+        }
+
+
+        void TESTIO(void)
+        {
+            Serial.println("dummy function. needs a prototype above");
+        }
     </div>
 </div>
 
+</div>
 <div id='info-sidebar' class='panel panel-default scrollpane'>
     <div class='panel-heading'>
         <ul class='tabs'>
@@ -388,68 +405,68 @@ void TESTIO(void)
         </ul>
     </div>
     <div id='serial' class='tabpane active vfill'>reporting...
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
-reporting...
-Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
+    reporting...
+    Temp: 45C
     </div>
 
     <div id='board-info' class='tabpane'>
@@ -469,6 +486,8 @@ Temp: 45C
 
     </div>
 </div>
+</div>
+
 
 <div class="modal fade" id='settings-modal'>
   <div class="modal-dialog">
@@ -646,6 +665,9 @@ Temp: 45C
             showBorder: false,
             levels: 1,
             });
+
+        $('#wrapper').split({orientation:'vertical', limit:300, position: '70%'});
+        $('#leftmiddle').split({orientation:'vertical', limit:200, position: '30%'});
     });
 </script>
 
