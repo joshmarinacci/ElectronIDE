@@ -22,10 +22,10 @@ In theory Electron should *just work* on Linux since it's just javascript undern
 However, some users have reported that some Linux distros have an existing program
 called `node` that is actually an ancient packet radio program.  Try running `node --version`
 to make sure you really have NodeJS 10.x and not that other program. Uninstall
-it if you do. NodeJS might also be run as `nodejs` instead of `node`.
+it if you do. NodeJS might also be run as `nodejs` instead of `node`. On Ubuntu 14.04
+we have reports that the `nodejs-legacy` package can successfully run Electron.
 
-There are many out of date packages on linux distros. We recommend you use the newest
-ones from SID, documented here: http://playground.arduino.cc/Linux/Ubuntu
+
 
 # What's New?
 
