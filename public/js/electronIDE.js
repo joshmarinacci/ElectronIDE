@@ -9,7 +9,7 @@ var ElectronIDE = (function() {
             rate: 9600
         },
         HOSTNAME = location.protocol + '//' + location.host
-    ;
+        ;
 
     var post = function(url, payload, cb) {
         var data = new FormData();
@@ -148,7 +148,7 @@ var ElectronIDE = (function() {
         })
     };
 
-    var compileCode = function () {
+    var compileCode = function() {
         appendConsole("compiling", STATE.sketch.name);
         post('/compile', {
             code: editor.getValue(),
@@ -162,7 +162,7 @@ var ElectronIDE = (function() {
         });
     };
 
-    var compileAndRunCode = function () {
+    var compileAndRunCode = function() {
         appendConsole('compiling and running');
         var data = new FormData();
         data.append('code', editor.getValue());
@@ -181,7 +181,7 @@ var ElectronIDE = (function() {
         });
     };
 
-    var toggleSerialConsole = function () {
+    var toggleSerialConsole = function() {
         if (STATE.serial == 'open') {
             STATE.serial = 'closed';
             $("#open-serial-button").text('open');
@@ -210,25 +210,25 @@ var ElectronIDE = (function() {
         }
     };
 
-    var appendConsole = function (str) {
+    var appendConsole = function(str) {
         $("#console").append('<p>' + str + '</p>');
         var objDiv = document.getElementById("console");
         objDiv.scrollTop = objDiv.scrollHeight;
     };
 
-    var appendConsoleResponse =function (str) {
+    var appendConsoleResponse = function(str) {
         $("#console").append('<p class="response">' + str + '</p>');
         var objDiv = document.getElementById("console");
         objDiv.scrollTop = objDiv.scrollHeight;
     };
 
-    var fetchSketches = function (cb) {
+    var fetchSketches = function(cb) {
         $.get(HOSTNAME + "/sketches", function(res) {
             cb(JSON.parse(res));
         });
     };
 
-    var populateSketches = function (sketches) {
+    var populateSketches = function(sketches) {
         var template = $("#sketch-template").text();
         $("#sketch-picker")
             .empty()
@@ -266,7 +266,7 @@ var ElectronIDE = (function() {
         });
     };
 
-    var monitorInit = function(){
+    var monitorInit = function() {
 
         var wsurl = "ws:" + location.hostname + ":4203";
         var monitor = new WebSocket(wsurl);
@@ -303,7 +303,7 @@ var ElectronIDE = (function() {
         };
     };
 
-    var eventsInit = function(){
+    var eventsInit = function() {
 
         $("#compile").click(function(e) {
             e.preventDefault();
@@ -423,7 +423,6 @@ var ElectronIDE = (function() {
         eventsInit();
         monitorInit();
     };
-
 
 
     return {
