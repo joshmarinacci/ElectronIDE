@@ -57,6 +57,9 @@ function Platform() {
         return this.root + '/hardware/tools/avr/bin';
     }
     this.getAvrDudeBinary = function(device) {
+        if(this.os == 'linux') {
+            return this.root + '/hardware/tools/avrdude';
+        }
         return this.root + '/hardware/tools/avr/bin/avrdude';
     }
     this.getAvrDudeConf = function(device) {
