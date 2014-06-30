@@ -24,15 +24,17 @@ function runAVRDude(hexfile, portpath, options, debug, cb) {
     console.log("running", uploadcmd.join(' '));
     var result = child_process.exec(uploadcmd.join(' '), function(error,stdout,stderr) {
         if(error) {
+            console.log("error. code = ",error.code);
             console.log(error);
             var err = new Error("there was a problem running " + uploadcmd.join(" "));
             err.cmd = uploadcmd;
             err.output = stdout + stderr;
             console.log(stdout);
             console.log(stderr)
-            //throw err;
+            debug(err);
+        } else {
+            debug("uploaded");
         }
-        debug("uploaded");
         if(cb) setTimeout(cb,1000);
     })
 }
@@ -58,8 +60,11 @@ function scanForPortReturn(list1,cb) {
 exports.upload = function(hexfile,portpath,options, publish, callback) {
     function debug(message) {
         var args = Array.prototype.slice.call(arguments);
-        //console.log(args.join(' '));
-        publish({type:"upload", message:args.join(" ")});
+        if(message instanceof Error) {
+            publish({type:'error', message: args.join(" ") + message.output});
+        } else {
+            publish({type:"upload", message:args.join(" ")});
+        }
     }
 
     console.log("uploading to device using ",options.device);
