@@ -140,7 +140,10 @@ function listdir(path) {
 
 
 function exec(cmd, cb, debug) {
-    var result = child_process.exec(cmd.join(' '), function(error, stdout, stderr) {
+    var result = child_process.execFile(
+        cmd[0],
+        cmd.slice(1),
+        function(error, stdout, stderr) {
         if(error) {
             console.log(error);
             console.log("code = ",error.code);

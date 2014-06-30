@@ -22,7 +22,10 @@ function runAVRDude(hexfile, portpath, options, debug, cb) {
     ];
 
     console.log("running", uploadcmd.join(' '));
-    var result = child_process.exec(uploadcmd.join(' '), function(error,stdout,stderr) {
+    var result = child_process.execFile(
+        uploadcmd[0],
+        uploadcmd.slice(1),
+        function(error, stdout, stderr) {
         if(error) {
             console.log("error. code = ",error.code);
             console.log(error);
