@@ -313,6 +313,21 @@ app.post('/serial/close', function(req,res) {
     });
 });
 
+app.post('/serial/send', function(req,res) {
+    if(!req.body.port) {
+        res.send(JSON.stringify({status:'error', message:'missing serial port'}));
+        res.end();
+        return;
+    }
+    if(!SERIAL.open) {
+        res.end(JSON.stringify({status:'error', message:'serial port not open'}));
+        return;
+    }
+    serial.send(req.body.message, function(err, results) {
+        res.end(JSON.stringify({status:'okay', message:'sent message'}));
+    })
+});
+
 var server = app.listen(54329,function() {
     console.log('open your browser to http://localhost:'+server.address().port+'/');
 });

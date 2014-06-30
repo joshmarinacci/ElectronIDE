@@ -278,6 +278,15 @@ var ElectronIDE = (function() {
             e.preventDefault();
             setRate($(this).attr('data-speed'));
         });
+        $("#serial-send-button").click(function(e) {
+            e.preventDefault();
+            post('/serial/send', {
+                port: STATE.port,
+                message: $("#serial-input-text").val(),
+            }, function(resp) {
+                console.log("resp is", resp);
+            });
+        })
 
         monitor.onopen = function(e) {
             console.log("opened the websocket for ", wsurl);

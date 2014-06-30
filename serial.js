@@ -30,3 +30,11 @@ exports.close = function(port, cb) {
         if(cb) cb();
     });
 }
+
+exports.send = function(message, cb)  {
+    sp.write(message+'\n',function(err, results) {
+        console.log('err', err);
+        console.log('results',results);
+        if(cb)cb(err,results);
+    });
+}
