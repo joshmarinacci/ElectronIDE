@@ -295,7 +295,11 @@ var ElectronIDE = (function() {
                 objDiv = document.getElementById("serial");
                 objDiv.scrollTop = objDiv.scrollHeight;
             } else {
-                $("#console").append('<p class="response">' + event.message + '</p>');
+                var clss = 'info';
+                if(event.type == 'error') {
+                    clss = 'error';
+                }
+                $("#console").append('<p class="response '+clss+'">' + event.message + '</p>');
                 objDiv = document.getElementById("console");
                 objDiv.scrollTop = objDiv.scrollHeight;
 

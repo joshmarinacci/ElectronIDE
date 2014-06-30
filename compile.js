@@ -144,6 +144,7 @@ function exec(cmd, cb, debug) {
         if(error) {
             console.log(error);
             console.log("code = ",error.code);
+            console.log(cmd.join(" "));
             console.log(stdout);
             console.log(stderr);
             var err = new Error("there was a problem running " + cmd.join(" "));
@@ -155,17 +156,17 @@ function exec(cmd, cb, debug) {
     });
 }
 
-function linkFile(options, file, outdir, cb) {
+function linkFile(options, file, outdir, cb, debug) {
     var cmd = [
         options.platform.getCompilerBinaryPath()+'/avr-ar',
         'rcs',
         outdir+'/core.a',
         file,
     ];
-    exec(cmd, cb);
+    exec(cmd, cb, debug);
 }
 
-function linkElfFile(options, libofiles, outdir, cb) {
+function linkElfFile(options, libofiles, outdir, cb, debug) {
 
     //link everything into the .elf file
     var elfcmd = [
@@ -186,10 +187,10 @@ function linkElfFile(options, libofiles, outdir, cb) {
     ]);
 
 
-    exec(elfcmd, cb);
+    exec(elfcmd, cb, debug);
 }
 
-function extractEEPROMData(options, outdir, cb) {
+function extractEEPROMData(options, outdir, cb, debug) {
     var eepcmd = [
         options.platform.getCompilerBinaryPath()+'/avr-objcopy',
         '-O',
@@ -204,10 +205,10 @@ function extractEEPROMData(options, outdir, cb) {
         outdir+'/'+options.name+'.eep',
     ];
 
-    exec(eepcmd, cb);
+    exec(eepcmd, cb, debug);
 }
 
-function buildHexFile(options, outdir, cb) {
+function buildHexFile(options, outdir, cb, debug) {
     var hexcmd = [
         options.platform.getCompilerBinaryPath()+'/avr-objcopy',
         '-O',
@@ -217,7 +218,7 @@ function buildHexFile(options, outdir, cb) {
         outdir+'/'+options.name+'.cpp.elf',
         outdir+'/'+options.name+'.hex',
     ];
-    exec(hexcmd, cb);
+    exec(hexcmd, cb, debug);
 }
 
 function processList(list, cb, publish) {
@@ -249,8 +250,11 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
 
     function debug(message) {
         var args = Array.prototype.slice.call(arguments);
-        //console.log(args.join(' '));
-        publish({type:"compile", message:args.join(" ")});
+        if(message instanceof Error) {
+            publish({type:'error', message: args.join(" ") + message.output});
+        } else {
+            publish({type:"compile", message:args.join(" ")});
+        }
     }
 
     checkfile(options.platform.getCompilerBinaryPath());
@@ -384,9 +388,11 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
             });
         async.mapSeries(dfiles, function(file, cb) {
                 debug("linking",file);
-                linkFile(options,file,outdir, cb);
+                linkFile(options,file,outdir, cb, debug);
             }, cb);
         });
+
+    //build the elf file
     tasks.push(function(cb) {
         debug("building elf file");
         var libofiles = [];
@@ -402,21 +408,21 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
             });
         });
 
-        linkElfFile(options,libofiles,outdir,cb);
+        linkElfFile(options,libofiles,outdir,cb, debug);
     });
 
 
     // 5. extract EEPROM data (from EEMEM directive) to .eep file.
     tasks.push(function(cb) {
         debug("extracting EEPROM data");
-        extractEEPROMData(options,outdir,cb);
+        extractEEPROMData(options,outdir,cb,debug);
     });
 
 
     // 6. build the .hex file
     tasks.push(function(cb) {
         debug("building .HEX file");
-        buildHexFile(options,outdir,cb);
+        buildHexFile(options,outdir,cb, debug);
     });
     processList(tasks,finalcb, publish);
 }

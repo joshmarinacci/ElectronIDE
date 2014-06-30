@@ -67,7 +67,14 @@
 }
 #console p.response {
     background-color: #ffe0e0;
+    word-wrap: break-word;
 }
+
+#console p.response.error {
+    background-color: #cc0000;
+    color: white;
+}
+
 #sketch-picker {
     position: absolute;
     overflow: auto;

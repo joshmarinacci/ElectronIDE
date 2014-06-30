@@ -28,7 +28,6 @@ console.log("options",OPTIONS);
 var wslist = [];
 function publishEvent(evt) {
     wslist.forEach(function(conn) {
-        console.log('sending event',evt);
         conn.sendText(JSON.stringify(evt));
     });
 }
