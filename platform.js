@@ -63,6 +63,9 @@ function Platform() {
         return this.root + '/hardware/tools/avr/bin/avrdude';
     }
     this.getAvrDudeConf = function(device) {
+        if(this.os == 'linux') {
+            return this.root + '/hardware/tools/avrdude.conf';
+        }
         return this.root + '/hardware/tools/avr/etc/avrdude.conf';
     }
     this.isInstalled = function() {
