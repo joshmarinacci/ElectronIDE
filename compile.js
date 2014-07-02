@@ -378,8 +378,13 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
 
     //compile core avr-libc
     tasks.push(function(cb) {
-        var cfiles = listdir(plat.getCorePath(options.device)+'/avr-libc');
-        compileFiles(options,outdir,includepaths,cfiles,debug,cb);
+        var libcdir = plat.getCorePath(options.device)+'/avr-libc';
+        if(fs.existsSync(libcdir)) {
+            var cfiles = listdir(plat.getCorePath(options.device)+'/avr-libc');
+            compileFiles(options,outdir,includepaths,cfiles,debug,cb);
+        } else {
+            if(cb) cb();
+        }
     });
 
     //link everything into core.a

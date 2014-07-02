@@ -13,7 +13,6 @@ function Platform() {
     this.os = process.platform;
     console.log("os = ",this.os);
 
-
     this.getUserHome = function() {
         return process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
     }
@@ -105,8 +104,23 @@ function Platform() {
     }
 }
 var _default = new Platform();
+var _digispark_pro = new Platform();
+_digispark_pro.droot = "/Users/josh/projects/Digistump/hardware/digistump/avr";
+_digispark_pro.getStandardLibraryPath = function() {   return this.droot + '/libraries';  }
+_digispark_pro.getCorePath = function(device) { return this.droot + '/cores/'+device.build.core;   }
+_digispark_pro.getVariantPath = function(device) { return this.droot + '/variants/'+device.build.core;   }
+_digispark_pro.getAvrDudeBinary = function(device) { return this.droot + '/tools/avrdude'; }
 
 exports.getDefaultPlatform = function() {
     console.log('getting the default platform');
     return _default;
+}
+
+exports.getPlatform = function(device) {
+    console.log(device);
+    if(device.id == 'digispark-pro') {
+        return _digispark_pro;
+    } else {
+        return _default;
+    }
 }

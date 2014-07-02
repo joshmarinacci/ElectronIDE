@@ -10,21 +10,22 @@ var outpath = "build/out";
 
 
 //var sketchPath = 'test/examples/NESTest/';
-var sketchPath = '/Users/josh/Documents/Arduino/BetterName2';
+var sketchPath = '/Users/josh/projects/Digistump/hardware/digistump/avr/libraries/SPI/examples/DigitalPotControl';
+//var sketchPath = '/Users/josh/Documents/Arduino/BetterName2';
 
 //setup standard options
 var options = {
-    //userlibs: "/Users/josh/Documents/Arduino/Libraries",
-    name: 'BetterName2',
+    name: sketchPath.substring(sketchPath.lastIndexOf('/')),
 }
-options.device = boards.getBoard('xadow');
-options.platform = platform.getDefaultPlatform();
+options.device = boards.getBoard('uno');
+options.device = boards.getBoard('digispark-pro');
+options.platform = platform.getPlatform(options.device);
+
 
 var debug = function(res) {
     console.log("LOG",res.message);
 }
 options.platform.installIfNeeded(function() {
-    console.log("options = ",options);
     compile.compile(sketchPath,outpath,options, debug, sketchPath, function() {
         console.log("done with compiling");
     });
