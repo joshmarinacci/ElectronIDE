@@ -59,7 +59,10 @@ var ElectronIDE = (function() {
 
         if (fullPort) {
             var boardMatched = BOARDS.filter(function(board) {
-                return (board && board.build && board.build.pid && board.build.pid === fullPort.productId && board.build.vid === fullPort.vendorId);
+                if('object' === typeof board.build.pid){
+                    return board.build.vid === fullPort.vendorId && ~board.build.pid.indexOf(fullPort.productId);
+                }
+                return board.build.vid === fullPort.vendorId && board.build.pid === fullPort.productId;
             })[0];
 
             if (boardMatched) {
