@@ -8,10 +8,10 @@ var http = require('http');
 var CLOUDPATH = 'http://joshondesign.com/p/apps/electron/platforms';
 var VERSION = "1.0.5";
 
+console.log("os = ",process.platform);
 
 function Platform() {
     this.os = process.platform;
-    console.log("os = ",this.os);
 
     this.getUserHome = function() {
         return process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
@@ -41,7 +41,7 @@ function Platform() {
     }
 
     this.root = this.getReposPath() + '/platforms/1.0.5/'+this.os;
-    console.log("root should be ", this.root);
+    //console.log("root should be ", this.root);
 
     this.getStandardLibraryPath = function() {
         return this.root + '/libraries';
@@ -111,6 +111,11 @@ _digispark_pro.getCorePath = function(device) { return this.droot + '/cores/'+de
 _digispark_pro.getVariantPath = function(device) { return this.droot + '/variants/'+device.build.core;   }
 _digispark_pro.getAvrDudeBinary = function(device) { return this.droot + '/tools/avrdude'; }
 
+var _trinket3 = new Platform();
+_trinket3.hroot = '/Users/josh/Downloads/hardware/attiny';
+_trinket3.getVariantPath = function(device) {   return this.hroot + '/variants/' + device.build.variant;  }
+
+
 exports.getDefaultPlatform = function() {
     console.log('getting the default platform');
     return _default;
@@ -118,9 +123,10 @@ exports.getDefaultPlatform = function() {
 
 exports.getPlatform = function(device) {
     console.log(device);
-    if(device.id == 'digispark-pro') {
-        return _digispark_pro;
-    } else {
-        return _default;
-    }
+    if(device.id == 'digispark-pro') return _digispark_pro;
+    if(device.id == 'digispark') return _digispark_pro;
+    if(device.id == 'trinket3') return _trinket3;
+    if(device.id == 'trinket5') return _trinket3;
+    if(device.id == 'gemma') return _trinket3;
+    return _default;
 }
