@@ -9,23 +9,35 @@ sp.list(function(err,list) {
 
 function runAVRDude(hexfile, portpath, options, debug, cb) {
     debug("running AVR dude");
-    var uploadcmd = [
-        options.platform.getAvrDudeBinary(options.device),
-        '-C'+options.platform.getAvrDudeConf(options.device),
-        '-v','-v','-v', //super verbose
-        '-p'+options.device.build.mcu,
-        '-c'+options.device.upload.protocol,
-        '-P'+portpath,
-        '-b'+options.device.upload.speed,
-        '-D', //don't erase
-        '-Uflash:w:'+hexfile+':i',
-    ];
+
+    if(options.platform.useSerial()) {
+        var uploadcmd = [
+            options.platform.getAvrDudeBinary(options.device),
+            '-C'+options.platform.getAvrDudeConf(options.device),
+            '-v','-v','-v', //super verbose
+            '-p'+options.device.build.mcu,
+            '-c'+options.device.upload.protocol,
+            '-P'+portpath,
+            '-b'+options.device.upload.speed,
+            '-D', //don't erase
+            '-Uflash:w:'+hexfile+':i',
+        ];
+    } else {
+        var uploadcmd = [
+            options.platform.getAvrDudeBinary(options.device),
+            '-C'+options.platform.getAvrDudeConf(options.device),
+            '-c',options.platform.getProgrammerId(),//'usbtiny',
+            '-p',options.device.build.mcu,//'attiny85',
+            '-Uflash:w:'+hexfile,
+        ];
+    }
 
     console.log("running", uploadcmd.join(' '));
     var result = child_process.execFile(
         uploadcmd[0],
         uploadcmd.slice(1),
         function(error, stdout, stderr) {
+            console.log(error,stdout,stderr);
         if(error) {
             console.log("error. code = ",error.code);
             console.log(error);
@@ -39,7 +51,7 @@ function runAVRDude(hexfile, portpath, options, debug, cb) {
             debug("uploaded");
         }
         if(cb) setTimeout(cb,1000);
-    })
+    });
 }
 
 function scanForPortReturn(list1,cb) {

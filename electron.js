@@ -92,7 +92,7 @@ function doCompile(code,board,sketch, cb) {
         if(bd.id == board) foundBoard = bd;
     })
     OPTIONS.device = foundBoard;
-    OPTIONS.platform = platform.getDefaultPlatform();
+    OPTIONS.platform = platform.getPlatform(OPTIONS.device);
     OPTIONS.platform.installIfNeeded(function() {
         OPTIONS.name = sketch;
         compile.compile(sketchpath,outpath,OPTIONS, publishEvent, path.join(OPTIONS.platform.getUserSketchesDir(), sketch), cb);

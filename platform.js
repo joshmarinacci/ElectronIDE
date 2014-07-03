@@ -1,4 +1,5 @@
 var fs = require('fs');
+var AdmZip = require('adm-zip');
 var settings = require('./settings');
 var zlib = require('zlib');
 var tar = require('tar');
@@ -13,6 +14,9 @@ console.log("os = ",process.platform);
 function Platform() {
     this.os = process.platform;
 
+    this.useSerial = function() {
+        return true;
+    }
     this.getUserHome = function() {
         return process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
     }
@@ -112,9 +116,59 @@ _digispark_pro.getVariantPath = function(device) { return this.droot + '/variant
 _digispark_pro.getAvrDudeBinary = function(device) { return this.droot + '/tools/avrdude'; }
 
 var _trinket3 = new Platform();
-_trinket3.hroot = '/Users/josh/Downloads/hardware/attiny';
-_trinket3.getVariantPath = function(device) {   return this.hroot + '/variants/' + device.build.variant;  }
+_trinket3.id = 'trinket3';
+//_trinket3.hroot = '/Users/josh/Downloads/hardware/attiny';
+_trinket3.hroot = _trinket3.getReposPath() + '/hardware/'+_trinket3.id;
+console.log("trinket hroot = ",_trinket3.hroot);
 
+_trinket3.parentPlatform = _default;
+_trinket3.getVariantPath = function(device) {   return this.hroot + '/hardware/attiny/variants/' + device.build.variant;  }
+_trinket3.isInstalled = function() { return fs.existsSync(this.hroot);  }
+
+function downloadUnzipTo(remote, outpath, update, cb) {
+    console.log('zip path = ',remote);
+    var self = this;
+    console.log('unziping to ',outpath);
+    var req = http.get(remote);
+    var fout = fs.createWriteStream('/tmp/blah.zip');
+    req.on('response', function(res) {
+        var total = res.headers['content-length']; //total byte length
+        var count = 0;
+        res
+            .on('data', function(data) {
+                count += data.length;
+                if(update) update( {message:count/total});
+            })
+            .pipe(fout)
+            .on('error',function() {
+                console.log('there was an error');
+            })
+            .on('close',function() {
+                console.log('unzipped the files');
+                var zip = new AdmZip('/tmp/blah.zip');
+                zip.extractAllTo(outpath,true);
+                if(cb) cb();
+            });
+        });
+}
+
+_trinket3.installIfNeeded = function(cb,update) {
+        if(this.isInstalled()) {
+            cb();
+            return;
+        }
+        console.log("not installed. installing now");
+        //http://learn.adafruit.com/system/assets/assets/000/010/777/original/trinkethardwaresupport.zip?1378321062
+        var zippath = 'http://learn.adafruit.com/system/assets/assets/000/010/777/original/trinkethardwaresupport.zip?1378321062';
+        var path = this.hroot;
+        downloadUnzipTo(zippath,path,update, function() {
+            var confpath = 'http://learn.adafruit.com/system/assets/assets/000/010/980/original/avrdudeconfmac.zip?1379342581';
+            downloadUnzipTo(confpath,path, update, cb);
+        });
+}
+_trinket3.useSerial = function() { return false; }
+_trinket3.getAvrDudeConf = function(device) { return this.hroot + '/avrdude.conf'; }
+_trinket3.getProgrammerId = function() { return 'usbtiny'; }
 
 exports.getDefaultPlatform = function() {
     console.log('getting the default platform');
