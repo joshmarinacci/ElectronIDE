@@ -84,12 +84,37 @@ function Platform() {
 }
 var _default = new Platform();
 var _digispark_pro = new Platform();
-_digispark_pro.droot = "/Users/josh/projects/Digistump/hardware/digistump/avr";
-_digispark_pro.getStandardLibraryPath = function() {   return this.droot + '/libraries';  }
-_digispark_pro.getCorePath = function(device) { return this.droot + '/cores/'+device.build.core;   }
-_digispark_pro.getVariantPath = function(device) { return this.droot + '/variants/'+device.build.core;   }
-_digispark_pro.getAvrDudeBinary = function(device) { return this.droot + '/tools/avrdude'; }
+_digispark_pro.id = 'digispark';
+var digifix = '/Digistump/hardware/digistump/avr'
+_digispark_pro.droot = _digispark_pro.getReposPath() + '/hardware/'+_digispark_pro.id;
+_digispark_pro.getStandardLibraryPath = function() {   return this.droot + digifix +'/libraries';  }
+_digispark_pro.getCorePath = function(device) { return this.droot + digifix + '/cores/'+device.build.core;   }
+_digispark_pro.getVariantPath = function(device) { return this.droot + digifix+ '/variants/'+device.build.core;   }
+_digispark_pro.getAvrDudeBinary = function(device) { return this.droot + digifix+ '/tools/avrdude'; }
 _digispark_pro.parentPlatform = _default;
+_digispark_pro.isInstalled = function() { return fs.existsSync(this.droot);  }
+_digispark_pro.installIfNeeded = function(cb,update) {
+    var self = this;
+    this.parentPlatform.installIfNeeded(function() {
+        if(self.isInstalled()) {
+            cb();
+            return;
+        }
+        var zippath = 'unknown path';
+        if(self.os == 'darwin') {
+            zippath = 'http://digispark.s3.amazonaws.com/digisparkpro_mac.zip';
+        }
+        if(self.os == 'linux') {
+            zippath = 'http://digispark.s3.amazonaws.com/digisparkpro_linux.zip';
+        }
+        if(self.os == 'win32') {
+            zippath = 'http://sourceforge.net/projects/digistump/files/Digistump1.5Addons-v09.zip/download';
+        }
+        var path = self.droot;
+        util.downloadUnzipTo(zippath,path,update, cb);
+    },update);
+}
+
 
 var _trinket3 = new Platform();
 _trinket3.id = 'trinket3';
@@ -124,7 +149,7 @@ exports.getDefaultPlatform = function() {
 
 exports.getPlatform = function(device) {
     if(device.id == 'digispark-pro') return _digispark_pro;
-    if(device.id == 'digispark') return _digispark_pro;
+    if(device.id == 'digispark-tiny') return _digispark_pro;
     if(device.id == 'trinket3') return _trinket3;
     if(device.id == 'trinket5') return _trinket3;
     if(device.id == 'gemma') return _trinket3;
