@@ -48,6 +48,10 @@ var ElectronIDE = (function() {
     };
 
     var setPort = function(port) {
+        if(port == 'RESCAN') {
+            fetchSerialports(populateSerialports);
+            return;
+        }
         STATE.port = port;
         $("#port-selector .data").text(port);
 
