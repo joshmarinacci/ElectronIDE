@@ -250,10 +250,11 @@ function processList(list, cb, publish) {
 }
 
 exports.compile = function(sketchPath, outdir,options, publish, sketchDir, finalcb) {
-
+    var errorHit = false;
     function debug(message) {
         var args = Array.prototype.slice.call(arguments);
         if(message instanceof Error) {
+            errorHit = true;
             publish({type:'error', message: args.join(" ") + message.output});
         } else {
             publish({type:"compile", message:args.join(" ")});
@@ -432,7 +433,14 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
         debug("building .HEX file");
         buildHexFile(options,outdir,cb, debug);
     });
-    processList(tasks,finalcb, publish);
+    processList(tasks, function() {
+        if(errorHit) {
+            var err = new Error("ERROR DURING COMPILE! STOP!");
+            finalcb(err);
+        } else {
+            finalcb(null);
+        }
+    }, publish);
 }
 
 function compileFiles(options, outdir, includepaths, cfiles,debug, cb) {

@@ -136,8 +136,13 @@ app.post('/run',function(req,res) {
         return;
     }
 
-    doCompile(req.body.code,req.body.board,req.body.sketch, function() {
+    doCompile(req.body.code,req.body.board,req.body.sketch, function(err) {
         console.log("compile is done. now on to uploading to hardware");
+        if(err) {
+            res.send(JSON.stringify({status:'compile error'}));
+            res.end();
+            return;
+        }
         var sketch = path.join('build', 'out', req.body.sketch+'.hex');
         var port = req.body.port;
 
