@@ -143,6 +143,26 @@ _trinket3.useSerial = function() { return false; }
 _trinket3.getAvrDudeConf = function(device) { return this.hroot + '/avrdude.conf'; }
 _trinket3.getProgrammerId = function() { return 'usbtiny'; }
 
+var _flora = new Platform();
+_flora.id = 'flora';
+_flora.hroot = _flora.getReposPath() + '/hardware/' + _flora.id;
+_flora.parentPlatform = _default;
+_flora.getVariantPath = function(device) {   return this.hroot;  }
+_flora.isInstalled = function() { return fs.existsSync(this.hroot);  }
+_flora.installIfNeeded = function(cb,update) {
+    var self = this;
+    this.parentPlatform.installIfNeeded(function() {
+        if(self.isInstalled()) {
+            cb();
+            return;
+        }
+        var remote_path = 'http://learn.adafruit.com/system/assets/assets/000/009/337/original/pins_arduino.h';
+        var local_path = self.hroot;
+        util.downloadTo(remote_path, local_path, 'pins_arduino.h', update, cb);
+    },update);
+}
+
+
 exports.getDefaultPlatform = function() {
     return _default;
 }
@@ -153,5 +173,6 @@ exports.getPlatform = function(device) {
     if(device.id == 'trinket3') return _trinket3;
     if(device.id == 'trinket5') return _trinket3;
     if(device.id == 'gemma') return _trinket3;
+    if(device.id == 'flora') return _flora;
     return _default;
 }
