@@ -1,6 +1,7 @@
 var fs = require('fs');
 var spawn = require('child_process').spawn;
 var http = require('http');
+var https = require('https');
 var AdmZip = require('adm-zip');
 var platform = require('./platform');
 
@@ -21,26 +22,33 @@ function isInstalled() {
     return false;
 }
 
+function scanSubdirs(path) {
+    var paths = [];
+    paths.push(path);
+    fs.readdirSync(path).forEach(function(filename) {
+        if(fs.statSync(path+'/'+filename).isDirectory()) {
+            //console.log('looking at path', path+'/'+filename);
+            if(filename != 'examples') {
+                console.log("found a subdir of files. use it",filename);
+                paths.push(path+'/'+filename);
+            }
+        }
+    });
+    return paths;
+
+}
+
 function getIncludePaths(platform) {
+    console.log("invoked for ",this.id);
+
     if(this.source == 'ide') {
         var path = platform.getStandardLibraryPath()+'/'+this.location;
-        //console.log("files = ",fs.readdirSync(path));
-        var paths = [];
-        paths.push(path);
-        fs.readdirSync(path).forEach(function(filename) {
-            if(fs.statSync(path+'/'+filename).isDirectory()) {
-                if(filename != 'examples') {
-                    //console.log("found a subdir of files. use it",filename);
-                    paths.push(path+'/'+filename);
-                }
-            }
-        });
-        return paths;
+        return scanSubdirs(path);
     }
     if(this.path) {
-        return [plat.getReposPath()+'/'+this.id+'/'+this.path];
+        return scanSubdirs(plat.getReposPath()+'/'+this.id+'/'+this.path);
     }
-    return [plat.getReposPath()+'/'+this.id];
+    return scanSubdirs(plat.getReposPath()+'/'+this.id);
 }
 
 function install(cb) {
@@ -75,10 +83,19 @@ function install(cb) {
         var outpath = plat.getReposPath();
         var outfile = plat.getReposPath()+'/'+this.location.substring(this.location.lastIndexOf('/')+1);
         console.log("output file = ",outfile);
-        var req = http.get(this.location)
-            .on('response',function(res){
+        //var req = http.get(this.location);
+        if(this.location.indexOf('https://') == 0) {
+            var req = https.get(this.location);
+        } else {
+            var req = http.get(this.locatin);
+        }
+        req.on('response',function(res) {
                 console.log("response");
-                res.pipe(fs.createWriteStream(outfile)).on('close',function(){
+                console.log('code = ', res.statusCode);
+                console.log("version = ", res.httpVersion);
+                console.log("headers = ", res.headers);
+                res.pipe(fs.createWriteStream(outfile))
+                .on('close',function(){
                     console.log('finished downloading');
                     var zip = new AdmZip(outfile);
                     var zipEntries = zip.getEntries();
@@ -90,7 +107,11 @@ function install(cb) {
                     fs.renameSync(plat.getReposPath()+'/'+rootpath, plat.getReposPath()+'/'+rootpath.toLowerCase());
                     if(cb) cb(null);
                 });
-            });
+            })
+            .on('error',function() {
+                console.log('an error with the http request');
+            })
+            ;
         req.end();
     }
 

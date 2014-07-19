@@ -312,7 +312,7 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
     tasks.push(function(cb) {
 
         var includedLibs = detectLibs(fs.readFileSync(cfile).toString());
-        debug('scanned for included libs',includedLibs);
+        debug('========= scanned for included libs',includedLibs);
 
         //assemble library paths
         var librarypaths = [];
@@ -341,7 +341,7 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
     tasks.push(function(cb) {
         console.log("moving on now");
         //debug("included libs = ", includedLibs);
-        debug("include paths = ", includepaths);
+        debug("include paths = ", JSON.stringify(includepaths,null, '   '));
         debug("using 3rd party libraries",libextra.map(function(lib) { return lib.id }).join(', '));
         compileFiles(options,outdir,includepaths,cfiles,debug, cb);
     });
