@@ -19,6 +19,33 @@
             width: 200px;
             bottom: 50px;
         }
+
+        .divider {
+            border: 1px solid black;
+            margin:0;
+            padding:0;
+            cursor: col-resize;
+
+            position: absolute;
+            height: 100%;
+            top: 0px;
+            bottom: 0px;
+            width: 5px;
+        }
+
+        .divider-left {
+            border-width: 0px 0px 0px 0px;
+            right: 0px;
+            padding-left: 5px;
+            margin-left: -5px;
+        }
+        .divider-right {
+            border-width: 0px 0px 0px 0px;
+            left: 0px;
+            padding-right: 5px;
+            margin-right: -5px;
+        }
+
         #editor {
             position: absolute;
             top: 50px;
@@ -55,6 +82,9 @@
             width: 100%;
         }
 
+
+
+
     </style>
 </head>
 <body ng-controller='MainCtrl as ctrl'>
@@ -75,19 +105,22 @@
 
     <div class='inline'>
         <label>Serial Port</label>
-        <select ng-model='ctrl.selectedPort' ng-options='p.label for p in ctrl.ports'>
-        </select>
+        <div class='select'>
+            <select ng-model='ctrl.selectedPort' ng-options='p.label for p in ctrl.ports'></select>
+        </div>
     </div>
 
     <div class='inline'>
         <label>Board</label>
-        <input type='text' placeholder='board search' ng-model='ctrl.searchBoard'>
-        <select ng-model='ctrl.selectedBoard' ng-options='b.label for b in ctrl.boards'>
-        </select>
+        <div class='select'>
+            <input type='text' placeholder='board search' ng-model='ctrl.searchBoard'>
+            <select ng-model='ctrl.selectedBoard' ng-options='b.label for b in ctrl.boards'></select>
+        </div>
     </div>
 </div>
 
 <div id='filebrowser' class='pane'>
+    <div class='divider divider-left'></div>
     <div class='pane-title'>File Browser</div>
     <ul class='tree'>
 
@@ -129,6 +162,7 @@
 </div>
 
 <div id='sidebar' class='pane'>
+    <div class='divider divider-right'></div>
     <div class='pane-title'>
         Sidebar
     </div>
@@ -192,8 +226,7 @@
     </div>
 </div>
 
-
-
+<script src="../public/jquery.js"></script>
 
 
 <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular.js'></script>
@@ -259,6 +292,41 @@ angular.module('app',[])
             self.editBuffer = this.files[tab].content;
         }
     }]);
+
+var MIN_SIDEBAR_WIDTH = 200;
+$(document).ready(function() {
+    $('.divider-left').mousedown(function (e) {
+        e.preventDefault();
+        $(document).mousemove(function (e) {
+            e.preventDefault();
+            var x = e.pageX;
+            if(x > MIN_SIDEBAR_WIDTH) {
+                $('#filebrowser').css("width", x);
+                $('#editor').css("left", x);
+            }
+        });
+        $(document).mouseup(function (e) {
+            $(document).unbind('mousemove');
+        });
+    });
+    $('.divider-right').mousedown(function (e) {
+        e.preventDefault();
+        $(document).mousemove(function (e) {
+            e.preventDefault();
+            var docw = $(document).width();
+            var x = docw-e.pageX;
+            if(x > MIN_SIDEBAR_WIDTH) {
+                $('#sidebar').css('width',x);
+                $('#editor').css('right',x);
+            }
+        });
+        $(document).mouseup(function (e) {
+            $(document).unbind('mousemove');
+        });
+    });
+})
+
+
 
 
 </script>
