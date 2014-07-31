@@ -1,0 +1,169 @@
+        html, body {
+            margin: 0;
+            padding: 0;
+            border-width: 0;
+            font-family: sans-serif;
+        }
+        .pane {
+            border: 1px solid gray;
+            background-color: #f0f0f0;
+            padding: 0em;
+        }
+
+
+
+        .dialog {
+            position: absolute;
+            border: 1px solid black;
+            z-index: 100;
+            left: 25%;
+            top: 25%;
+            width: 50%;
+            height: 50%;
+            background-color: white;
+            color: black;
+            padding: 0px;
+        }
+
+        .dialog .header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            margin: 0;
+            padding: 0.5em;
+            border: 0px solid black;
+            background-color: gray;
+            color: white;
+        }
+
+        .dialog .content {
+            position: absolute;
+            top: 50px;
+        }
+        .dialog .footer {
+            position: absolute;
+            bottom: 0px;
+            left: 0;
+            right: 0;
+            padding: 0.3em;
+            border: 0px solid black;
+            background-color: gray;
+        }
+
+
+
+        .align-right {
+            float: right;
+        }
+        .inline {
+            display: inline-block;
+            padding: 0.5em;
+            border: 0px solid gray;
+        }
+
+        ul.tab-group {
+            padding:0;
+            margin:0;
+            border: 0px solid black;
+            /* top right bottom left */
+            padding: 1em 0 0 0;
+            background-color: #f0f0f0;
+        }
+        ul.tab-group li {
+            padding: 0.4em 0.5em;
+            margin:  0 0 0 0.8em;
+            display: inline-block;
+            border: 0px solid black;
+            list-style: none;
+            background-color: lightgray;
+            border: 1px solid gray;
+            border-width: 1px 1px 0px 1px;
+            border-radius: 6px 6px 0px 0px;
+        }
+        ul.tab-group li.active {
+            background-color: white;
+            border-width: 0px;
+            border-width: 1px 1px 0px 1px;
+        }
+        ul.tab-group li a {
+            text-decoration: none;
+            color: black;
+        }
+        ul.tab-content-group {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+        ul.tab-content-group li {
+            display: none;
+        }
+        ul.tab-content-group li.active {
+            display: block;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+
+
+        label {
+            font-size: 90%;
+        }
+        .logo { font-size: 110%; color: gray; }
+
+        button, select, input {
+            border: 0px solid gray;
+            border-radius: 6px;
+            padding: 0.4em 0.8em;
+            background-color: lightgray;
+            color: black;
+            margin: 0.2em;
+            font-size: 90%;
+        }
+        button:hover {
+            background-color: white;
+        }
+        button:active {
+            background-color: black;
+            color: white;
+        }
+        input {
+            background-color: lightGray;
+            color: black;
+        }
+
+
+
+        /* file browser */
+
+        .tree {
+            margin: 0.5em;
+            padding: 0.5em;
+        }
+        .tree li {
+            list-style: none;
+        }
+        .tree li a {
+            text-decoration: none;
+            color: black;
+        }
+
+
+
+        .pane-title {
+            padding: 0.5em;
+            background-color: lightgray;
+            color: black;
+            vertical-align: center;
+        }
+
+
+        .primary {
+            background-color: #aaddff;
+            border: 1px solid #88aacc;
+        }
+
+        .action {
+            background-color: #aaffaa;
+            border: 1px solid #88cc88;
+        }
