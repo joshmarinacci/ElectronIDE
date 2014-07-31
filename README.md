@@ -23,7 +23,8 @@ However, some users have reported that some Linux distros have an existing progr
 called `node` that is actually an ancient packet radio program.  Try running `node --version`
 to make sure you really have NodeJS 10.x and not that other program. Uninstall
 it if you do. NodeJS might also be run as `nodejs` instead of `node`. On Ubuntu 14.04
-we have reports that the `nodejs-legacy` package can successfully run Electron.
+we have reports that the `nodejs-legacy` package can successfully run Electron, which is to
+say you have to install it AND `nodejs`, which allows running it as `node` and `nodejs`.
 
 
 
@@ -122,7 +123,7 @@ arch notes:
 
 platform design:
 
-Phe platform abstraction encompasses both the host operating system and the target
+The platform abstraction encompasses both the host operating system and the target
 platform. The target platform is larger than just a board. It is the
 architecture and surrounding details. Initally we have one platform: AVR.  
 With the Due we have two AVR and SAM, which is ARM based.  Some Arduino
