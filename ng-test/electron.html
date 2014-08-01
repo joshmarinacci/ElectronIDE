@@ -19,6 +19,33 @@
             width: 200px;
             bottom: 50px;
         }
+
+        .divider {
+            border: 1px solid black;
+            margin:0;
+            padding:0;
+            cursor: col-resize;
+
+            position: absolute;
+            height: 100%;
+            top: 0px;
+            bottom: 0px;
+            width: 5px;
+        }
+
+        .divider-left {
+            border-width: 0px 0px 0px 0px;
+            right: 0px;
+            padding-left: 5px;
+            margin-left: -5px;
+        }
+        .divider-right {
+            border-width: 0px 0px 0px 0px;
+            left: 0px;
+            padding-right: 5px;
+            margin-right: -5px;
+        }
+
         #editor {
             position: absolute;
             top: 50px;
@@ -33,6 +60,7 @@
             width: 300px;
             bottom: 50px;
         }
+
         #footer {
             position: absolute;
             height: 50px;
@@ -55,6 +83,63 @@
             width: 100%;
         }
 
+        .search-results {
+            overflow: auto;
+            margin: 0;
+            padding: 0;
+            width: 40em;
+            height: 240px;
+        }
+        .search-results li {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            background-color: lightgray;
+            border: 1px solid gray;
+            border-width: 1px 1px 0px 1px;
+            padding: 0.5em;
+        }
+        .search-results h4, .search-results p {
+            margin:0;
+            padding:0;
+        }
+
+
+
+
+        #board-search-results {
+            border: 1px solid gray;
+            position: absolute;
+            top: 45px;
+            z-index: 50;
+            min-width: 200px;
+            max-height: 500px;
+            margin:0;
+            padding:0;
+            background-color: white;
+            overflow: scroll;
+            width: 20em;
+        }
+        #board-search-results li{
+            list-style:none;
+            padding: 0.5em;
+        }
+        #board-search-results li:hover {
+            background-color: gray;
+            color: white;
+        }
+        #board-search-results li a{
+            text-decoration: none;
+            color: inherit;
+        }
+
+
+        .search {
+            border: 1px solid gray;
+            border-radius: 1em;
+        }
+
+
     </style>
 </head>
 <body ng-controller='MainCtrl as ctrl'>
@@ -65,8 +150,8 @@
     <div class='inline logo'>Electron</div>
 
     <div class='inline'>
-        <button class='primary' ng-click='ctrl.compile()'>Check <i class="fa fa-check"></i></button><!--  change state-->
-        <button class='primary' ng-click='ctrl.run()'>Run <i class='fa fa-play'></i></button><!--  chage state -->
+        <button class='primary' ng-click='ctrl.compile()'>Check <i class="fa fa-check"></i></button>
+        <button class='primary' ng-click='ctrl.run()'>Run <i class='fa fa-play'></i></button>
     </div>
 
     <div class='inline align-right'>
@@ -75,19 +160,35 @@
 
     <div class='inline'>
         <label>Serial Port</label>
-        <select ng-model='ctrl.selectedPort' ng-options='p.label for p in ctrl.ports'>
-        </select>
+        <div class='select'>
+            <select ng-model='ctrl.selectedPort' ng-options='p.label for p in ctrl.ports'></select>
+        </div>
     </div>
 
     <div class='inline'>
         <label>Board</label>
-        <input type='text' placeholder='board search' ng-model='ctrl.searchBoard'>
-        <select ng-model='ctrl.selectedBoard' ng-options='b.label for b in ctrl.boards'>
-        </select>
+        <div class='select'>
+            <input type='text'
+                placeholder='board search'
+                ng-model='ctrl.boardQuery'
+                ng-change='ctrl.searchBoard()'
+            >
+            <select
+                ng-model='ctrl.selectedBoard'
+                ng-options='b.label for b in ctrl.boards'></select>
+            <ul id='board-search-results' ng-show='ctrl.boardResultsVisible'>
+                <li ng-repeat='board in ctrl.boardResults'>
+                    <a href='#' ng-click='ctrl.selectBoard(board)'>
+                    {{board.label}} {{board.vendor}}
+                    </a>
+                </li>
+            </ul>
+        </div>
     </div>
 </div>
 
 <div id='filebrowser' class='pane'>
+    <div class='divider divider-left'></div>
     <div class='pane-title'>File Browser</div>
     <ul class='tree'>
 
@@ -118,17 +219,13 @@
             <a href='#' ng-click="ctrl.switchTab(id)">{{file.id}}</a>
         </li>
     </ul>
-        <!--
-        <li><a href='#' ng-click="ctrl.open('first')">MySketch.ino</a></li>
-        <li class='active'><a href='#' ng-click="ctrl.open('second')">Foo.h *</a></li>
-        <li><a href='#' ng-click="ctrl.open('third')">Foo.cpp</a></li>
-    -->
     <div id='editor-textarea'>
         {{ctrl.editBuffer}}
         </div>
 </div>
 
 <div id='sidebar' class='pane'>
+    <div class='divider divider-right'></div>
     <div class='pane-title'>
         Sidebar
     </div>
@@ -156,7 +253,7 @@
         status bar: debug messages from compiling.
         opens if errors are found. compiled, uploaded, etc.
     -->
-    Compiling....
+    {{ctrl.footerStatus}}
 
 </div>
 
@@ -181,19 +278,24 @@
 <div id='library-search-dialog' class='dialog' ng-show='ctrl.librarySearchVisible'>
     <h3 class='header'>Add Library</h3>
     <div class='content'>
-        <input type='text' placeholder='search by name or tag'>
-        <button class='primary'>Search</button>
-        results<br/>
-        results<br/>
-        results<br/>
+        <input class='search' ng-model='ctrl.searchQuery' type='text' placeholder='search by name or tag'
+            ng-change='ctrl.searchLibrary()'>
+        <button ng-click='ctrl.searchLibrary()' class='primary'>Search</button>
+        <ul class='search-results'>
+            <li ng-repeat='library in ctrl.searchResults'>
+                <h4>{{library.name}}</h4>
+                <p>{{library.description}}</p>
+                <p>{{library.tags}}</p>
+                <button ng-click='ctrl.addLibrary(library)'><i class="fa fa-plus-square"></i> Add</button>
+            </li>
+        </ul>
     </div>
     <div class='footer'>
         <button ng-click='ctrl.closeLibrary()' class='align-right'>done</button>
     </div>
 </div>
 
-
-
+<script src="../public/jquery.js"></script>
 
 
 <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular.js'></script>
@@ -223,12 +325,42 @@ angular.module('app',[])
         this.selectedPort = this.ports[1];
 
         this.boards = [
-            {id:'uno', label:'Uno'},
-            {id:'leonardo',label:'Leonardo'},
-            {id:'xadow',label:'Xadow'},
-            {id:'@more',label:'More...'},
+            {id:'uno', label:'Uno', vendor:'Arduino CC'},
+            {id:'leonardo',label:'Leonardo', vendor:'Arduino CC'},
+            {id:'xadow',label:'Xadow', vendor: 'Seeedstudio LLC'},
+            {id:'@more',label:'More...', vendor: ''},
         ];
         this.selectedBoard = this.boards[0];
+        this.allBoards = [
+            {id:'uno', label:'Uno', vendor:'Arduino CC'},
+            {id:'leonardo',label:'Leonardo', vendor:'Arduino CC'},
+            {id:'xadow',label:'Xadow', vendor: 'Seeedstudio LLC'},
+            {id:'atmega328',label:'Arduino Duemilanove w/ ATmega328', vendor:'Arduino CC'},
+            {id:'digispark-pro',label:'Digispark Pro (16 Mhz)', vendor:'DigiStump'},
+            {id:'digispark-tiny',label:'Digispark (Default - 16.5mhz)', vendor:'DigiStump'},
+            {id:'trinket5',label:'Trinket 16MHz, 5V', vendor:'Adafruit'},
+            {id:'trinket3',label:'Trinket 8MHz, 3.3V', vendor:'Adafruit'},
+        ];
+        this.boardQuery = null;
+        this.boardResults = [];
+        this.boardResultsVisible = false;
+        this.searchBoard = function() {
+            self.boardResultsVisible = true;
+            console.log("searching for",this.boardQuery);
+            self.boardResults = [];
+            var q = this.boardQuery;
+            this.allBoards.forEach(function(board) {
+                if(board.label.toLowerCase().indexOf(q) >= 0
+                || board.vendor.toLowerCase().indexOf(q) >= 0
+                ) {
+                    self.boardResults.push(board);
+                }
+            })
+        };
+        this.selectBoard = function(board) {
+            console.log('choosing the board', board);
+            self.boardResultsVisible = false;
+        }
 
         this.openSettings = function() {
             self.settingsVisible = true;
@@ -242,11 +374,20 @@ angular.module('app',[])
         this.closeLibrary = function() {
             self.librarySearchVisible = false;
         }
+        this.footerStatus = '';
         this.compile = function() {
             console.log("compiling");
+            this.footerStatus = 'Compiling...';
+            setTimeout(function() {
+                self.footerStatus = '';
+            },5000)
         }
         this.run = function() {
             console.log("running");
+            this.footerStatus = 'Running...';
+            setTimeout(function() {
+                self.footerStatus = '';
+            },5000)
         }
 
         this.getActive = function(tab) {
@@ -258,7 +399,115 @@ angular.module('app',[])
             self.tab = tab;
             self.editBuffer = this.files[tab].content;
         }
+
+        this.searchResults = [];
+        this.libraries = [
+            {
+                "id":"adafruit_motorshield",
+                "name":"Adafruit Motorshield",
+                "description":"Adafruit Motor Shield V2 library",
+                "tags":["motor"],
+                "source":"git",
+                "location":"https://github.com/adafruit/Adafruit_Motor_Shield_V2_Library.git",
+                "platforms":["avr"],
+                "dependencies":["wire"],
+                "homepage":"https://github.com/adafruit/Adafruit_Motor_Shield_V2_Library.git"
+            },
+            {
+                "id":"cmd",
+                "name":"Cmd",
+                "description":"Simple serial command line prompt for Arduino",
+                "tags":["serial"],
+                "source":"git",
+                "location":"https://github.com/joshmarinacci/CmdArduino.git",
+                "platforms":["avr"],
+                "homepage":"http://www.freaklabs.org/index.php/Tutorials/Software/Tutorial-Using-CmdArduino.html"
+            },
+            {
+                "id":"gsm",
+                "name":"GSM",
+                "description":"With the Arduino GSM Shield, this library enables an Arduino board to do most of the operations you can do with a GSM phone",
+                "tags":["standard","gsm","phone","gprs","networking","sms"],
+                "source":"ide",
+                "location":"GSM",
+                "platforms":["avr"],
+                "homepage":"http://arduino.cc/en/Reference/GSM"
+            },
+            {
+                "id":"nespad",
+                "name":"NESPad",
+                "description":"NESpad/SNESpad: Nintendo Joystick/Game Pad Libraries for Arduino",
+                "tags":["joystick","input"],
+                "source":"git",
+                "location":"https://github.com/joshmarinacci/nespad-arduino.git",
+                "platforms":["avr"],
+                "homepage":"https://github.com/joshmarinacci/nespad-arduino"
+            },
+            {
+                "id":"liquidcrystal",
+                "name":"Liquid Crystal",
+                "description":"Allows an Arduino board to control LiquidCrystal displays (LCDs) based on the Hitachi HD44780 (or a compatible) chipset, which is found on most text-based LCDs",
+                "tags":["standard","lcd","display"],
+                "source":"ide",
+                "location":"LiquidCrystal",
+                "platforms":["avr"],
+                "homepage":"http://arduino.cc/en/Reference/LiquidCrystal"
+            },
+
+        ];
+        this.searchQuery = null;
+        this.searchLibrary = function() {
+            var q = this.searchQuery.toLowerCase();
+            console.log("searching", q);
+            self.searchResults = [];
+            this.libraries.forEach(function(lib) {
+                if(lib.name.toLowerCase().indexOf(q) >= 0
+                || lib.description.toLowerCase().indexOf(q) >= 0
+                ) {
+                    self.searchResults.push(lib);
+                }
+            })
+        };
+
+        this.addLibrary = function(lib) {
+            console.log("adding library",lib);
+        }
     }]);
+
+var MIN_SIDEBAR_WIDTH = 200;
+$(document).ready(function() {
+    $('.divider-left').mousedown(function (e) {
+        e.preventDefault();
+        $(document).mousemove(function (e) {
+            e.preventDefault();
+            var x = e.pageX;
+            if(x > MIN_SIDEBAR_WIDTH) {
+                $('#filebrowser').css("width", x);
+                $('#editor').css("left", x);
+            }
+        });
+        $(document).mouseup(function (e) {
+            $(document).unbind('mousemove');
+        });
+    });
+    $('.divider-right').mousedown(function (e) {
+        e.preventDefault();
+        $(document).mousemove(function (e) {
+            e.preventDefault();
+            var docw = $(document).width();
+            var x = docw-e.pageX;
+            if(x > MIN_SIDEBAR_WIDTH) {
+                $('#sidebar').css('width',x);
+                $('#editor').css('right',x);
+            }
+        });
+        $(document).mouseup(function (e) {
+            $(document).unbind('mousemove');
+        });
+    });
+})
+
+
 
 
 </script>
