@@ -47,6 +47,14 @@
             background-color: lightgray;
             color: black;
         }
+        button.small {
+            font-size: 70%;
+            font-weight: bold;
+        }
+        input.search {
+            border: 1px solid gray;
+            border-radius: 1em;
+        }
 
 
 

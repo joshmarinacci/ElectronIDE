@@ -107,38 +107,6 @@
 
 
 
-        #board-search-results {
-            border: 1px solid gray;
-            position: absolute;
-            top: 45px;
-            z-index: 50;
-            min-width: 200px;
-            max-height: 500px;
-            margin:0;
-            padding:0;
-            background-color: white;
-            overflow: scroll;
-            width: 20em;
-        }
-        #board-search-results li{
-            list-style:none;
-            padding: 0.5em;
-        }
-        #board-search-results li:hover {
-            background-color: gray;
-            color: white;
-        }
-        #board-search-results li a{
-            text-decoration: none;
-            color: inherit;
-        }
-
-
-        .search {
-            border: 1px solid gray;
-            border-radius: 1em;
-        }
-
 
     </style>
 </head>
@@ -168,21 +136,12 @@
     <div class='inline'>
         <label>Board</label>
         <div class='select'>
-            <input type='text'
-                placeholder='board search'
-                ng-model='ctrl.boardQuery'
-                ng-change='ctrl.searchBoard()'
-            >
             <select
+                style='width: 6em;'
                 ng-model='ctrl.selectedBoard'
-                ng-options='b.label for b in ctrl.boards'></select>
-            <ul id='board-search-results' ng-show='ctrl.boardResultsVisible'>
-                <li ng-repeat='board in ctrl.boardResults'>
-                    <a href='#' ng-click='ctrl.selectBoard(board)'>
-                    {{board.label}} {{board.vendor}}
-                    </a>
-                </li>
-            </ul>
+                ng-options='b.name for b in ctrl.boards'
+                ng-change='ctrl.choseBoard()'
+                ></select>
         </div>
     </div>
 </div>
@@ -212,7 +171,7 @@
 <div id='editor' class='pane'>
     <div id='editor-title' class='pane-title'>
         <span>MySketch</span>
-        <button ng-click='ctrl.openLibrary()' class='align-right action'>add library</button>
+        <button ng-click='ctrl.openLibrary()' class='align-right action small'><i class='fa fa-plus'></i> Library</button>
     </div>
     <ul id='editor-tabs' class='tab-group'>
         <li ng-repeat='(id, file) in ctrl.files' ng-class='ctrl.getActive(id)'>
@@ -275,10 +234,14 @@
     </div>
 </div>
 
+
 <div id='library-search-dialog' class='dialog' ng-show='ctrl.librarySearchVisible'>
     <h3 class='header'>Add Library</h3>
     <div class='content'>
-        <input class='search' ng-model='ctrl.searchQuery' type='text' placeholder='search by name or tag'
+        <input class='search'
+            ng-model='ctrl.searchQuery'
+            type='text'
+            placeholder='search by name or tag'
             ng-change='ctrl.searchLibrary()'>
         <button ng-click='ctrl.searchLibrary()' class='primary'>Search</button>
         <ul class='search-results'>
@@ -295,16 +258,41 @@
     </div>
 </div>
 
+<div id='board-search-dialog' class='dialog' ng-show='ctrl.boardSearchVisible'>
+    <h3 class='header'>Add Board</h3>
+    <div class='content'>
+        <input type='text'
+            class='search'
+            placeholder='board search'
+            ng-model='ctrl.boardQuery'
+            ng-change='ctrl.searchBoard()'
+            >
+        <ul class='search-results'>
+            <li ng-repeat='board in ctrl.boardResults'>
+                <h4>{{board.name}}</h4>
+                <p style='font-size: 90%'>
+                    <i>{{board.vendor}}</i>
+                </p>
+                <button ng-click='ctrl.selectBoard(board)'>Choose <i class="fa fa-plus-square"></i></button>
+            </li>
+        </ul>
+    </div>
+    <div class='footer'>
+        <button ng-click='ctrl.closeBoardSearch()' class='align-right'>done</button>
+    </div>
+</div>
+
 <script src="jquery.js"></script>
 
 
 <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular.js'></script>
 <script type='text/javascript'>
 angular.module('app',[])
-    .controller('MainCtrl', [function() {
+    .controller('MainCtrl', ['$http',function($http) {
         var self = this;
         this.settingsVisible = false;
         this.librarySearchVisible = false;
+        this.boardSearchVisible = false;
 
         this.files = {
             'f1': { id:'MySketch.ino',content: 'contents of file 1' },
@@ -325,41 +313,46 @@ angular.module('app',[])
         this.selectedPort = this.ports[1];
 
         this.boards = [
-            {id:'uno', label:'Uno', vendor:'Arduino CC'},
-            {id:'leonardo',label:'Leonardo', vendor:'Arduino CC'},
-            {id:'xadow',label:'Xadow', vendor: 'Seeedstudio LLC'},
-            {id:'@more',label:'More...', vendor: ''},
+            {id:'uno', name:'Uno', vendor:'Arduino CC'},
+            {id:'leonardo',name:'Leonardo', vendor:'Arduino CC'},
+            {id:'xadow',name:'Xadow', vendor: 'Seeedstudio LLC'},
+            {id:'@more',name:'More...', vendor: ''},
         ];
+
         this.selectedBoard = this.boards[0];
-        this.allBoards = [
-            {id:'uno', label:'Uno', vendor:'Arduino CC'},
-            {id:'leonardo',label:'Leonardo', vendor:'Arduino CC'},
-            {id:'xadow',label:'Xadow', vendor: 'Seeedstudio LLC'},
-            {id:'atmega328',label:'Arduino Duemilanove w/ ATmega328', vendor:'Arduino CC'},
-            {id:'digispark-pro',label:'Digispark Pro (16 Mhz)', vendor:'DigiStump'},
-            {id:'digispark-tiny',label:'Digispark (Default - 16.5mhz)', vendor:'DigiStump'},
-            {id:'trinket5',label:'Trinket 16MHz, 5V', vendor:'Adafruit'},
-            {id:'trinket3',label:'Trinket 8MHz, 3.3V', vendor:'Adafruit'},
-        ];
         this.boardQuery = null;
         this.boardResults = [];
         this.boardResultsVisible = false;
+
         this.searchBoard = function() {
-            self.boardResultsVisible = true;
+            var q = this.boardQuery.toLowerCase();
+            if(q.length < 2) return;
+            this.boardResultsVisible = true;
             console.log("searching for",this.boardQuery);
-            self.boardResults = [];
-            var q = this.boardQuery;
-            this.allBoards.forEach(function(board) {
-                if(board.label.toLowerCase().indexOf(q) >= 0
-                || board.vendor.toLowerCase().indexOf(q) >= 0
-                ) {
-                    self.boardResults.push(board);
-                }
-            })
+            $http.get('/boards').then(function(res) {
+                self.boardResults = [];
+                res.data.forEach(function(board) {
+                    if(board.id.toLowerCase().indexOf(q) >= 0
+                     || board.name.toLowerCase().indexOf(q) >= 0)
+                     {
+                         self.boardResults.push(board);
+                     }
+                });
+            });
         };
         this.selectBoard = function(board) {
-            console.log('choosing the board', board);
-            self.boardResultsVisible = false;
+            this.boards.push(board);
+            this.selectedBoard = board;
+        }
+
+        this.choseBoard = function() {
+            console.log('chose',this.selectedBoard);
+            if(this.selectedBoard.id == '@more') {
+                this.boardSearchVisible = true;
+            }
+        }
+        this.closeBoardSearch = function() {
+            this.boardSearchVisible = false;
         }
 
         this.openSettings = function() {
