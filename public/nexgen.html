@@ -4,6 +4,7 @@
     <title>Electron IDE</title>
     <link rel='stylesheet' href='font-awesome/css/font-awesome.css'>
     <link rel='stylesheet' href='css/mockup.css'>
+    <link rel='stylesheet' href='css/serial_panel.css'>
     <style type='text/css'>
         #toolbar {
             position: absolute;
@@ -96,6 +97,7 @@
             top:7em;
             bottom:0;
             border-width: 1px 1px 1px 0px;
+            font-family: "Source Code Pro", monospace;
         }
 
         #toolbar input {
@@ -129,6 +131,19 @@
 
 
 
+.docs {
+    background-color:white;
+    height:100%;
+    font-family:"Source Serif Pro";
+    padding: 1em;
+}
+
+.docs a {
+    text-decoration: none;
+}
+.docs a:hover {
+    text-decoration: underline;
+}
 
     </style>
 </head>
@@ -185,37 +200,26 @@
             <a href='#' ng-click="ctrl.switchTab(id)">{{file.id}}</a>
         </li>
     </ul>
-    <!--
-    <div id='editor-textarea'>
-        {{ctrl.editBuffer}}
-    </div>
-    -->
-
-    <div id='ace-editor'
-    >asdfas</div>
-
+    <div id='ace-editor'>some code to edit</div>
 </div>
 
-<div id='sidebar' class='pane'>
+<div id='sidebar' class='pane' ng-controller='SidebarCtrl as sb'>
     <div class='divider divider-right'></div>
     <div class='pane-title'>
         Sidebar
     </div>
     <ul class='tab-group'>
-        <li class='active'><a>Console</a></li>
-        <li><a>Docs</a></li>
+        <li><a ng-click="sb.setTab('console')">Console</a></li>
+        <li class='active'><a ng-click="sb.setTab('docs')">Docs</a></li>
     </ul>
     <ul class='tab-content-group'>
-        <li class='active'>
+        <li ng-show="sb.showConsole">
             <div id='serial-console'>
                 <div ng-include="'serial_panel.html'"></div>
             </div>
         </li>
-        <li class=''>
-            docs
-                board info
-                library info
-                searchable docs
+        <li ng-show="sb.showDocs">
+            <div ng-include="'docs_panel.html'"></div>
         </li>
     </ul>
 </div>
@@ -314,6 +318,7 @@ var editorInit = function() {
     editor.getSession().setMode('ace/mode/c_cpp');
     editor.setTheme('ace/theme/solarized_light');
     editor.getSession().setUseWrapMode(true);
+
 };
 
 
@@ -434,24 +439,16 @@ angular.module('app',[])
 
         this.addLibrary = function(lib) {
             console.log("adding library",lib);
+            editor.gotoLine(0);
+            editor.insert('#include <'+lib.name+'.h>\n');
+
         }
 
         setupDividers();
     }])
+
     .controller('FilebrowserCtrl', ['$http',function($http){
-        this.sketches = [
-            { id:'Blink', label:'Blink',
-                files: [
-                    { id: 'Blink.ino', label:'Blink'},
-                    { id: 'foo.h', label:'foo'},
-                    { id: 'foo.cpp', label:'foo'},
-                ]
-            },
-            { id:'LedFlash', label:'LedFlash',
-                files:[
-                    { id: 'LedFlash.ino', label:'LedFlash'}
-                ]},
-            ];
+        this.sketches = [];
         var self = this;
         $http.get('/sketchtree').then(function(res) {
             self.sketches = res.data;
@@ -463,6 +460,18 @@ angular.module('app',[])
                 editor.gotoLine(0);
                 console.log('selection = ', editor.getSelection().getRange());
             })
+        }
+    }])
+
+    .controller('SidebarCtrl', ['$http', function($http){
+        this.tab = 'console';
+        this.showConsole = true;
+        this.showDocs = false;
+        this.setTab = function(tab) {
+            console.log('swapping tabs',this.tab);
+            this.tab = tab;
+            this.showConsole = (this.tab == 'console');
+            this.showDocs = (this.tab == 'docs');
         }
     }]);
 

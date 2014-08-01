@@ -192,16 +192,14 @@
             padding: 0;
             height: 100%;
         }
-        ul.tab-content-group li {
-            display: none;
-        }
-        ul.tab-content-group li.active {
-            display: block;
+        ul.tab-content-group > li {
+            list-style: none;
+            border: 1px solid darkgray;
+            border-width: 1px 0px 0px 0px;
             margin: 0;
             padding: 0;
             height: 100%;
         }
-
 
 
         label {
@@ -254,10 +252,13 @@
 
 
         .pane-title {
-            padding: 0.5em;
+            padding: 0.5rem;
             background-color: lightgray;
             color: black;
             vertical-align: center;
+            height: 1.5rem;
+            font-weight: 600;
+            font-size: 100%;
         }
 
 
