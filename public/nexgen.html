@@ -166,7 +166,9 @@
     <div class='inline'>
         <label>Serial Port</label>
         <div class='select'>
-            <select ng-model='ctrl.selectedPort' ng-options='p.label for p in ctrl.ports'></select>
+            <select
+                ng-model='ctrl.selectedPort'
+                ng-options='p.comName for p in ctrl.ports'></select>
         </div>
     </div>
 
@@ -326,7 +328,42 @@ $(document).ready(function() {
     editorInit();
 });
 angular.module('app',[])
-    .controller('MainCtrl', ['$http',function($http) {
+    .factory('Sketch', ['$http',function($http) {
+        return {
+            title:'Sketch',
+            status: 'success',
+            compile: function(board) {
+                console.log("board = ",board);
+                var self = this;
+                console.log('compiling the sketch');
+                $http.post('/compile',{
+                    code: editor.getValue(),
+                    board: board.id,
+                    sketch:this.sketchName,
+                }).then(function(res) {
+                    console.log("the response is",res.data.status);
+                    self.status = res.data.status;
+                });
+            },
+            run: function(serial) {
+                console.log("running the sketch with serial port",serial);
+            },
+            loadSketch: function(file) {
+                console.log("loading the sketch",file);
+                this.sketchName = file.label;
+                $http.get('/sketchfile?id='+file.id).then(function(res) {
+                    editor.setValue(res.data.content);
+                    editor.clearSelection();
+                    editor.gotoLine(0);
+                    console.log('selection = ', editor.getSelection().getRange());
+                })
+
+            }
+
+        }
+    }])
+
+    .controller('MainCtrl', ['Sketch','$http',function(Sketch,$http) {
         var self = this;
         this.settingsVisible = false;
         this.librarySearchVisible = false;
@@ -340,15 +377,8 @@ angular.module('app',[])
         this.tab = 'f1';
         this.editBuffer = this.files.f1.content;
 
-        this.ports = [
-            {id:'cuamodem1234',     label:'Uno'},
-            {id:'cuamodem4867',     label:'cuamodem4867'},
-            {id:'com1',             label:'Xadow'},
-            {id:'@none',            label:'None'},
-            {id:'@rescan',          label:'Rescan'},
-        ];
-
-        this.selectedPort = this.ports[1];
+        this.ports = [];
+        this.selectedPort = null;
 
         this.boards = [
             {id:'uno', name:'Uno', vendor:'Arduino CC'},
@@ -405,16 +435,10 @@ angular.module('app',[])
         }
         this.footerStatus = '';
         this.compile = function() {
-            this.footerStatus = 'Compiling...';
-            setTimeout(function() {
-                self.footerStatus = '';
-            },5000)
+            Sketch.compile(this.selectedBoard);
         }
         this.run = function() {
-            this.footerStatus = 'Running...';
-            setTimeout(function() {
-                self.footerStatus = '';
-            },5000)
+            Sketch.run(this.selectedPort);
         }
 
         this.getActive = function(tab) {
@@ -444,22 +468,23 @@ angular.module('app',[])
 
         }
 
+        $http.get('/ports').then(function(res) {
+            console.log("ports = ",res.data);
+            self.ports = res.data;
+        })
+
+
         setupDividers();
     }])
 
-    .controller('FilebrowserCtrl', ['$http',function($http){
+    .controller('FilebrowserCtrl', ['Sketch','$http',function(Sketch,$http){
         this.sketches = [];
         var self = this;
         $http.get('/sketchtree').then(function(res) {
             self.sketches = res.data;
         });
         this.loadFile = function(file) {
-            $http.get('/sketchfile?id='+file.id).then(function(res) {
-                editor.setValue(res.data.content);
-                editor.clearSelection();
-                editor.gotoLine(0);
-                console.log('selection = ', editor.getSelection().getRange());
-            })
+            Sketch.loadSketch(file);
         }
     }])
 

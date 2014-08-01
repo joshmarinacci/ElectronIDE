@@ -13,6 +13,7 @@
     "serialport": "^1.4.0",
     "tar": "^0.1.19",
     "unzip": "^0.1.9",
-    "wrench": "^1.5.8"
+    "wrench": "^1.5.8",
+    "body-parser": "^1.5.2"
   }
 }

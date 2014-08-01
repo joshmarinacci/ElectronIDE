@@ -8,6 +8,7 @@ var compile = require('./compile');
 var uploader = require('./uploader');
 var websocket = require('nodejs-websocket');
 var path = require('path');
+var bodyParser = require('body-parser');
 
 var settings = require('./settings.js');
 var sketches = require('./sketches.js');
@@ -36,6 +37,7 @@ function publishEvent(evt) {
 var app = express();
 //parse post bodies
 app.use(multer({dest:'./uploads'}));
+app.use(bodyParser.json());
 
 //public is the dir for static files
 app.use(express.static(__dirname+'/public'));
@@ -102,7 +104,7 @@ function doCompile(code,board,sketch, cb) {
 }
 
 app.post('/compile',function(req,res) {
-    console.log("code = ",req.body.code);
+    console.log("code = ",req.body);
     if(!req.body.board) {
         res.send(JSON.stringify({status:'missing board name'}));
         res.end();
