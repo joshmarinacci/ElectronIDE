@@ -1,9 +1,25 @@
+/* resets */
+
         html, body {
             margin: 0;
             padding: 0;
             border-width: 0;
             font-family: sans-serif;
         }
+
+
+/* input elements */
+
+        input, textarea, select {
+            -webkit-appearance: none;
+        }
+
+
+
+
+ /* panes */
+
+
         .pane {
             border: 1px solid gray;
             background-color: #f0f0f0;
@@ -11,6 +27,56 @@
         }
 
 
+        button, select, input {
+            border: 0px solid gray;
+            border-radius: 6px;
+            padding: 0.4em 0.8em;
+            background-color: lightgray;
+            color: black;
+            margin: 0.2em;
+            font-size: 90%;
+        }
+        button:hover {
+            background-color: white;
+        }
+        button:active {
+            background-color: black;
+            color: white;
+        }
+        input {
+            background-color: lightgray;
+            color: black;
+        }
+
+
+
+
+        .select {
+            display: inline-block;
+            padding: 0.2em;
+            margin: 0;
+            border: 1px solid gray;
+            background-color: lightgray;
+            border-radius: 6px;
+        }
+        .select select, .select input {
+            border: 0px solid red;
+            padding: 0 0.2em;
+            margin: 0;
+        }
+        .select:after {
+            content: '\f0d7';
+            font-family: FontAwesome;
+            font-size: 150%;
+            border: 0px solid black;
+            margin-left: -20;
+            padding-left: 0;
+            vertical-align: middle;
+        }
+
+
+
+/* modal dialogs */
 
         .dialog {
             position: absolute;
@@ -106,32 +172,11 @@
         }
 
 
+
         label {
             font-size: 90%;
         }
         .logo { font-size: 110%; color: gray; }
-
-        button, select, input {
-            border: 0px solid gray;
-            border-radius: 6px;
-            padding: 0.4em 0.8em;
-            background-color: lightgray;
-            color: black;
-            margin: 0.2em;
-            font-size: 90%;
-        }
-        button:hover {
-            background-color: white;
-        }
-        button:active {
-            background-color: black;
-            color: white;
-        }
-        input {
-            background-color: lightGray;
-            color: black;
-        }
-
 
 
         /* file browser */
