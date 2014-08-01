@@ -184,6 +184,9 @@
             text-decoration: none;
             color: black;
         }
+        ul.tab-group li:hover {
+            background-color:#ccffff;
+        }
         ul.tab-content-group {
             margin: 0;
             padding: 0;
@@ -210,15 +213,42 @@
         /* file browser */
 
         .tree {
-            margin: 0.5em;
-            padding: 0.5em;
+            margin: 0.0em;
+            padding: 0.0em;
+            font-size: 90%;
         }
         .tree li {
             list-style: none;
+            border: 0px solid green;
+            margin: 0;
+            padding: 0;
+            padding-top: 0.2em;
+            padding-bottom: 0.2em;
+        }
+        .tree li ul {
+            margin:0;
+            border: 0px solid blue;
+            padding: 0;
+        }
+        .tree > li a {
+            padding-left: 0.5em;
+            display: inline-block;
+            border: 0px solid blue;
+            width: 100%;
+        }
+        .tree > li a:hover {
+            background-color: lightblue;
         }
         .tree li a {
             text-decoration: none;
             color: black;
+        }
+        .tree li li {
+            border: 0px solid red;
+            padding-left: 1em;
+        }
+        .tree li li:hover {
+            background-color: lightblue;
         }
 
 
@@ -232,8 +262,8 @@
 
 
         .primary {
-            background-color: #aaddff;
             border: 1px solid #88aacc;
+            background-color:#ccffff;
         }
 
         .action {

@@ -61,11 +61,8 @@ exports.getSketch = function(name, cb) {
         //skip hidden files
         if(filename.indexOf('.')==0) return;
         var file = fs.readFileSync(dir+'/'+filename);
-        //console.log("file",filename);
         if(filename.toLowerCase() == 'info.json') {
-            console.log("info file");
             obj.info = JSON.parse(file.toString());
-            console.log("info = ",obj.info);
             return;
         }
         obj.files.push({
@@ -74,8 +71,35 @@ exports.getSketch = function(name, cb) {
         });
     });
     if(cb) cb(obj);
+}
 
+var SKETCH_DIR_FILTER = function(file) {
+    if(file.toLowerCase() == 'libraries') return false;
+    if(file.toLowerCase() == '.ds_store') return false;
+    return true;
+}
+exports.listSketchesFull = function(cb) {
 
+    fs.readdir(plat.getUserSketchesDir(), function(err,list) {
+        list = list.filter(SKETCH_DIR_FILTER).map(function(dir) {
+            var ret = {
+                id:dir,
+                label:dir,
+                files:[],
+            }
+            fs.readdirSync(plat.getUserSketchesDir()+'/'+dir)
+               .filter(SKETCH_DIR_FILTER)
+               .forEach(function(file) {
+                   var shortname = file.substring(0,file.lastIndexOf('.'));
+                   ret.files.push({
+                       id:dir+'/'+file,
+                       label:shortname
+                       });
+            });
+            return ret;
+        });
+        cb(list);
+    });
 }
 
 exports.saveSketch = function(name, code, cb) {
@@ -86,4 +110,16 @@ exports.saveSketch = function(name, code, cb) {
     console.log("file = ",file);
     fs.writeFileSync(file,code);
     if(cb)cb();
+}
+
+
+exports.getFile = function(id, cb) {
+    console.log("loading file",id);
+    var file = plat.getUserSketchesDir() + '/' + id;
+    console.log("laoding file",file);
+    var content = fs.readFileSync(file).toString();
+    cb({
+        id:id,
+        content:content,
+    });
 }

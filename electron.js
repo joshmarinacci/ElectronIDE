@@ -242,6 +242,12 @@ app.get('/sketches',function(req,res) {
         res.end();
     });
 });
+app.get('/sketchtree',function(req,res) {
+    sketches.listSketchesFull(function(list) {
+        res.send(JSON.stringify(list));
+        res.end();
+    });
+})
 
 app.post('/save',function(req,res) {
     sketches.saveSketch(req.body.name,req.body.code,function(results) {
@@ -255,6 +261,13 @@ app.get('/sketch/:name',function(req,res) {
         res.send(sketch);
         res.end();
     });
+});
+
+app.get('/sketchfile', function(req,res) {
+    sketches.getFile(req.query.id,function(file) {
+        res.json(file);
+        res.end();
+    })
 });
 
 app.get('/search',function(req,res){

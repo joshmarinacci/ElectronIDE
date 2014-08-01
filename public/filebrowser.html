@@ -1,0 +1,28 @@
+<ul class='tree' ng-controller='FilebrowserCtrl as fb'>
+
+    <li ng-repeat='sketch in fb.sketches'>
+        <a href='#'><i class='fa fa-folder-open-o'></i> {{sketch.label}} </a>
+        <ul>
+            <li ng-repeat='file in sketch.files'>
+                <a href='#'
+                    ng-click='fb.loadFile(file)'
+                ><i class='fa fa-file-o'></i> {{file.label}}</a>
+            </li>
+        </ul>
+    </li>
+
+    <!--
+    <li><a href='#'><i class="fa fa-folder-o"></i> foo</a></li>
+    <li><a href='#'><i class="fa fa-file-o"></i> bar</a></li>
+    <li><a href='#'><i class="fa fa-folder-open-o"></i> foo folder</a>
+        <ul>
+            <li><a href='#'><i class="fa fa-file-o"></i>
+                sub item 1</a>
+            </li>
+            <li><a href='#'><i class="fa fa-file-o"></i>
+                sub item 2</a>
+            </li>
+        </ul>
+    </li>
+-->
+</ul>
