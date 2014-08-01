@@ -423,71 +423,13 @@ angular.module('app',[])
         }
 
         this.searchResults = [];
-        this.libraries = [
-            {
-                "id":"adafruit_motorshield",
-                "name":"Adafruit Motorshield",
-                "description":"Adafruit Motor Shield V2 library",
-                "tags":["motor"],
-                "source":"git",
-                "location":"https://github.com/adafruit/Adafruit_Motor_Shield_V2_Library.git",
-                "platforms":["avr"],
-                "dependencies":["wire"],
-                "homepage":"https://github.com/adafruit/Adafruit_Motor_Shield_V2_Library.git"
-            },
-            {
-                "id":"cmd",
-                "name":"Cmd",
-                "description":"Simple serial command line prompt for Arduino",
-                "tags":["serial"],
-                "source":"git",
-                "location":"https://github.com/joshmarinacci/CmdArduino.git",
-                "platforms":["avr"],
-                "homepage":"http://www.freaklabs.org/index.php/Tutorials/Software/Tutorial-Using-CmdArduino.html"
-            },
-            {
-                "id":"gsm",
-                "name":"GSM",
-                "description":"With the Arduino GSM Shield, this library enables an Arduino board to do most of the operations you can do with a GSM phone",
-                "tags":["standard","gsm","phone","gprs","networking","sms"],
-                "source":"ide",
-                "location":"GSM",
-                "platforms":["avr"],
-                "homepage":"http://arduino.cc/en/Reference/GSM"
-            },
-            {
-                "id":"nespad",
-                "name":"NESPad",
-                "description":"NESpad/SNESpad: Nintendo Joystick/Game Pad Libraries for Arduino",
-                "tags":["joystick","input"],
-                "source":"git",
-                "location":"https://github.com/joshmarinacci/nespad-arduino.git",
-                "platforms":["avr"],
-                "homepage":"https://github.com/joshmarinacci/nespad-arduino"
-            },
-            {
-                "id":"liquidcrystal",
-                "name":"Liquid Crystal",
-                "description":"Allows an Arduino board to control LiquidCrystal displays (LCDs) based on the Hitachi HD44780 (or a compatible) chipset, which is found on most text-based LCDs",
-                "tags":["standard","lcd","display"],
-                "source":"ide",
-                "location":"LiquidCrystal",
-                "platforms":["avr"],
-                "homepage":"http://arduino.cc/en/Reference/LiquidCrystal"
-            },
-
-        ];
         this.searchQuery = null;
         this.searchLibrary = function() {
             var q = this.searchQuery.toLowerCase();
-            self.searchResults = [];
-            this.libraries.forEach(function(lib) {
-                if(lib.name.toLowerCase().indexOf(q) >= 0
-                || lib.description.toLowerCase().indexOf(q) >= 0
-                ) {
-                    self.searchResults.push(lib);
-                }
-            })
+            if(q.length < 2) return;
+            $http.get('/search?query='+q).then(function(res) {
+                self.searchResults = res.data;
+            });
         };
 
         this.addLibrary = function(lib) {
