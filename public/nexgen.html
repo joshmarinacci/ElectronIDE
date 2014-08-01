@@ -3,8 +3,11 @@
 <head>
     <title>Electron IDE</title>
     <link rel='stylesheet' href='font-awesome/css/font-awesome.css'>
+    <link rel='stylesheet' href='css/reset.css'>
     <link rel='stylesheet' href='css/mockup.css'>
     <link rel='stylesheet' href='css/serial_panel.css'>
+    <link rel='stylesheet' href='css/docs_panel.css'>
+    <link rel='stylesheet' href='css/toolbar.css'>
     <style type='text/css'>
         #toolbar {
             position: absolute;
@@ -80,15 +83,6 @@
             bottom: 0px;
         }
 
-        /*
-        #editor-textarea, #serial-console {
-            border: 0px solid green;
-            height: 100%;
-            padding: 1em;
-            background-color: white;
-        }
-        */
-
         #ace-editor {
             position: absolute;
             left:0;
@@ -100,12 +94,6 @@
             font-family: "Source Code Pro", monospace;
         }
 
-        #toolbar input {
-            width: 10em;
-        }
-        #sidebar input {
-            width: 100%;
-        }
 
         .search-results {
             overflow: auto;
@@ -131,59 +119,11 @@
 
 
 
-.docs {
-    background-color:white;
-    height:100%;
-    font-family:"Source Serif Pro";
-    padding: 1em;
-}
-
-.docs a {
-    text-decoration: none;
-}
-.docs a:hover {
-    text-decoration: underline;
-}
-
     </style>
 </head>
 <body ng-controller='MainCtrl as ctrl'>
 
-
-
-<div id='toolbar' class='pane'>
-    <div class='inline logo'>Electron</div>
-
-    <div class='inline'>
-        <button class='primary' ng-click='ctrl.compile()'>Check <i class="fa fa-check"></i></button>
-        <button class='primary' ng-click='ctrl.run()'>Run <i class='fa fa-play'></i></button>
-    </div>
-
-    <div class='inline align-right'>
-        <button class='primary' ng-click='ctrl.openSettings()'>Settings <i class='fa fa-gear'></i></button>
-    </div>
-
-    <div class='inline'>
-        <label>Serial Port</label>
-        <div class='select'>
-            <select
-                ng-model='ctrl.selectedPort'
-                ng-options='p.comName for p in ctrl.ports'></select>
-        </div>
-    </div>
-
-    <div class='inline'>
-        <label>Board</label>
-        <div class='select'>
-            <select
-                style='width: 6em;'
-                ng-model='ctrl.selectedBoard'
-                ng-options='b.name for b in ctrl.boards'
-                ng-change='ctrl.choseBoard()'
-                ></select>
-        </div>
-    </div>
-</div>
+<div id='toolbar' class='pane' ng-include="'toolbar.html'"></div>
 
 <div id='filebrowser' class='pane'>
     <div class='divider divider-left'></div>
@@ -232,81 +172,23 @@
         opens if errors are found. compiled, uploaded, etc.
     -->
     {{ctrl.footerStatus}}
-
 </div>
 
-<div id='settings-dialog' class='dialog' ng-show='ctrl.settingsVisible'>
-    <h3 class='header'>Settings</h3>
+<div ng-show='ctrl.settingsVisible'      ng-include="'settings_dialog.html'" class='dialog'></div>
 
-    <div class='content'>
-        <input type='checkbox'>tracking<br/>
-        <input type='radio' name='theme' value='light'>Light<br/>
-        <input type='radio' name='theme' value='light'>Dark<br/>
-        default board when creating a new sketch
-        <select>
-            <option>board1</option>
-            <option>board2</option>
-        </select>
-    </div>
-    <div class='footer'>
-        <button ng-click='ctrl.closeSettings()' class='align-right'>done</button>
-    </div>
-</div>
+<div ng-show='ctrl.librarySearchVisible' ng-include="'library_dialog.html'"  class='dialog'></div>
 
-
-<div id='library-search-dialog' class='dialog' ng-show='ctrl.librarySearchVisible'>
-    <h3 class='header'>Add Library</h3>
-    <div class='content'>
-        <input class='search'
-            ng-model='ctrl.searchQuery'
-            type='text'
-            placeholder='search by name or tag'
-            ng-change='ctrl.searchLibrary()'>
-        <button ng-click='ctrl.searchLibrary()' class='primary'>Search</button>
-        <ul class='search-results'>
-            <li ng-repeat='library in ctrl.searchResults'>
-                <h4>{{library.name}}</h4>
-                <p>{{library.description}}</p>
-                <p>{{library.tags}}</p>
-                <button ng-click='ctrl.addLibrary(library)'><i class="fa fa-plus-square"></i> Add</button>
-            </li>
-        </ul>
-    </div>
-    <div class='footer'>
-        <button ng-click='ctrl.closeLibrary()' class='align-right'>done</button>
-    </div>
-</div>
-
-<div id='board-search-dialog' class='dialog' ng-show='ctrl.boardSearchVisible'>
-    <h3 class='header'>Add Board</h3>
-    <div class='content'>
-        <input type='text'
-            class='search'
-            placeholder='board search'
-            ng-model='ctrl.boardQuery'
-            ng-change='ctrl.searchBoard()'
-            >
-        <ul class='search-results'>
-            <li ng-repeat='board in ctrl.boardResults'>
-                <h4>{{board.name}}</h4>
-                <p style='font-size: 90%'>
-                    <i>{{board.vendor}}</i>
-                </p>
-                <button ng-click='ctrl.selectBoard(board)'>Choose <i class="fa fa-plus-square"></i></button>
-            </li>
-        </ul>
-    </div>
-    <div class='footer'>
-        <button ng-click='ctrl.closeBoardSearch()' class='align-right'>done</button>
-    </div>
-</div>
+<div ng-show='ctrl.boardSearchVisible'   ng-include="'board_dialog.html'"    class='dialog'></div>
 
 <script src="jquery.js"></script>
-
+<script src='js/dividers.js'></script>
 
 <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular.js'></script>
 <script src='./ace-builds-master/src-noconflict/ace.js' type='text/javascript' charset='utf-8'></script>
 <script src="./ace-builds-master/src-noconflict/ext-language_tools.js"></script>
+<script src='js/app.js'></script>
+<script src='js/Sketch.js'></script>
+<script src='js/filebrowser.js'></script>
 <script type='text/javascript'>
 var editor;
 
@@ -323,46 +205,9 @@ var editorInit = function() {
 
 };
 
+$(document).ready(editorInit);
 
-$(document).ready(function() {
-    editorInit();
-});
-angular.module('app',[])
-    .factory('Sketch', ['$http',function($http) {
-        return {
-            title:'Sketch',
-            status: 'success',
-            compile: function(board) {
-                console.log("board = ",board);
-                var self = this;
-                console.log('compiling the sketch');
-                $http.post('/compile',{
-                    code: editor.getValue(),
-                    board: board.id,
-                    sketch:this.sketchName,
-                }).then(function(res) {
-                    console.log("the response is",res.data.status);
-                    self.status = res.data.status;
-                });
-            },
-            run: function(serial) {
-                console.log("running the sketch with serial port",serial);
-            },
-            loadSketch: function(file) {
-                console.log("loading the sketch",file);
-                this.sketchName = file.label;
-                $http.get('/sketchfile?id='+file.id).then(function(res) {
-                    editor.setValue(res.data.content);
-                    editor.clearSelection();
-                    editor.gotoLine(0);
-                    console.log('selection = ', editor.getSelection().getRange());
-                })
-
-            }
-
-        }
-    }])
-
+app
     .controller('MainCtrl', ['Sketch','$http',function(Sketch,$http) {
         var self = this;
         this.settingsVisible = false;
@@ -462,14 +307,11 @@ angular.module('app',[])
         };
 
         this.addLibrary = function(lib) {
-            console.log("adding library",lib);
             editor.gotoLine(0);
             editor.insert('#include <'+lib.name+'.h>\n');
-
         }
 
         $http.get('/ports').then(function(res) {
-            console.log("ports = ",res.data);
             self.ports = res.data;
         })
 
@@ -477,16 +319,6 @@ angular.module('app',[])
         setupDividers();
     }])
 
-    .controller('FilebrowserCtrl', ['Sketch','$http',function(Sketch,$http){
-        this.sketches = [];
-        var self = this;
-        $http.get('/sketchtree').then(function(res) {
-            self.sketches = res.data;
-        });
-        this.loadFile = function(file) {
-            Sketch.loadSketch(file);
-        }
-    }])
 
     .controller('SidebarCtrl', ['$http', function($http){
         this.tab = 'console';
@@ -500,38 +332,6 @@ angular.module('app',[])
         }
     }]);
 
-var MIN_SIDEBAR_WIDTH = 200;
-function setupDividers() {
-    $('.divider-left').mousedown(function (e) {
-        e.preventDefault();
-        $(document).mousemove(function (e) {
-            e.preventDefault();
-            var x = e.pageX;
-            if(x > MIN_SIDEBAR_WIDTH) {
-                $('#filebrowser').css("width", x);
-                $('#editor').css("left", x);
-            }
-        });
-        $(document).mouseup(function (e) {
-            $(document).unbind('mousemove');
-        });
-    });
-    $('.divider-right').mousedown(function (e) {
-        e.preventDefault();
-        $(document).mousemove(function (e) {
-            e.preventDefault();
-            var docw = $(document).width();
-            var x = docw-e.pageX;
-            if(x > MIN_SIDEBAR_WIDTH) {
-                $('#sidebar').css('width',x);
-                $('#editor').css('right',x);
-            }
-        });
-        $(document).mouseup(function (e) {
-            $(document).unbind('mousemove');
-        });
-    });
-}
 
 
 

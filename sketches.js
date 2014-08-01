@@ -76,6 +76,7 @@ exports.getSketch = function(name, cb) {
 var SKETCH_DIR_FILTER = function(file) {
     if(file.toLowerCase() == 'libraries') return false;
     if(file.toLowerCase() == '.ds_store') return false;
+    if(file.toLowerCase() == '.git') return false;
     return true;
 }
 exports.listSketchesFull = function(cb) {
@@ -90,10 +91,9 @@ exports.listSketchesFull = function(cb) {
             fs.readdirSync(plat.getUserSketchesDir()+'/'+dir)
                .filter(SKETCH_DIR_FILTER)
                .forEach(function(file) {
-                   var shortname = file.substring(0,file.lastIndexOf('.'));
                    ret.files.push({
                        id:dir+'/'+file,
-                       label:shortname
+                       label:file
                        });
             });
             return ret;

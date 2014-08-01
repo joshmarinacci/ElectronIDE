@@ -1,0 +1,14 @@
+
+.docs {
+    background-color:white;
+    height:100%;
+    font-family:"Source Serif Pro";
+    padding: 1em;
+}
+
+.docs a {
+    text-decoration: none;
+}
+.docs a:hover {
+    text-decoration: underline;
+}
