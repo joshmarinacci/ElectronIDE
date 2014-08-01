@@ -1,10 +1,12 @@
+@import url(http://fonts.googleapis.com/css?family=Source+Sans+Pro:200,300,400,600,700,900,200italic,300italic,400italic,600italic,700italic,900italic|Source+Code+Pro:200,300,400,500,600,700,900|Source+Serif+Pro:400,600,700);
+
 /* resets */
 
         html, body {
             margin: 0;
             padding: 0;
             border-width: 0;
-            font-family: sans-serif;
+            font-family: 'Source Sans Pro', sans-serif;
         }
 
 
@@ -28,9 +30,9 @@
 
 
         button, select, input {
-            border: 0px solid gray;
-            border-radius: 6px;
-            padding: 0.4em 0.8em;
+            border: 1px solid gray;
+            border-radius: 4px;
+            padding: 0.3em 0.8em;
             background-color: lightgray;
             color: black;
             margin: 0.2em;
@@ -65,7 +67,7 @@
             margin: 0;
             border: 1px solid gray;
             background-color: lightgray;
-            border-radius: 6px;
+            border-radius: 4px;
         }
         .select select, .select input {
             border: 0px solid red;
@@ -87,8 +89,7 @@
 /* modal dialogs */
 
         .dialog {
-            position: absolute;
-            border: 1px solid black;
+            position: fixed;
             z-index: 100;
             left: 25%;
             top: 25%;
@@ -106,14 +107,21 @@
             right: 0;
             margin: 0;
             padding: 0.5em;
-            border: 0px solid black;
             background-color: gray;
+            border-radius: 4px 4px 0px 0px;
             color: white;
         }
 
         .dialog .content {
             position: absolute;
-            top: 50px;
+            top: 2.5em;
+            padding: 1em;
+            background-color: white;
+            left: 0;
+            right:0;
+            bottom:2.0em;
+            border: 1px solid gray;
+            border-width: 0px 1px 0px 1px;
         }
         .dialog .footer {
             position: absolute;
@@ -121,8 +129,20 @@
             left: 0;
             right: 0;
             padding: 0.3em;
-            border: 0px solid black;
             background-color: gray;
+            border-radius: 0px 0px 4px 4px;
+        }
+
+        .dialog:before {
+            content:'';
+            position: fixed;
+            left:0;
+            top:0;
+            right:0;
+            bottom:0;
+            background-color: white;
+            opacity: 0.75;
+            z-index: -10000;
         }
 
 
@@ -146,14 +166,14 @@
         }
         ul.tab-group li {
             padding: 0.4em 0.5em;
-            margin:  0 0 0 0.8em;
+            margin:  0 0 0 0.4em;
             display: inline-block;
             border: 0px solid black;
             list-style: none;
             background-color: lightgray;
             border: 1px solid gray;
             border-width: 1px 1px 0px 1px;
-            border-radius: 6px 6px 0px 0px;
+            border-radius: 4px 4px 0px 0px;
         }
         ul.tab-group li.active {
             background-color: white;

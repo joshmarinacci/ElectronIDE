@@ -170,10 +170,10 @@
 
 <div id='editor' class='pane'>
     <div id='editor-title' class='pane-title'>
-        <span>MySketch</span>
         <button ng-click='ctrl.openLibrary()' class='align-right action small'><i class='fa fa-plus'></i> Library</button>
+        <span>MySketch</span>
     </div>
-    <ul id='editor-tabs' class='tab-group'>
+    <ul class='tab-group'>
         <li ng-repeat='(id, file) in ctrl.files' ng-class='ctrl.getActive(id)'>
             <a href='#' ng-click="ctrl.switchTab(id)">{{file.id}}</a>
         </li>
@@ -188,9 +188,9 @@
     <div class='pane-title'>
         Sidebar
     </div>
-    <ul id='editor-tabs' class='tab-group'>
-        <li class='active'>Console</li>
-        <li>Docs</li>
+    <ul class='tab-group'>
+        <li class='active'><a>Console</a></li>
+        <li><a>Docs</a></li>
     </ul>
     <ul class='tab-content-group'>
         <li class='active'>
