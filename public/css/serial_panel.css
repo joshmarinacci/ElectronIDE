@@ -1,11 +1,9 @@
 #serial-console {
-    border: 1px solid darkgray;
     position: absolute;
-    top: 5.4rem;
+    top: 4.6rem;
     left:0;
     right:0;
     background-color: #eee;
-    border-width: 1px 0px 0px 0px;
     bottom: 0;
 }
 .serial-output {
@@ -13,7 +11,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    top: 6.5em;
+    top: 7em;
     background-color: #fff;
     padding: 0.5em;
     font-family: "Source Code Pro", monospace;

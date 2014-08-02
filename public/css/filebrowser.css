@@ -1,0 +1,27 @@
+#filebrowser {
+    position: absolute;
+    top: 50px;
+    left:0px;
+    width: 200px;
+    bottom: 50px;
+}
+#filebrowser .tree {
+    position: absolute;
+    top: 2.5em;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border: 0px solid red;
+    margin:0;
+    overflow: scroll;
+}
+
+#filebrowser .toolbar {
+    position: absolute;
+    bottom: 0;
+    height: 2em;
+    background-color: lightgray;
+    left: 0;
+    right: 0;
+    border: 0px solid red;
+}

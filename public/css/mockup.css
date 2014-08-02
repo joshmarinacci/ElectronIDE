@@ -178,9 +178,10 @@ input[type=checkbox],
         ul.tab-group {
             padding:0;
             margin:0;
-            border: 0px solid black;
+            border: 1px solid gray;
+            border-width: 0px 0px 1px 0px;
             /* top right bottom left */
-            padding: 1em 0 0 0;
+            padding: 0.5em 0 0 0;
             background-color: #f0f0f0;
         }
         ul.tab-group li {
@@ -191,13 +192,14 @@ input[type=checkbox],
             list-style: none;
             background-color: lightgray;
             border: 1px solid gray;
-            border-width: 1px 1px 0px 1px;
+            border-width: 1px 1px 1px 1px;
             border-radius: 4px 4px 0px 0px;
         }
         ul.tab-group li.active {
-            background-color: white;
+            background-color: #eee;
             border-width: 0px;
-            border-width: 1px 1px 0px 1px;
+            border-width: 1px 1px 1px 1px;
+            border-bottom-color: #eee;
         }
         ul.tab-group li a {
             text-decoration: none;
@@ -213,8 +215,6 @@ input[type=checkbox],
         }
         ul.tab-content-group > li {
             list-style: none;
-            border: 1px solid darkgray;
-            border-width: 1px 0px 0px 0px;
             margin: 0;
             padding: 0;
             height: 100%;
@@ -275,7 +275,7 @@ input[type=checkbox],
             background-color: lightgray;
             color: black;
             vertical-align: center;
-            height: 1.5rem;
+            height: 1.0em;
             font-weight: 600;
             font-size: 100%;
         }
