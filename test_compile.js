@@ -10,8 +10,9 @@ var outpath = "build/out";
 
 
 //var sketchPath = 'test/examples/NESTest/';
-var sketchPath = '/Users/josh/projects/Digistump/hardware/digistump/avr/libraries/SPI/examples/DigitalPotControl';
+//var sketchPath = '/Users/josh/projects/Digistump/hardware/digistump/avr/libraries/SPI/examples/DigitalPotControl';
 //var sketchPath = '/Users/josh/Documents/Arduino/BetterName2';
+var sketchPath = '/Users/josh/Documents/Arduino/BleRobot2';
 
 //setup standard options
 var options = {
@@ -19,6 +20,9 @@ var options = {
 }
 options.device = boards.getBoard('uno');
 options.device = boards.getBoard('digispark-pro');
+if(options.device == null) {
+    throw new Error('Device Not Found');
+}
 options.platform = platform.getPlatform(options.device);
 
 
