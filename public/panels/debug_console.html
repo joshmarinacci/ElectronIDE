@@ -1,6 +1,10 @@
 <h3 class='header'>Console</h3>
-<div class='content'>
-    debugging output here.
+<div class='content' style='overflow:scroll'>
+    <ul>
+        <li ng-repeat='line in ctrl.debugOutput' style='border: 1px solid gray; border-width: 0 0 1px 0;'>
+            {{line}}
+        </li>
+    </ul>
 </div>
 <div class='footer'>
     <button ng-click='ctrl.closeDebugConsole()' class='align-right'>done</button>

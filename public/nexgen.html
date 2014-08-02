@@ -311,9 +311,15 @@ app
             self.ports = res.data;
         })
 
+        this.debugOutput = [];
 
         Monitor.on(function(e) {
             console.log(e.type,e.message);
+            if(e.type == 'error') {
+                console.log('set the status');
+                self.footerStatus = 'Error:'+e.message;
+                self.debugOutput.push(e.message);
+            }
         });
 
         setupDividers();
