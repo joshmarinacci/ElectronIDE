@@ -172,7 +172,11 @@
         opens if errors are found. compiled, uploaded, etc.
     -->
     {{ctrl.footerStatus}}
+
+    <button ng-click='ctrl.openDebugConsole()' class='align-right'>^</button>
 </div>
+
+<div ng-show='ctrl.debugVisible'          ng-include="'panels/debug_console.html'"   class='dialog'></div>
 
 <div ng-show='ctrl.settingsVisible'      ng-include="'settings_dialog.html'" class='dialog'></div>
 
@@ -189,6 +193,7 @@
 <script src='js/app.js'></script>
 <script src='js/Sketch.js'></script>
 <script src='js/filebrowser.js'></script>
+<script src='js/Monitor.js'></script>
 <script type='text/javascript'>
 var editor;
 
@@ -208,11 +213,12 @@ var editorInit = function() {
 $(document).ready(editorInit);
 
 app
-    .controller('MainCtrl', ['Sketch','$http',function(Sketch,$http) {
+    .controller('MainCtrl', ['Sketch','$http', 'Monitor',function(Sketch,$http,Monitor) {
         var self = this;
         this.settingsVisible = false;
         this.librarySearchVisible = false;
         this.boardSearchVisible = false;
+        this.debugVisible = false;
 
         this.files = {
             'f1': { id:'MySketch.ino',content: 'contents of file 1' },
@@ -278,6 +284,12 @@ app
         this.closeLibrary = function() {
             self.librarySearchVisible = false;
         }
+        this.openDebugConsole = function() {
+            self.debugVisible = true;
+        }
+        this.closeDebugConsole = function() {
+            self.debugVisible = false;
+        }
         this.footerStatus = '';
         this.compile = function() {
             Sketch.compile(this.selectedBoard);
@@ -316,6 +328,10 @@ app
         })
 
 
+        Monitor.on(function(e) {
+            console.log(e.type,e.message);
+        });
+
         setupDividers();
     }])
 
@@ -330,10 +346,12 @@ app
             this.showConsole = (this.tab == 'console');
             this.showDocs = (this.tab == 'docs');
         }
-    }]);
+    }])
 
 
 
+
+    ;
 
 
 
