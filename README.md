@@ -59,23 +59,13 @@ Don't worry. There's *tons* to do.
 
 If you want to help on the Node side, you can work on
 
-* support uploading to Leonardo and related boards using the serial port tricks.
 * support proper software reset on Unos (setting DTR high?)
 * figure out how to extract documentation from Arduino library source directly (doxygen?)
-* figure out how to support Windows and Linux (shouldn't be too much)
-* look into integrating the embedded webkit from Atom.io
-* rewrite the compile system to be properly asynchronous and send feedback to the browser
-
+* look into integrating the embedded webkit from Atom.io (Atom-Shell)
 
 If you want to help on the HTML side, you can work on
 
-* Build a preferences dialog
-* Build a dialog for managing boards
-* Build a dialog to search and install and query libraries
-* Design a panel system to manage the sidebars, main editor, tabs, etc. something more like XCode
 * Pick better defaults for the Ace editor. Syntax highlighting, themes, search, etc.
-* Design a new file picker interface. The current one really isn't usable.
-
 
 If you want to help with metadata, you can add:
 
