@@ -7,14 +7,16 @@
 }
 #filebrowser .tree {
     position: absolute;
-    top: 2.5em;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    top: 2.3em;
+    bottom: 2em;
+    left: 0em;
+    right: 0em;
     border: 0px solid red;
     margin:0;
+    padding: 0;
     overflow: scroll;
 }
+
 
 #filebrowser .toolbar {
     position: absolute;
@@ -24,4 +26,19 @@
     left: 0;
     right: 0;
     border: 0px solid red;
+}
+
+#filebrowser .tree-node-opened ul {
+    display: block;
+}
+
+#filebrowser .tree-node-closed ul {
+    display: none;
+}
+
+#filebrowser .tree-node-opened > a > i:before {
+  content: "\f07c";
+}
+#filebrowser .tree-node-closed > a > i:before {
+  content: "\f07b";
 }

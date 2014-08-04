@@ -1,7 +1,9 @@
 <ul class='tree' ng-controller='FilebrowserCtrl as fb'>
 
-    <li ng-repeat='sketch in fb.sketches'>
-        <a href='#'><i class='fa fa-folder-open-o'></i> {{sketch.label}} </a>
+    <li ng-repeat='sketch in fb.sketches' ng-class='fb.isClosed(sketch)'>
+        <a href='#'
+            ng-click='fb.toggleNode(sketch)'
+            ><i class='fa'></i> {{sketch.label}} </a>
         <ul>
             <li ng-repeat='file in sketch.files'>
                 <a href='#'

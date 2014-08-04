@@ -251,7 +251,7 @@ input[type=checkbox],
             padding-left: 0.5em;
             display: inline-block;
             border: 0px solid blue;
-            width: 100%;
+            width: 90%;
         }
         .tree > li a:hover {
             background-color: lightblue;
