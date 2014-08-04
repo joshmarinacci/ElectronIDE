@@ -44,6 +44,8 @@
             margin-right: -5px;
         }
 
+
+
         #editor {
             position: absolute;
             top: 50px;
@@ -51,6 +53,7 @@
             right: 300px;
             bottom: 50px;
         }
+
         #sidebar {
             position: absolute;
             top: 50px;
@@ -58,6 +61,12 @@
             width: 300px;
             bottom: 50px;
         }
+
+        #filebrowser.left-collapse {    display: none; }
+        #sidebar.right-collapse {       display: none; }
+        #editor.left-collapse {         left: 0px;   }
+        #editor.right-collapse {        right: 0px;  }
+
 
         #footer {
             position: absolute;
@@ -109,14 +118,14 @@
 
 <div id='toolbar' class='pane' ng-include="'toolbar.html'"></div>
 
-<div id='filebrowser' class='pane'>
+<div id='filebrowser' class='pane' ng-class='ctrl.getCollapseClasses()'>
     <div class='divider divider-left'></div>
     <div class='pane-title'>File Browser</div>
     <div ng-include="'filebrowser.html'"></div>
 </div>
 
 
-<div id='editor' class='pane'>
+<div id='editor' class='pane' ng-class='ctrl.getCollapseClasses()'>
     <div id='editor-title' class='pane-title'>
         <button ng-click='ctrl.openLibrary()' class='align-right action small'><i class='fa fa-plus'></i> Library</button>
         <span>MySketch</span>
@@ -129,7 +138,7 @@
     <div id='ace-editor'>some code to edit</div>
 </div>
 
-<div id='sidebar' class='pane' ng-controller='SidebarCtrl as sb'>
+<div id='sidebar' class='pane' ng-class='ctrl.getCollapseClasses()' ng-controller='SidebarCtrl as sb'>
     <div class='divider divider-right'></div>
     <div class='pane-title'>
         Sidebar
@@ -155,9 +164,13 @@
         status bar: debug messages from compiling.
         opens if errors are found. compiled, uploaded, etc.
     -->
+
+    <button ng-click='ctrl.collapseLeft()'><i class='fa fa-toggle-left'></i></button>
+    <button ng-click='ctrl.collapseRight()'><i class='fa fa-toggle-right'></i></button>
+
     {{ctrl.footerStatus}}
 
-    <button ng-click='ctrl.openDebugConsole()' class='align-right'>^</button>
+    <button ng-click='ctrl.openDebugConsole()' class='align-right'><i class='fa fa-toggle-up'></i></button>
 </div>
 
 <div ng-show='ctrl.debugVisible'          ng-include="'panels/debug_console.html'"   class='dialog'></div>
@@ -342,6 +355,21 @@ app
 
         });
 
+
+        this.lcollapse = false;
+        this.rcollapse = false;
+        this.getCollapseClasses = function() {
+            return {
+                'left-collapse' : this.lcollapse,
+                'right-collapse': this.rcollapse
+            }
+        };
+        this.collapseLeft = function() {
+            this.lcollapse = !this.lcollapse;
+        }
+        this.collapseRight = function() {
+            this.rcollapse = !this.rcollapse;
+        }
         setupDividers();
     }])
 
