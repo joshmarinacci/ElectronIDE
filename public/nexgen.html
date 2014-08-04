@@ -277,11 +277,25 @@ app
         this.footerStatus = '';
         this.compile = function() {
             self.debugOutput = [];
-            Sketch.compile(this.selectedBoard);
+            Sketch.compile(this.selectedBoard, function(res) {
+                console.log('status = ',res);
+                if(res.status == 'okay') {
+                    self.footerStatus = '';
+                } else {
+                    self.footerStatus = res.status;
+                }
+            });
             this.footerStatus = 'Compiling...';
         }
         this.run = function() {
-            Sketch.run(this.selectedPort,this.selectedBoard);
+            Sketch.run(this.selectedPort,this.selectedBoard, function(res) {
+                console.log('status = ',res);
+                if(res.status == 'okay') {
+                    self.footerStatus = '';
+                } else {
+                    self.footerStatus = res.status;
+                }
+            });
         }
 
         this.getActive = function(tab) {
@@ -318,7 +332,7 @@ app
         Monitor.on(function(e) {
             console.log(e.type,e.message);
             if(e.type == 'error') {
-                self.footerStatus = 'Error:'+e.message;
+                //self.footerStatus = 'Error:'+e.message;
                 self.debugOutput.push(e.message);
             }
 

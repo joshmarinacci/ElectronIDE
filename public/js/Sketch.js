@@ -2,7 +2,7 @@ app.factory('Sketch', ['$http',function($http) {
     return {
         title:'Sketch',
         status: 'success',
-        compile: function(board) {
+        compile: function(board, cb) {
             console.log("board = ",board);
             var self = this;
             var name = this.sketchName;
@@ -17,9 +17,10 @@ app.factory('Sketch', ['$http',function($http) {
             }).then(function(res) {
                 console.log("the response is",res.data.status);
                 self.status = res.data.status;
+                if(cb) cb(res.data);
             });
         },
-        run: function(serial, board) {
+        run: function(serial, board, cb) {
             console.log("running the sketch with serial port",serial);
             var name = this.sketchName;
             if(name.indexOf('.')>=0) {
@@ -30,10 +31,11 @@ app.factory('Sketch', ['$http',function($http) {
                 code: editor.getValue(),
                 board: board.id,
                 sketch:name,
-                port: serial,
+                port: serial.comName,
             }).then(function(res) {
                 console.log("the response is",res.data.status);
                 self.status = res.data.status;
+                if(cb) cb(res.data);
             });
         },
         loadSketch: function(file) {
