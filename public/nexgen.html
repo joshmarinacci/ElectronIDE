@@ -276,10 +276,12 @@ app
         }
         this.footerStatus = '';
         this.compile = function() {
+            self.debugOutput = [];
             Sketch.compile(this.selectedBoard);
+            this.footerStatus = 'Compiling...';
         }
         this.run = function() {
-            Sketch.run(this.selectedPort);
+            Sketch.run(this.selectedPort,this.selectedBoard);
         }
 
         this.getActive = function(tab) {
@@ -316,10 +318,14 @@ app
         Monitor.on(function(e) {
             console.log(e.type,e.message);
             if(e.type == 'error') {
-                console.log('set the status');
                 self.footerStatus = 'Error:'+e.message;
                 self.debugOutput.push(e.message);
             }
+
+            if(e.type == 'compile') {
+                self.debugOutput.push(e.message);
+            }
+
         });
 
         setupDividers();

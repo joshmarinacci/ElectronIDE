@@ -19,8 +19,22 @@ app.factory('Sketch', ['$http',function($http) {
                 self.status = res.data.status;
             });
         },
-        run: function(serial) {
+        run: function(serial, board) {
             console.log("running the sketch with serial port",serial);
+            var name = this.sketchName;
+            if(name.indexOf('.')>=0) {
+                name = name.substring(0,name.lastIndexOf('.'));
+            }
+            console.log('compiling the sketch',name);
+            $http.post('/run',{
+                code: editor.getValue(),
+                board: board.id,
+                sketch:name,
+                port: serial,
+            }).then(function(res) {
+                console.log("the response is",res.data.status);
+                self.status = res.data.status;
+            });
         },
         loadSketch: function(file) {
             console.log("loading the sketch",file);
