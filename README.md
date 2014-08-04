@@ -57,7 +57,7 @@ Don't worry. There's *tons* to do.
 If you want to help on the Node side, you can work on
 
 * support proper software reset on Unos (setting DTR high?)
-* figure out how to extract documentation from Arduino library source directly (doxygen?) see #56
+* figure out how to extract documentation from Arduino library source directly (doxygen?) see [#56](https://github.com/joshmarinacci/ElectronIDE/issues/56)
   for further discussion
 * look into integrating the embedded webkit from Atom.io (Atom-Shell)
 
