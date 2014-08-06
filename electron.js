@@ -265,8 +265,9 @@ app.post('/save',function(req,res) {
     });
 });
 
-app.get('/sketch/:name',function(req,res) {
-    sketches.getSketch(req.params.name, function(sketch) {
+app.get('/sketch',function(req,res) {
+    var path = req.query.id.substring(0,req.query.id.lastIndexOf('/'));
+    sketches.getSketch(path, function(sketch) {
         res.send(sketch);
         res.end();
     });

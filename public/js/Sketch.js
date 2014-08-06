@@ -2,6 +2,8 @@ app.factory('Sketch', ['$http',function($http) {
     return {
         title:'Sketch',
         status: 'success',
+        files:[],
+        listeners:[],
         compile: function(board, cb) {
             console.log("board = ",board);
             var self = this;
@@ -40,12 +42,14 @@ app.factory('Sketch', ['$http',function($http) {
         },
         loadSketch: function(file) {
             console.log("loading the sketch",file);
-            this.sketchName = file.label;
-            $http.get('/sketchfile?id='+file.id).then(function(res) {
-                editor.setValue(res.data.content);
-                editor.clearSelection();
-                editor.gotoLine(0);
-                console.log('selection = ', editor.getSelection().getRange());
+            var self = this;
+            $http.get('/sketch?id='+file.id).then(function(res) {
+                console.log("got result",res.data);
+                self.files = res.data.files;
+                self.sketchName = res.data.name;
+                self.listeners.forEach(function(l) {
+                    l();
+                })
             })
 
         }

@@ -128,11 +128,11 @@
 <div id='editor' class='pane' ng-class='ctrl.getCollapseClasses()'>
     <div id='editor-title' class='pane-title'>
         <button ng-click='ctrl.openLibrary()' class='align-right action small'><i class='fa fa-plus'></i> Library</button>
-        <span>MySketch</span>
+        <span>{{ctrl.sketchName}}</span>
     </div>
     <ul class='tab-group'>
-        <li ng-repeat='(id, file) in ctrl.files' ng-class='ctrl.getActive(id)'>
-            <a href='#' ng-click="ctrl.switchTab(id)">{{file.id}}</a>
+        <li ng-repeat='file in ctrl.files' ng-class='ctrl.getActive(file.filename)'>
+            <a href='#' ng-click="ctrl.switchTab(file.filename)">{{file.filename}}</a>
         </li>
     </ul>
     <div id='ace-editor'>some code to edit</div>
@@ -217,13 +217,12 @@ app
         this.boardSearchVisible = false;
         this.debugVisible = false;
 
-        this.files = {
-            'f1': { id:'MySketch.ino',content: 'contents of file 1' },
-            'f2': { id:'Api.h',       content: 'contents of file 2' },
-            'f3': { id:'Api.cpp',     content: 'contents of file 3' },
-        };
-        this.tab = 'f1';
-        this.editBuffer = this.files.f1.content;
+        this.files = [
+            { filename:'MySketch.ino',content: 'contents of file 1' },
+            { filename:'Api.h',       content: 'contents of file 2' },
+            { filename:'Api.cpp',     content: 'contents of file 3' },
+        ];
+        this.tab = 'MySketch.ino';
 
         this.ports = [];
         this.selectedPort = null;
@@ -323,7 +322,13 @@ app
         }
         this.switchTab = function(tab) {
             self.tab = tab;
-            self.editBuffer = this.files[tab].content;
+            this.files.forEach(function(file) {
+                if(file.filename == self.tab) {
+                    editor.setValue(file.content);
+                    editor.clearSelection();
+                    editor.gotoLine(0);
+                }
+            });
         }
 
         this.searchResults = [];
@@ -346,6 +351,7 @@ app
         })
 
         this.debugOutput = [];
+        this.sketchName = "No Sketch";
 
         Monitor.on(function(e) {
             console.log(e.type,e.message);
@@ -375,6 +381,15 @@ app
         this.collapseRight = function() {
             this.rcollapse = !this.rcollapse;
         }
+
+        var self = this;
+        Sketch.listeners.push(function() {
+            self.sketchName = Sketch.sketchName;
+            self.files = Sketch.files;
+            editor.setValue(self.files[0].content);
+            editor.clearSelection();
+            editor.gotoLine(0);
+        })
         setupDividers();
     }])
 
