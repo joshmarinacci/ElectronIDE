@@ -1,361 +1,399 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Electron Arduino IDE</title>
+<html ng-app='app'>
+<head>
+    <title>Electron IDE</title>
+    <link rel='stylesheet' href='font-awesome/css/font-awesome.css'>
+    <link rel='stylesheet' href='css/reset.css'>
+    <link rel='stylesheet' href='css/mockup.css'>
+    <link rel='stylesheet' href='css/serial_panel.css'>
+    <link rel='stylesheet' href='css/docs_panel.css'>
+    <link rel='stylesheet' href='css/toolbar.css'>
+    <link rel='stylesheet' href='css/filebrowser.css'>
+    <style type='text/css'>
+        #toolbar {
+            position: absolute;
+            top: 0px;
+            left:0px;
+            right: 0px;
+            height: 50px;
+        }
 
-    <!-- Bootstrap -->
-    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/edit.css" rel="stylesheet">
+        .divider {
+            border: 1px solid black;
+            margin:0;
+            padding:0;
+            cursor: col-resize;
 
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
+            position: absolute;
+            height: 100%;
+            top: 0px;
+            bottom: 0px;
+            width: 5px;
+        }
 
-  </head>
-  <body>
-
-
-<!-- new sketch dialog -->
-
-<div id='new-sketch-dialog' class="modal fade">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title">New Sketch</h4>
-      </div>
-      <div class="modal-body">
-          <form>
-              <div class='form-group'>
-                  <label>Sketch Name</label>
-                  <input type='text' class='form-control' value='NewSketch'>
-              </div>
-          </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-primary" id='create-sketch-button'>Create Sketch</button>
-      </div>
-    </div><!-- /.modal-content -->
-  </div><!-- /.modal-dialog -->
-</div><!-- /.modal -->
+        .divider-left {
+            border-width: 0px 0px 0px 0px;
+            right: 0px;
+            padding-left: 5px;
+            margin-left: -5px;
+        }
+        .divider-right {
+            border-width: 0px 0px 0px 0px;
+            left: 0px;
+            padding-right: 5px;
+            margin-right: -5px;
+        }
 
 
 
-<!-- rename sketch dialog -->
-<div id='rename-sketch-dialog' class="modal fade">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title">Rename Sketch</h4>
-      </div>
-      <div class="modal-body">
-          <form>
-              <div class='form-group'>
-                  <label>Sketch Name</label>
-                  <input type='hidden' class='form-control old-name' value='NewSketch'>
-                  <input type='text' class='form-control new-name' value='NewSketch'>
-              </div>
-          </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-primary" id='rename-sketch-button'>Create Sketch</button>
-      </div>
-    </div><!-- /.modal-content -->
-  </div><!-- /.modal-dialog -->
-</div><!-- /.modal -->
+        #editor {
+            position: absolute;
+            top: 50px;
+            left:200px;
+            right: 300px;
+            bottom: 50px;
+        }
 
-<nav class="navbar navbar-default navbar-fixed-top " role="navigation">
-  <div class="container-fluid">
+        #sidebar {
+            position: absolute;
+            top: 50px;
+            right:0px;
+            width: 300px;
+            bottom: 50px;
+        }
 
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <span class="navbar-brand">Electron</span>
-    </div>
+        #filebrowser.left-collapse {    display: none; }
+        #sidebar.right-collapse {       display: none; }
+        #editor.left-collapse {         left: 0px;   }
+        #editor.right-collapse {        right: 0px;  }
 
 
-    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-        <form class="navbar-form navbar-left" role="search">
-            <div class='form-group'>
-                <input type='text' class='form-control' placeholder='search help' id='search-help'>
-                <button id='search-button' class='btn btn-success'>search</button>
-            </div>
-        </form>
-        <div class="list-group" id='search-results'>
-            <a href="#" class="list-group-item active">
-              <h4 class="list-group-item-heading">library name</h4>
-              <p class="list-group-item-text">some text about the library</p>
-            </a>
-            <a href="#" class="list-group-item active">
-              <h4 class="list-group-item-heading">List group item heading</h4>
-              <p class="list-group-item-text">...</p>
-            </a>
-            <a href="#" class="list-group-item active">
-              <h4 class="list-group-item-heading">List group item heading</h4>
-              <p class="list-group-item-text">...</p>
-            </a>
-            <a href="#" class="list-group-item active">
-              <h4 class="list-group-item-heading">List group item heading</h4>
-              <p class="list-group-item-text">...</p>
-            </a>
-        </div>
+        #footer {
+            position: absolute;
+            height: 50px;
+            left: 0px;
+            right: 0px;
+            bottom: 0px;
+        }
 
-        <form class="navbar-form navbar-right" role="search">
+        #ace-editor {
+            position: absolute;
+            left:0;
+            right:0;
+            border: 1px solid darkgray;
+            top: 5.8em;
+            bottom:0;
+            border-width: 1px 1px 1px 0px;
+            font-family: "Source Code Pro", monospace;
+        }
 
 
-            <div class="btn-group" id='port-selector'>
-              <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                 port: <b class='data'>NONE</b> <span class="caret"></span>
-              </button>
-              <ul class="dropdown-menu" role="menu">
-                <li><a href="#">Acti</a></li>
-                <li><a href="#">Another action</a></li>
-                <li><a href="#">Something else here</a></li>
-                <li class="divider"></li>
-                <li><a href="#">edit...</a></li>
-              </ul>
-            </div>
-
-            <div class="btn-group" id='board-selector'>
-              <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                board: <b class='data'>asdf</b> <span class="caret"></span>
-              </button>
-              <ul class="dropdown-menu" role="menu">
-                <li><a href="#">Acti</a></li>
-                <li><a href="#">Another action</a></li>
-                <li><a href="#">Something else here</a></li>
-                <li class="divider"></li>
-                <li><a href="#">edit...</a></li>
-              </ul>
-            </div>
-
-            <div class='btn-group'>
-                <button id='compile' type="button" class="btn btn-primary">compile</button>
-                <button id='run' type="button" class="btn btn-success">run</button>
-            </div>
-        </form>
-
-    </div>
-  </div>
-</nav>
+        .search-results {
+            overflow: auto;
+            margin: 0;
+            padding: 0;
+            width: 40em;
+            height: 240px;
+        }
+        .search-results li {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            background-color: lightgray;
+            border: 1px solid gray;
+            border-width: 1px 1px 0px 1px;
+            padding: 0.5em;
+        }
+        .search-results h4, .search-results p {
+            margin:0;
+            padding:0;
+        }
 
 
-<div class='container-fluid' id='mainarea'>
-    <div class='row'>
-        <div class='col-md-2 fixed-pane left-pane'>
-            <h4 id='sketch-name'>foo</h4>
-            <div id='sketch-info'></div>
-            <h3>Sketches</h3>
-            <div id='sketch-picker'></div>
-            <div class='row'>
-                <div class='col-md-12' id='sketch-buttons'>
-                    <button class='btn btn-default' id='new-sketch-button'>new</button>
-                    <button class='btn btn-default' id='edit-sketches-button'>edit</button>
-                    <button class='btn btn-default' id='save-sketch-button'>save</button>
-                </div>
 
-            </div>
-        </div>
-        <div class='col-md-6 fixed-pane center-pane'>
-            <div id='ace-editor'>asdfas</div>
-        </div>
-        <div class='col-md-4 fixed-pane right-pane'>
 
-            <ul class="nav nav-tabs">
-                <li class="active"><a href="#console-pane" data-toggle="tab">Debug</a></li>
-                <li><a href="#serial-pane" data-toggle="tab">Serial</a></li>
-                <li><a href="#docs-pane" data-toggle="tab">Docs</a></li>
-                <li><a href="#board-info-pane" data-toggle="tab">Board Info</a></li>
-            </ul>
+    </style>
+</head>
+<body ng-controller='MainCtrl as ctrl'>
 
-            <div class='tab-content'>
-                <div id='console-pane' class='tab-pane active'>
-                    <div id='console'>this is the console</div>
-                    <div id='console-tools'>
-                        <button class='btn btn-default btn-xs' id='clear-debug-pane'>clear</button>
-                    </div>
-                </div>
-                <div id='docs-pane' class='tab-pane'>
-                    some docs go here
-                </div>
-                <div id='board-info-pane' class='tab-pane'>
-                    board info goes here
-                </div>
-                <div id='serial-pane' class='tab-pane'>
-                    <div class='row'>
-                        <div class='col-xs-12'>
-                            <button type='button' class='btn btn-default dropdown-toggle btn-xs' id='serial-selection-button'  data-toggle="dropdown">
-                                <span class='data'>9600</span> baud <span class="caret"></span>
-                            </button>
-                            <ul class='dropdown-menu' role='menu' id='serial-selection-menu'></ul>
-                            <button class='btn btn-default btn-xs' id='open-serial-button'>open</button>
-                            <button class='btn btn-default btn-xs' id='clear-serial-pane'>clear</button>
-                        </div>
-                    </div>
-                    <div class='row'>
-                        <div class='col-xs-12'>
-                            <input type='text' class='input-control' id='serial-input-text'></input>
-                            <button class='btn btn-default' id='serial-send-button'>send</button>
-                        </div>
-                    </div>
+<div id='toolbar' class='pane' ng-include="'toolbar.html'"></div>
 
-                    <pre id='serial'></pre>
-                </div>
-            </div>
-        </div>
-    </div>
+<div id='filebrowser' class='pane' ng-class='ctrl.getCollapseClasses()'>
+    <div class='divider divider-left'></div>
+    <div class='pane-title'>File Browser</div>
+    <div ng-include="'filebrowser.html'"></div>
 </div>
 
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="jquery.js"></script>
-    <script src="mustache.js"></script>
-    <script src='./ace-builds-master/src-noconflict/ace.js' type='text/javascript' charset='utf-8'></script>
-    <script src="./ace-builds-master/src-noconflict/ext-language_tools.js"></script>
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="bootstrap/js/bootstrap.min.js"></script>
-<script src="js/electronIDE.js"></script>
-  <script>
-      $(document).ready(function(){
-          ElectronIDE.init();
-      });
-  </script>
-  </body>
 
-
-
-<script id='board-selector-template' type='text/mustache'>
-  {{#.}}
-    <li><a href='#' data-id='{{id}}'><b>{{name}}</b> : {{mcu}}</a></li>
-  {{/.}}
-</script>
-
-<script id='port-selector-template' type='text/mustache'>
-    {{#.}}
-      <li><a href='#' data-name='{{comName}}'><b>{{comName}}</b> : {{comName}}</a></li>
-    {{/.}}
-    <li><a href='#' data-name='NONE'>None / Serial not used</li>
-    <li><a href='#' data-name='RESCAN'>Rescan</li>
-</script>
-
-<script id='docs-template' type='text/mustache'>
-    <h3>{{name}}</h3>
-    <p><b>Platforms</b> {{#platforms}} {{.}} {{/platforms}}
-    {{#docs}}
-    <div>
-      <h4>{{type}}:{{name}}</h4>
-
-      <h5>constructors</h5>
-      {{#constructors}}
-      <h6>{{.}}</h6>
-      {{/constructors}}
-
-      <h5>methods</h5>
-      {{#methods}}
-      <h6>{{.}}</h6>
-      {{/methods}}
-
+<div id='editor' class='pane' ng-class='ctrl.getCollapseClasses()'>
+    <div id='editor-title' class='pane-title'>
+        <button ng-click='ctrl.openLibrary()' class='align-right action small'><i class='fa fa-plus'></i> Library</button>
+        <span>MySketch</span>
     </div>
-    {{/docs}}
-</script>
-
-<script id='sketch-template' type='text/mustache'>
-    <div class='list-group'>
-        {{#.}}
-            <a href='#' class='list-group-item' data-name="{{.}}">{{.}}
-                <button data-name='{{.}}' class='btn btn-default btn-xs pull-right hidden delete-button'
-                    ><span class='glyphicon glyphicon-remove'></span></button>
-                <button data-name='{{.}}' class='btn btn-default btn-xs pull-right hidden edit-button'
-                    ><span class='glyphicon glyphicon-pencil'></span></button>
-            </a>
-        {{/.}}
-    </div>
-</script>
-
-<script id='board-info-template' type='text/mustache'>
-    <h3>{{name}}</h3>
-
-    <dl class='dl-horizontal'>
-        <dt>vendor</dt><dd>{{vendor}}</dd>
-        <dt>homepage</dt><dd><a href='{{homepage}}' target='_blank'>homepage</a></dd>
-        <dt>platform</dt><dd>{{build.core}}</dd>
-        <dt>mcu</dt><dd>{{build.mcu}}</dd>
-        <dt>operating voltage</dt><dd>{{info.power.operating}}V</dd>
-        <dt>input voltage</dt><dd>{{info.power.inputmin}}V - {{info.power.inputmax}}V</dd>
-        <dt>flash memory</dt><dd>{{info.memory.flash}} KB</dd>
-        <dt>sram</dt><dd>{{info.memory.sram}} KB</dd>
-        <dt>eeprom</dt><dd>{{info.memory.eeprom}} KB</dd>
-        <dt>digital pins</dt><dd>{{info.io.digital}}</dd>
-        <dt>analog pins</dt><dd>{{info.io.analogin}}</dd>
-        <dt>pwm pins</dt><dd>{{info.io.pwm}}</dd>
-        <dt>clock speed</dt><dd>{{info.clockspeed}} MHz</dd>
-    </dl>
-
-    <!--
-    <h3>PINS</h3>
-    <dl class='dl-horizontal'>
-    {{#pins}}
-      <dt>{{name}}</dt>
-      <dd>{{desc}}, {{type}} <b>{{altname}} {{alttype}}</b></dd>
-    {{/pins}}
-    -->
-</script>
-
-<script id='sketch-info-template' type='text/mustache'>
-    <h5>libraries</h5>
-    <ul class='libraries'>
-        {{#libraries}}
-            <li><a href='#' data-id='{{.}}'>{{.}}</a></li>
-        {{/libraries}}
+    <ul class='tab-group'>
+        <li ng-repeat='(id, file) in ctrl.files' ng-class='ctrl.getActive(id)'>
+            <a href='#' ng-click="ctrl.switchTab(id)">{{file.id}}</a>
+        </li>
     </ul>
+    <div id='ace-editor'>some code to edit</div>
+</div>
+
+<div id='sidebar' class='pane' ng-class='ctrl.getCollapseClasses()' ng-controller='SidebarCtrl as sb'>
+    <div class='divider divider-right'></div>
+    <div class='pane-title'>
+        Sidebar
+    </div>
+    <ul class='tab-group'>
+        <li><a ng-click="sb.setTab('console')">Console</a></li>
+        <li class='active'><a ng-click="sb.setTab('docs')">Docs</a></li>
+    </ul>
+    <ul class='tab-content-group'>
+        <li ng-show="sb.showConsole">
+            <div id='serial-console'>
+                <div ng-include="'serial_panel.html'"></div>
+            </div>
+        </li>
+        <li ng-show="sb.showDocs">
+            <div ng-include="'docs_panel.html'"></div>
+        </li>
+    </ul>
+</div>
+
+<div id='footer' class='pane'>
+    <!--
+        status bar: debug messages from compiling.
+        opens if errors are found. compiled, uploaded, etc.
+    -->
+
+    <button ng-click='ctrl.collapseLeft()'><i class='fa fa-toggle-left'></i></button>
+    <button ng-click='ctrl.collapseRight()'><i class='fa fa-toggle-right'></i></button>
+
+    {{ctrl.footerStatus}}
+
+    <button ng-click='ctrl.openDebugConsole()' class='align-right'><i class='fa fa-toggle-up'></i></button>
+</div>
+
+<div ng-show='ctrl.debugVisible'          ng-include="'panels/debug_console.html'"   class='dialog'></div>
+
+<div ng-show='ctrl.settingsVisible'      ng-include="'settings_dialog.html'" class='dialog'></div>
+
+<div ng-show='ctrl.librarySearchVisible' ng-include="'library_dialog.html'"  class='dialog'></div>
+
+<div ng-show='ctrl.boardSearchVisible'   ng-include="'board_dialog.html'"    class='dialog'></div>
+
+<script src="jquery.js"></script>
+<script src='js/dividers.js'></script>
+
+<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular.js'></script>
+<script src='./ace-builds-master/src-noconflict/ace.js' type='text/javascript' charset='utf-8'></script>
+<script src="./ace-builds-master/src-noconflict/ext-language_tools.js"></script>
+<script src='js/app.js'></script>
+<script src='js/Sketch.js'></script>
+<script src='js/filebrowser.js'></script>
+<script src='js/Monitor.js'></script>
+<script type='text/javascript'>
+var editor;
+
+var editorInit = function() {
+    ace.require("ace/ext/language_tools");
+    editor = ace.edit('ace-editor');
+    editor.setOptions({
+        enableBasicAutocompletion: true
+    });
+
+    editor.getSession().setMode('ace/mode/c_cpp');
+    editor.setTheme('ace/theme/solarized_light');
+    editor.getSession().setUseWrapMode(true);
+
+};
+
+$(document).ready(editorInit);
+
+app
+    .controller('MainCtrl', ['Sketch','$http', 'Monitor',function(Sketch,$http,Monitor) {
+        var self = this;
+        this.settingsVisible = false;
+        this.librarySearchVisible = false;
+        this.boardSearchVisible = false;
+        this.debugVisible = false;
+
+        this.files = {
+            'f1': { id:'MySketch.ino',content: 'contents of file 1' },
+            'f2': { id:'Api.h',       content: 'contents of file 2' },
+            'f3': { id:'Api.cpp',     content: 'contents of file 3' },
+        };
+        this.tab = 'f1';
+        this.editBuffer = this.files.f1.content;
+
+        this.ports = [];
+        this.selectedPort = null;
+
+        this.boards = [
+            {id:'uno', name:'Uno', vendor:'Arduino CC'},
+            {id:'leonardo',name:'Leonardo', vendor:'Arduino CC'},
+            {id:'xadow',name:'Xadow', vendor: 'Seeedstudio LLC'},
+            {id:'@more',name:'More...', vendor: ''},
+        ];
+
+        this.selectedBoard = this.boards[0];
+        this.boardQuery = null;
+        this.boardResults = [];
+        this.boardResultsVisible = false;
+
+        this.searchBoard = function() {
+            var q = this.boardQuery.toLowerCase();
+            if(q.length < 2) return;
+            this.boardResultsVisible = true;
+            $http.get('/boards').then(function(res) {
+                self.boardResults = [];
+                res.data.forEach(function(board) {
+                    if(board.id.toLowerCase().indexOf(q) >= 0
+                     || board.name.toLowerCase().indexOf(q) >= 0)
+                     {
+                         self.boardResults.push(board);
+                     }
+                });
+            });
+        };
+        this.selectBoard = function(board) {
+            this.boards.push(board);
+            this.selectedBoard = board;
+        }
+
+        this.choseBoard = function() {
+            if(this.selectedBoard.id == '@more') {
+                this.boardSearchVisible = true;
+            }
+        }
+        this.closeBoardSearch = function() {
+            this.boardSearchVisible = false;
+        }
+
+        this.openSettings = function() {
+            self.settingsVisible = true;
+        }
+        this.closeSettings = function() {
+            self.settingsVisible = false;
+        }
+        this.openLibrary = function() {
+            self.librarySearchVisible = true;
+        }
+        this.closeLibrary = function() {
+            self.librarySearchVisible = false;
+        }
+        this.openDebugConsole = function() {
+            self.debugVisible = true;
+        }
+        this.closeDebugConsole = function() {
+            self.debugVisible = false;
+        }
+        this.footerStatus = '';
+        this.compile = function() {
+            self.debugOutput = [];
+            Sketch.compile(this.selectedBoard, function(res) {
+                console.log('status = ',res);
+                if(res.status == 'okay') {
+                    self.footerStatus = '';
+                } else {
+                    self.footerStatus = res.status;
+                }
+            });
+            this.footerStatus = 'Compiling...';
+        }
+        this.run = function() {
+            Sketch.run(this.selectedPort,this.selectedBoard, function(res) {
+                console.log('status = ',res);
+                if(res.status == 'okay') {
+                    self.footerStatus = '';
+                } else {
+                    self.footerStatus = res.status;
+                }
+            });
+        }
+
+        this.getActive = function(tab) {
+            return {
+                active: (tab==self.tab)
+            }
+        }
+        this.switchTab = function(tab) {
+            self.tab = tab;
+            self.editBuffer = this.files[tab].content;
+        }
+
+        this.searchResults = [];
+        this.searchQuery = null;
+        this.searchLibrary = function() {
+            var q = this.searchQuery.toLowerCase();
+            if(q.length < 2) return;
+            $http.get('/search?query='+q).then(function(res) {
+                self.searchResults = res.data;
+            });
+        };
+
+        this.addLibrary = function(lib) {
+            editor.gotoLine(0);
+            editor.insert('#include <'+lib.name+'.h>\n');
+        }
+
+        $http.get('/ports').then(function(res) {
+            self.ports = res.data;
+        })
+
+        this.debugOutput = [];
+
+        Monitor.on(function(e) {
+            console.log(e.type,e.message);
+            if(e.type == 'error') {
+                //self.footerStatus = 'Error:'+e.message;
+                self.debugOutput.push(e.message);
+            }
+
+            if(e.type == 'compile') {
+                self.debugOutput.push(e.message);
+            }
+
+        });
+
+
+        this.lcollapse = false;
+        this.rcollapse = false;
+        this.getCollapseClasses = function() {
+            return {
+                'left-collapse' : this.lcollapse,
+                'right-collapse': this.rcollapse
+            }
+        };
+        this.collapseLeft = function() {
+            this.lcollapse = !this.lcollapse;
+        }
+        this.collapseRight = function() {
+            this.rcollapse = !this.rcollapse;
+        }
+        setupDividers();
+    }])
+
+
+    .controller('SidebarCtrl', ['$http', function($http){
+        this.tab = 'console';
+        this.showConsole = true;
+        this.showDocs = false;
+        this.setTab = function(tab) {
+            console.log('swapping tabs',this.tab);
+            this.tab = tab;
+            this.showConsole = (this.tab == 'console');
+            this.showDocs = (this.tab == 'docs');
+        }
+    }])
+
+
+
+
+    ;
+
+
+
 </script>
 
-<script id='library-doc-template' type='text/mustache'>
-    {{#classes}}
-        class <b>{{name}}</b>
-        <h5>constants</h5>
-        <ul>
-        {{#constants}}
-            <li>{{name}}::{{.}}</li>
-        {{/constants}}
-        </ul>
-        <h5>constructors</h5>
-        {{#constructors}}
-            <p><b>{{name}}</b> ( <i>{{args}}</i> )</p>
-        {{/constructors}}
-        <h5>methods</h5>
-        {{#methods}}
-            <p>{{ret}} <b>{{name}}</b> ( <i>{{args}}</i>) </p>
-        {{/methods}}
-    {{/classes}}
-</script>
-
-<script id='library-template' type='text/mustache'>
-    {{#.}}
-        <a href="#" class="list-group-item" data-id={{id}} data-name={{name}}>
-          <h4 class="list-group-item-heading">{{name}}</h4>
-          <p class="list-group-item-text">{{description}}</p>
-        </a>
-    {{/.}}
-</script>
-
-
-<script id='serial-selection-menu-template' type='text/mustache'>
-    {{#.}}
-        <li role="presentation"><a role="menuitem" tabindex="-1" href="#" data-speed='{{.}}'>{{.}}</a></li>
-    {{/.}}
-</script>
-
+</body>
 </html>

@@ -144,19 +144,22 @@ function exec(cmd, cb, debug) {
         cmd[0],
         cmd.slice(1),
         function(error, stdout, stderr) {
-        if(error) {
-            console.log(error);
-            console.log("code = ",error.code);
-            console.log(cmd.join(" "));
-            console.log(stdout);
-            console.log(stderr);
-            var err = new Error("there was a problem running " + cmd.join(" "));
-            err.cmd = cmd;
-            err.output = stdout + stderr;
-            if(debug) debug(err);
+            if(error) {
+                console.log(error);
+                console.log("code = ",error.code);
+                console.log(cmd.join(" "));
+                console.log(stdout);
+                console.log(stderr);
+                var err = new Error("there was a problem running " + cmd.join(" "));
+                err.cmd = cmd;
+                err.output = stdout + stderr;
+                if(debug) debug(err);
+                cb(err);
+                return;
+            }
+            if(cb) cb();
         }
-        if(cb) cb();
-    });
+    );
 }
 
 function linkFile(options, file, outdir, cb, debug) {
@@ -231,8 +234,9 @@ function processList(list, cb, publish) {
     }
     var item = list.shift();
     try {
-        item(function() {
+        item(function(err) {
             console.log("--------------------");
+            if(err) return cb(err);
             processList(list,cb, publish);
         });
     } catch(err) {
@@ -366,6 +370,7 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
                     })
                 ;
             });
+
             compileFiles(options, outdir, includepaths, cfiles, debug,cb);
         },cb);
     });
@@ -433,14 +438,7 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
         debug("building .HEX file");
         buildHexFile(options,outdir,cb, debug);
     });
-    processList(tasks, function() {
-        if(errorHit) {
-            var err = new Error("ERROR DURING COMPILE! STOP!");
-            finalcb(err);
-        } else {
-            finalcb(null);
-        }
-    }, publish);
+    processList(tasks, finalcb, publish);
 }
 
 function compileFiles(options, outdir, includepaths, cfiles,debug, cb) {

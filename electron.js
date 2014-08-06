@@ -97,9 +97,10 @@ function doCompile(code,board,sketch, cb) {
     OPTIONS.platform = platform.getPlatform(OPTIONS.device);
     OPTIONS.platform.installIfNeeded(function() {
         OPTIONS.name = sketch;
-        compile.compile(sketchpath,outpath,OPTIONS, publishEvent, path.join(OPTIONS.platform.getUserSketchesDir(), sketch), cb);
+        compile.compile(sketchpath,outpath,OPTIONS, publishEvent,
+                path.join(OPTIONS.platform.getUserSketchesDir(), sketch), cb);
     }, function(per) {
-        //console.log("percentage = ",per);
+        console.log("percentage = ",per);
     });
 }
 
@@ -111,7 +112,13 @@ app.post('/compile',function(req,res) {
         return;
     }
     try {
-        doCompile(req.body.code, req.body.board, req.body.sketch, function() {
+        doCompile(req.body.code, req.body.board, req.body.sketch, function(err) {
+            console.log("the error was",err);
+            if(err) {
+                res.json({status:'error',message:err})
+                res.end();
+                return;
+            }
             res.send(JSON.stringify({status:'okay'}));
             res.end();
         });
@@ -128,12 +135,12 @@ app.post('/compile',function(req,res) {
 app.post('/run',function(req,res) {
     console.log("body = ",req.body.code);
     if(!req.body.board) {
-        res.send(JSON.stringify({status:'missing board name'}));
+        res.send(JSON.stringify({status:'error', message:'missing board name'}));
         res.end();
         return;
     }
     if(!req.body.port) {
-        res.send(JSON.stringify({status:'missing port name'}));
+        res.send(JSON.stringify({status:'error', message:'missing port name'}));
         res.end();
         return;
     }
