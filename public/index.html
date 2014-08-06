@@ -296,6 +296,9 @@ app
                     self.footerStatus = '';
                 } else {
                     self.footerStatus = res.status;
+                    if(res.message) {
+                        self.footerStatus = res.status + ' ' + res.message.output;
+                    }
                 }
             });
             this.footerStatus = 'Compiling...';
