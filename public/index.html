@@ -304,6 +304,8 @@ app
             this.footerStatus = 'Compiling...';
         }
         this.run = function() {
+            self.debugOutput = [];
+            this.footerStatus = 'Running...';
             Sketch.run(this.selectedPort,this.selectedBoard, function(res) {
                 console.log('status = ',res);
                 if(res.status == 'okay') {
