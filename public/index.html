@@ -116,7 +116,7 @@
 </head>
 <body ng-controller='MainCtrl as ctrl'>
 
-<div id='toolbar' class='pane' ng-include="'toolbar.html'"></div>
+<div id='toolbar' class='pane' ng-include="'panels/toolbar.html'"></div>
 
 <div id='filebrowser' class='pane' ng-class='ctrl.getCollapseClasses()'>
     <div class='divider divider-left'></div>
@@ -345,10 +345,26 @@ app
             editor.gotoLine(0);
             editor.insert('#include <'+lib.name+'.h>\n');
         }
+        function rescan() {
+            $http.get('/ports').then(function(res) {
+                self.ports = res.data;
+                self.ports.unshift({
+                    comName:'None',
+                })
+                self.ports.push({
+                    comName:'Rescan',
+                });
+                self.selectedPort = self.ports[0];
+            });
+        }
 
-        $http.get('/ports').then(function(res) {
-            self.ports = res.data;
-        })
+        rescan();
+
+        this.portChanged = function() {
+            if(self.selectedPort.comName == 'Rescan') {
+                rescan();
+            }
+        }
 
         this.debugOutput = [];
         this.sketchName = "No Sketch";

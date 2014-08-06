@@ -15,7 +15,9 @@
     <div class='select'>
         <select
             ng-model='ctrl.selectedPort'
-            ng-options='p.comName for p in ctrl.ports'></select>
+            ng-options='p.comName for p in ctrl.ports'
+            ng-change='ctrl.portChanged()'
+            ></select>
     </div>
 </div>
 
