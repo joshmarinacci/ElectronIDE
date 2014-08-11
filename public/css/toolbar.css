@@ -1,8 +1,0 @@
-#toolbar select {
-    border: 0px solid red;
-    width: 10em;
-}
-
-#toolbar *:focus {
-    outline: 0;
-}
