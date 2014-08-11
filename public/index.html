@@ -2,176 +2,87 @@
 <html ng-app='app'>
 <head>
     <title>Electron IDE</title>
+    <link rel="stylesheet" href="uikit/css/uikit.gradient.css" />
+    <!--
     <link rel='stylesheet' href='font-awesome/css/font-awesome.css'>
-    <link rel='stylesheet' href='css/reset.css'>
-    <link rel='stylesheet' href='css/mockup.css'>
+-->
+    <!--
     <link rel='stylesheet' href='css/serial_panel.css'>
     <link rel='stylesheet' href='css/docs_panel.css'>
     <link rel='stylesheet' href='css/toolbar.css'>
     <link rel='stylesheet' href='css/filebrowser.css'>
-    <style type='text/css'>
-        #toolbar {
-            position: absolute;
-            top: 0px;
-            left:0px;
-            right: 0px;
-            height: 50px;
-        }
+-->
+<!--
+    <link rel='stylesheet' href='general/general.css'>
+-->
 
-        .divider {
-            border: 1px solid black;
-            margin:0;
-            padding:0;
-            cursor: col-resize;
-
-            position: absolute;
-            height: 100%;
-            top: 0px;
-            bottom: 0px;
-            width: 5px;
-        }
-
-        .divider-left {
-            border-width: 0px 0px 0px 0px;
-            right: 0px;
-            padding-left: 5px;
-            margin-left: -5px;
-        }
-        .divider-right {
-            border-width: 0px 0px 0px 0px;
-            left: 0px;
-            padding-right: 5px;
-            margin-right: -5px;
-        }
-
-
-
-        #editor {
-            position: absolute;
-            top: 50px;
-            left:200px;
-            right: 300px;
-            bottom: 50px;
-        }
-
-        #sidebar {
-            position: absolute;
-            top: 50px;
-            right:0px;
-            width: 300px;
-            bottom: 50px;
-        }
-
-        #filebrowser.left-collapse {    display: none; }
-        #sidebar.right-collapse {       display: none; }
-        #editor.left-collapse {         left: 0px   !important; }
-        #editor.right-collapse {        right: 0px  !important; }
-
-
-        #footer {
-            position: absolute;
-            height: 50px;
-            left: 0px;
-            right: 0px;
-            bottom: 0px;
-        }
-
-        #ace-editor {
-            position: absolute;
-            left:0;
-            right:0;
-            border: 1px solid darkgray;
-            top: 5.8em;
-            bottom:0;
-            border-width: 1px 1px 1px 0px;
-            font-family: "Source Code Pro", monospace;
-        }
-
-
-        .search-results {
-            overflow: auto;
-            margin: 0;
-            padding: 0;
-            width: 40em;
-            height: 240px;
-        }
-        .search-results li {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            background-color: lightgray;
-            border: 1px solid gray;
-            border-width: 1px 1px 0px 1px;
-            padding: 0.5em;
-        }
-        .search-results h4, .search-results p {
-            margin:0;
-            padding:0;
-        }
-
-
-
-
-    </style>
+    <script src="js/jquery.js"></script>
+    <script src="uikit/js/uikit.min.js"></script>
 </head>
 <body ng-controller='MainCtrl as ctrl'>
 
-<div id='toolbar' class='pane' ng-include="'panels/toolbar.html'"></div>
+<div class='vbox'>
 
-<div id='filebrowser' class='pane' ng-class='ctrl.getCollapseClasses()'>
-    <div class='divider divider-left'></div>
-    <div class='pane-title'>File Browser</div>
-    <div ng-include="'filebrowser.html'"></div>
-</div>
+    <div id='toolbar' class='top toolbar uk-form' ng-include="'toolbar/toolbar.html'"></div>
 
 
-<div id='editor' class='pane' ng-class='ctrl.getCollapseClasses()'>
-    <div id='editor-title' class='pane-title'>
-        <button ng-click='ctrl.openLibrary()' class='align-right action small'><i class='fa fa-plus'></i> Library</button>
-        <span>{{ctrl.sketchName}}</span>
-    </div>
-    <ul class='tab-group'>
-        <li ng-repeat='file in ctrl.files' ng-class='ctrl.getActive(file.filename)'>
-            <a href='#' ng-click="ctrl.switchTab(file.filename)">{{file.filename}}</a>
-        </li>
-    </ul>
-    <div id='ace-editor'>some code to edit</div>
-</div>
+    <div class='middle grow'>
+        <div class='hbox'>
 
-<div id='sidebar' class='pane' ng-class='ctrl.getCollapseClasses()' ng-controller='SidebarCtrl as sb'>
-    <div class='divider divider-right'></div>
-    <div class='pane-title'>
-        Sidebar
-    </div>
-    <ul class='tab-group'>
-        <li><a ng-click="sb.setTab('console')">Console</a></li>
-        <li class='active'><a ng-click="sb.setTab('docs')">Docs</a></li>
-    </ul>
-    <ul class='tab-content-group'>
-        <li ng-show="sb.showConsole">
-            <div id='serial-console'>
-                <div ng-include="'serial_panel.html'"></div>
+            <div id='filebrowser' class='left' ng-class='ctrl.getCollapseClasses()'>
+                <div class='divider divider-left'></div>
+                <div class='pane-title'>File Browser</div>
+                <div ng-include="'filebrowser.html'"></div>
             </div>
-        </li>
-        <li ng-show="sb.showDocs">
-            <div ng-include="'docs_panel.html'"></div>
-        </li>
-    </ul>
+
+            <div id='editor' class='content grow' ng-class='ctrl.getCollapseClasses()'>
+                <div id='editor-title' class='pane-title'>
+                    <button ng-click='ctrl.openLibrary()' class='align-right action small'><i class='fa fa-plus'></i> Library</button>
+                    <span>{{ctrl.sketchName}}</span>
+                </div>
+                <ul class='tab-group'>
+                    <li ng-repeat='file in ctrl.files' ng-class='ctrl.getActive(file.filename)'>
+                        <a href='#' ng-click="ctrl.switchTab(file.filename)">{{file.filename}}</a>
+                    </li>
+                </ul>
+                <div id='ace-editor'>some code to edit</div>
+            </div>
+
+            <div id='sidebar' class='right' ng-class='ctrl.getCollapseClasses()' ng-controller='SidebarCtrl as sb'>
+                <div class='divider divider-right'></div>
+                <div class='pane-title'>
+                    Sidebar
+                </div>
+                <ul class='tab-group'>
+                    <li><a ng-click="sb.setTab('console')">Console</a></li>
+                    <li class='active'><a ng-click="sb.setTab('docs')">Docs</a></li>
+                </ul>
+                <ul class='tab-content-group'>
+                    <li ng-show="sb.showConsole">
+                        <div id='serial-console'>
+                            <div ng-include="'serial_panel.html'"></div>
+                        </div>
+                    </li>
+                    <li ng-show="sb.showDocs">
+                        <div ng-include="'docs_panel.html'"></div>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+
+    <div id='footer' class='bottom toolbar'>
+        <button ng-click='ctrl.collapseLeft()'><i class='fa fa-toggle-left'></i></button>
+        <button ng-click='ctrl.collapseRight()'><i class='fa fa-toggle-right'></i></button>
+        {{ctrl.footerStatus}}
+        <button ng-click='ctrl.openDebugConsole()' class='align-right'><i class='fa fa-toggle-up'></i></button>
+    </div>
+
+
+
 </div>
 
-<div id='footer' class='pane'>
-    <!--
-        status bar: debug messages from compiling.
-        opens if errors are found. compiled, uploaded, etc.
-    -->
-
-    <button ng-click='ctrl.collapseLeft()'><i class='fa fa-toggle-left'></i></button>
-    <button ng-click='ctrl.collapseRight()'><i class='fa fa-toggle-right'></i></button>
-
-    {{ctrl.footerStatus}}
-
-    <button ng-click='ctrl.openDebugConsole()' class='align-right'><i class='fa fa-toggle-up'></i></button>
-</div>
 
 <div ng-show='ctrl.debugVisible'          ng-include="'panels/debug_console.html'"   class='dialog'></div>
 
@@ -207,7 +118,7 @@ var editorInit = function() {
 
 };
 
-$(document).ready(editorInit);
+//$(document).ready(editorInit);
 
 app
     .controller('MainCtrl', ['Sketch','$http', 'Monitor',function(Sketch,$http,Monitor) {
@@ -430,6 +341,98 @@ app
 
 
 </script>
+<style>
+
+/* flex layouts */
+.vbox {
+    display: flex;
+    display: -webkit-flex;
+    flex-direction: column;
+    -webkit-flex-direction: column;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+.hbox {
+    display: flex;
+    display: -webkit-flex;
+    flex-direction: row;
+    -webkit-flex-direction: row;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.grow {
+    flex-grow: 1;
+    -webkit-flex-grow: 1;
+    position: relative;
+}
+
+.top, .left, .bottom, .right {
+    position: relative;
+}
+.left, .right {
+    width: 300px;
+}
+
+
+
+/* panel content */
+
+.top, .left, .bottom, .right {
+    border: 1px solid #ddd;
+}
+.top    { border-width: 0px 0px 1px 0px; }
+.left   { border-width: 0px 1px 0px 0px; }
+.bottom { border-width: 1px 0px 0px 0px; }
+.right  { border-width: 0px 0px 0px 1px; }
+.toolbar {
+    display: flex;
+    display: -webkit-flex;
+    flex-direction: row;
+    -webkit-flex-direction: row;
+
+}
+.toolbar > * {
+    display: inline-block;
+    align-self: center;
+    margin: 0.4em 0.6em;
+}
+
+.toolbar > .spacer {
+    flex-grow: 1;
+    -webkit-flex-grow: 1;
+}
+
+.toolbar label {
+    font-weight: bold;
+    margin-right: 0em;
+}
+
+.panel h3 {
+    color: gray;
+    padding: 0.3em 0.5em;
+    text-transform: capitalize;
+}
+
+
+/* tweaks */
+
+.uk-tab {
+    padding-left: 1em;
+}
+textarea {
+    border: 0px solid black;
+    font-family: monospace;
+}
+#editor {
+    margin-top: 1px;
+}
+
+</style>
 
 </body>
 </html>
