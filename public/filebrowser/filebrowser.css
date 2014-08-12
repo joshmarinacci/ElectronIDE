@@ -1,34 +1,3 @@
-/*#filebrowser {
-    position: absolute;
-    top: 50px;
-    left:0px;
-    width: 200px;
-    bottom: 50px;
-}
-#filebrowser .tree {
-    position: absolute;
-    top: 2.3em;
-    bottom: 2em;
-    left: 0em;
-    right: 0em;
-    border: 0px solid red;
-    margin:0;
-    padding: 0;
-    overflow: scroll;
-}
-
-
-#filebrowser .toolbar {
-    position: absolute;
-    bottom: 0;
-    height: 2em;
-    background-color: lightgray;
-    left: 0;
-    right: 0;
-    border: 0px solid red;
-}
-
-*/
 
 #filebrowser ul {
     	list-style: none;
@@ -41,12 +10,3 @@
 #filebrowser .tree-node-closed ul {
     display: none;
 }
-
-/*
-#filebrowser .tree-node-opened > a > i:before {
-  content: "\f0d9";
-}
-#filebrowser .tree-node-closed > a > i:before {
-  content: "\f07b";
-}
-*/

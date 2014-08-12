@@ -1,20 +1,26 @@
+<div class='uk-modal-dialog'>
     <h3 class='header'>Add Library</h3>
-    <div class='content'>
+    <form class='uk-form'>
         <input class='search'
             ng-model='ctrl.searchQuery'
             type='text'
             placeholder='search by name or tag'
             ng-change='ctrl.searchLibrary()'>
-        <button ng-click='ctrl.searchLibrary()' class='primary'>Search</button>
+        <button ng-click='ctrl.searchLibrary()' class='uk-button'>Search</button>
+    </form>
+
+    <div class="uk-overflow-container">
         <ul class='search-results'>
             <li ng-repeat='library in ctrl.searchResults'>
                 <h4>{{library.name}}</h4>
                 <p>{{library.description}}</p>
                 <p>{{library.tags}}</p>
-                <button ng-click='ctrl.addLibrary(library)'><i class="fa fa-plus-square"></i> Add</button>
+                <button class='uk-button'
+                    ng-click='ctrl.addLibrary(library)'>Add <i class="uk-icon-plus"></i></button>
             </li>
         </ul>
     </div>
     <div class='footer'>
-        <button ng-click='ctrl.closeLibrary()' class='align-right'>done</button>
+        <button ng-click='ctrl.closeLibrary()' class='uk-button'>done</button>
     </div>
+</div>

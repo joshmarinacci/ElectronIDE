@@ -29,4 +29,5 @@ app.controller('FilebrowserCtrl', ['Sketch','$http',function(Sketch,$http){
                 'uk-icon-caret-down':!node.closed
             }
         }
+
     }]);

@@ -1,28 +1,23 @@
-<div class='vbox'>
-
-    <!--
-    <div class='divider divider-left'></div>
--->
-    <h3>File Browser</h3>
-    <ul class='tree grow' ng-controller='FilebrowserCtrl as fb'>
-        <li ng-repeat='sketch in fb.sketches' ng-class='fb.isClosed(sketch)'>
-            <a href='#'
-                ng-click='fb.toggleNode(sketch)'
-                ><i ng-class='fb.iconClass(sketch)' style='width: 1em;'></i> {{sketch.label}} </a>
-            <ul>
-                <li ng-repeat='file in sketch.files'>
-                    <a href='#'
-                        ng-click='fb.loadFile(file)'
-                    ><i class=''></i> {{file.label}}</a>
-                </li>
-            </ul>
-        </li>
-    </ul>
-
-    <div class='toolbar'>
-        <button class='uk-button'>Add <i class="uk-icon-plus"></i></button>
-        <button class='uk-button'>Delete <i class="uk-icon-minus"></i></button>
-    </div>
+<h3>File Browser</h3>
 
 
+<ul class='tree grow' ng-controller='FilebrowserCtrl as fb'>
+    <li ng-repeat='sketch in fb.sketches' ng-class='fb.isClosed(sketch)'>
+        <a href='#'
+            ng-click='fb.toggleNode(sketch)'
+            ><i ng-class='fb.iconClass(sketch)' style='width: 1em;'></i> {{sketch.label}} </a>
+        <ul>
+            <li ng-repeat='file in sketch.files'>
+                <a href='#'
+                    ng-click='fb.loadFile(file)'
+                ><i class=''></i> {{file.label}}</a>
+            </li>
+        </ul>
+    </li>
+</ul>
+
+
+<div class='toolbar'>
+    <button class='uk-button'>Add <i class="uk-icon-plus"></i></button>
+    <button class='uk-button'>Delete <i class="uk-icon-minus"></i></button>
 </div>

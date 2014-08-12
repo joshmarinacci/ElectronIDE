@@ -3,8 +3,6 @@
 <head>
     <title>Electron IDE</title>
     <link rel="stylesheet" href="uikit/css/uikit.gradient.css" />
-    <link rel='stylesheet' href='filebrowser/filebrowser.css'>
-    <link rel='stylesheet' href='serialconsole/serialconsole.css'>
 
     <script src="js/jquery.js"></script>
     <script src="uikit/js/uikit.js"></script>
@@ -19,11 +17,12 @@
     <div class='middle grow'>
         <div class='hbox'>
 
-            <div id='filebrowser' class='left panel'>
-                <div ng-include="'filebrowser/filebrowser.html'"></div>
+            <div id='filebrowser' class='left'>
+                <div class='vbox panel' ng-include="'filebrowser/filebrowser.html'"></div>
+                <div class='divider divider-left'></div>
             </div>
 
-            <div id='editor' class='content grow'>
+            <div id='editor'      class='content grow'>
 
                 <div class='vbox panel'>
 
@@ -39,37 +38,36 @@
                 </div>
             </div>
 
-            <div id='sidebar' class='right' ng-controller='SidebarCtrl as sb'>
-
-    <!--                <div class='divider divider-right'></div> -->
-                    <div class='vbox panel'>
-                        <h3>Tools</h3>
-                        <ul class='uk-tab'>
-                            <li class='uk-active'><a ng-click="sb.setTab('console')">Console</a></li>
-                            <li><a ng-click="sb.setTab('docs')">Docs</a></li>
-                        </ul>
-                        <div class='grow'>
-                            <div ng-show="sb.showConsole">
-                                <div ng-include="'serialconsole/serialconsole.html'"/>
-                            </div>
-
-                            <div ng-show="sb.showDocs">
-                                <div ng-include="'docs_panel.html'"></div>
-                            </div>
+            <div id='sidebar'     class='right'>
+                <div class='vbox panel' ng-controller='SidebarCtrl as sb'>
+                    <h3>Tools</h3>
+                    <ul class='uk-tab'>
+                        <li class='uk-active'><a ng-click="sb.setTab('console')">Console</a></li>
+                        <li><a ng-click="sb.setTab('docs')">Docs</a></li>
+                    </ul>
+                    <div class='grow'>
+                        <div ng-show="sb.showDocs">
+                            <div ng-include="'docs_panel.html'"></div>
+                        </div>
+                        <div ng-show="sb.showConsole">
+                            <div ng-include="'serialconsole/serialconsole.html'"></div>
                         </div>
                     </div>
                 </div>
+                <div class='divider divider-right'></div>
             </div>
 
         </div>
     </div>
 
     <div id='footer' class='bottom toolbar'>
-        <button class='uk-button' ng-click='ctrl.collapseLeft()'><i class='uk-icon-caret-left'></i> File Browser</button>
+        <button class='uk-button'
+            ng-click='ctrl.collapseLeft()'><i class='uk-icon-caret-left'></i> File Browser</button>
         <span class='spacer'></span>
-        <label>Okay.{{ctrl.footerStatus}}</label>
+        <label>{{ctrl.footerStatus}}</label>
         <span class='spacer'></span>
-        <button class='uk-button' ng-click='ctrl.collapseRight()'>Options <i class='uk-icon-caret-right'></i></button>
+        <button class='uk-button'
+            ng-click='ctrl.collapseRight()'>Options <i class='uk-icon-caret-right'></i></button>
         <!--
         <button ng-click='ctrl.openDebugConsole()' class='align-right'><i class='fa fa-toggle-up'></i></button>
     -->
@@ -80,24 +78,39 @@
 </div>
 
 
-<div ng-show='ctrl.debugVisible'          ng-include="'panels/debug_console.html'"   class='dialog'></div>
+<div
+    ng-show='ctrl.debugVisible'
+    ng-include="'panels/debug_console.html'"
+    class='uk-modal'></div>
 
-<div id='settings' ng-show='ctrl.settingsVisible'      ng-include="'settings/settings.html'" class='uk-modal'></div>
+<div id='settings'
+     class='uk-modal'
+     ng-include="'settings/settings.html'"></div>
 
-<div ng-show='ctrl.librarySearchVisible' ng-include="'library_dialog.html'"  class='dialog'></div>
+<div id="librarypicker"
+    ng-include="'librarypicker/librarypicker.html'"
+    class='uk-modal'></div>
 
-<div ng-show='ctrl.boardSearchVisible'   ng-include="'board_dialog.html'"    class='dialog'></div>
+<div id='boardpicker'
+     class='uk-modal'
+     ng-include="'boardpicker/boardpicker.html'"></div>
 
-<script src="jquery.js"></script>
-<script src='js/dividers.js'></script>
+
 
 <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular.js'></script>
 <script src='./ace-builds-master/src-noconflict/ace.js' type='text/javascript' charset='utf-8'></script>
 <script src="./ace-builds-master/src-noconflict/ext-language_tools.js"></script>
+
+<link rel='stylesheet' href='serialconsole/serialconsole.css'>
 <script src='js/app.js'></script>
 <script src='js/Sketch.js'></script>
 <script src='js/Monitor.js'></script>
-<script src='filebrowser/filebrowser.js'></script>
+
+<link   href='filebrowser/filebrowser.css' rel='stylesheet' >
+<script  src='filebrowser/filebrowser.js'></script>
+<link   href='dividers/dividers.css' rel='stylesheet'>
+<script  src='dividers/dividers.js'></script>
+
 <script type='text/javascript'>
 var editor;
 
@@ -168,7 +181,7 @@ app
 
         this.choseBoard = function() {
             if(this.selectedBoard.id == '@more') {
-                this.boardSearchVisible = true;
+                $.UIkit.modal('#boardpicker').show();
             }
         }
         this.closeBoardSearch = function() {
@@ -177,14 +190,13 @@ app
 
         this.openSettings = function() {
             self.settingsVisible = true;
-            var modal = $.UIkit.modal("#settings");
-            modal.show();
         }
         this.closeSettings = function() {
             self.settingsVisible = false;
         }
         this.openLibrary = function() {
             self.librarySearchVisible = true;
+            $.UIkit.modal('#librarypicker').show();
         }
         this.closeLibrary = function() {
             self.librarySearchVisible = false;
@@ -316,13 +328,15 @@ app
             editor.gotoLine(0);
         })
         setupDividers();
+
+
     }])
 
 
     .controller('SidebarCtrl', ['$http', function($http){
         this.tab = 'console';
-        this.showConsole = true;
-        this.showDocs = false;
+        this.showConsole = false;
+        this.showDocs = true;
         this.setTab = function(tab) {
             console.log('swapping tabs',this.tab);
             this.tab = tab;
@@ -331,13 +345,7 @@ app
         }
     }])
 
-
-
-
     ;
-
-
-
 
 
 </script>
@@ -396,7 +404,7 @@ app
     display: -webkit-flex;
     flex-direction: row;
     -webkit-flex-direction: row;
-
+    padding: 0.2em;
 }
 .toolbar > * {
     display: inline-block;
@@ -418,22 +426,23 @@ app
     color: gray;
     padding: 0.3em 0.5em;
     text-transform: capitalize;
+    border: 1px solid lightgray;
+    border-width: 0px 0px 1px 0px;
 }
-
-
 
 /* tweaks */
 
 .uk-tab {
     padding-left: 1em;
 }
-textarea {
-    border: 0px solid black;
-    font-family: monospace;
-}
-#editor {
+
+#ace-editor {
     margin-top: 1px;
+    border: 1px solid darkgray;
+    border-width: 0px 0px 0px 0px;
+    font-family: "Source Code Pro", monospace;
 }
+
 
 </style>
 

@@ -1,8 +1,10 @@
 <b>Electron</b>
 
 <div class='uk-button-group'>
-    <button class='uk-button uk-button-primary' ng-click='ctrl.compile()'>Check <i class="fa fa-check"></i></button>
-    <button class='uk-button uk-button-success' ng-click='ctrl.run()'>Run <i class='fa fa-play'></i></button>
+    <button class='uk-button uk-button-primary'
+        ng-click='ctrl.compile()'>Check <i class="fa fa-check"></i></button>
+    <button class='uk-button uk-button-success'
+        ng-click='ctrl.run()'>Run <i class='fa fa-play'></i></button>
 </div>
 
 
@@ -31,4 +33,7 @@
 <span class='spacer'></span>
 
 
-<button class='uk-button' ng-click='ctrl.openSettings()'>Settings <i class='fa fa-gear'></i></button>
+<button
+    data-uk-modal="{target:'#settings'}"
+    class='uk-button'
+    >Settings <i class='fa fa-gear'></i></button>
