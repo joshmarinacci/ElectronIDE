@@ -27,7 +27,8 @@
                 <div class='vbox panel'>
 
                     <h3>{{ctrl.sketchName}}
-                        <button ng-click='ctrl.openLibrary()' class='uk-button uk-button-success uk-button-mini uk-float-right'> Library</button>
+                        <button ng-click='ctrl.openLibrary()'
+                            class='uk-button uk-button-success uk-button-mini uk-float-right'> Library</button>
                     </h3>
                     <ul class='uk-tab'>
                         <li ng-repeat='file in ctrl.files' ng-class='ctrl.getActive(file.filename)'>
