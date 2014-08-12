@@ -14,13 +14,13 @@
             <li ng-repeat='library in ctrl.searchResults'>
                 <h4>{{library.name}}</h4>
                 <p>{{library.description}}</p>
-                <p>{{library.tags}}</p>
-                <button class='uk-button'
+                <button class='uk-button uk-float-right'
                     ng-click='ctrl.addLibrary(library)'>Add <i class="uk-icon-plus"></i></button>
+                <p><b ng-repeat='tag in library.tags' class='tag'>{{tag}}</b></p>
             </li>
         </ul>
     </div>
     <div class='footer'>
-        <button ng-click='ctrl.closeLibrary()' class='uk-button'>done</button>
+        <button ng-click='ctrl.closeLibrary()' class='uk-button uk-button-primary'>done</button>
     </div>
 </div>

@@ -1,0 +1,22 @@
+.search-results {
+    margin:0;
+    padding:0;
+
+}
+.search-results li {
+    border: 1px solid lightgray;
+    border-radius: 4px;
+    list-style: none;
+    background-color: #f0f0f0;
+    padding: 0.5em;
+    margin: 0.5em;
+}
+
+.search-results .tag {
+    border:  1px solid gray;
+    padding: 0.1em 0.3em;
+    margin:  0.3em 0.2em;
+    border-radius: 4px;
+    background-color: gray;
+    color: white;
+}
