@@ -1,23 +1,26 @@
 <div class='uk-modal-dialog'>
     <h3 class='header'>Add Board</h3>
-    <div class='content'>
+    <form class='uk-form'>
         <input type='text'
             class='search'
             placeholder='board search'
             ng-model='ctrl.boardQuery'
             ng-change='ctrl.searchBoard()'
             >
+    </form>
+    <div class='uk-overflow-container'>
+
         <ul class='search-results'>
             <li ng-repeat='board in ctrl.boardResults'>
                 <h4>{{board.name}}</h4>
                 <p style='font-size: 90%'>
                     <i>{{board.vendor}}</i>
                 </p>
-                <button ng-click='ctrl.selectBoard(board)'>Choose <i class="fa fa-plus-square"></i></button>
+                <button class='uk-button' ng-click='ctrl.selectBoard(board)'>Choose <i class="uk-icon-plus"></i></button>
             </li>
         </ul>
     </div>
     <div class='footer'>
-        <button ng-click='ctrl.closeBoardSearch()' class='align-right'>done</button>
+        <button ng-click='ctrl.closeBoardSearch()' class='uk-button uk-button-primary'>done</button>
     </div>
 </div>
