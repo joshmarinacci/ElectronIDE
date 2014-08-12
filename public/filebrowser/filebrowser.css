@@ -1,4 +1,4 @@
-#filebrowser {
+/*#filebrowser {
     position: absolute;
     top: 50px;
     left:0px;
@@ -28,6 +28,12 @@
     border: 0px solid red;
 }
 
+*/
+
+#filebrowser ul {
+    	list-style: none;
+
+}
 #filebrowser .tree-node-opened ul {
     display: block;
 }
@@ -36,9 +42,11 @@
     display: none;
 }
 
+/*
 #filebrowser .tree-node-opened > a > i:before {
-  content: "\f07c";
+  content: "\f0d9";
 }
 #filebrowser .tree-node-closed > a > i:before {
   content: "\f07b";
 }
+*/

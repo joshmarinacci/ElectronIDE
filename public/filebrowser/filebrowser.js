@@ -20,4 +20,13 @@ app.controller('FilebrowserCtrl', ['Sketch','$http',function(Sketch,$http){
                 'tree-node-opened':!node.closed
             }
         }
+        this.iconClass = function(node) {
+            if(node.closed == undefined) {
+                node.closed = false;
+            }
+            return {
+                'uk-icon-caret-right':node.closed,
+                'uk-icon-caret-down':!node.closed
+            }
+        }
     }]);

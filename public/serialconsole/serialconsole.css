@@ -1,17 +1,14 @@
-#serial-console {
+/*#serial-console {
     position: absolute;
     top: 4.6rem;
     left:0;
     right:0;
     background-color: #eee;
     bottom: 0;
-}
+}*/
+
+
 .serial-output {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    top: 7em;
     background-color: #fff;
     padding: 0.5em;
     font-family: "Source Code Pro", monospace;

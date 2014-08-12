@@ -3,21 +3,11 @@
 <head>
     <title>Electron IDE</title>
     <link rel="stylesheet" href="uikit/css/uikit.gradient.css" />
-    <!--
-    <link rel='stylesheet' href='font-awesome/css/font-awesome.css'>
--->
-    <!--
-    <link rel='stylesheet' href='css/serial_panel.css'>
-    <link rel='stylesheet' href='css/docs_panel.css'>
-    <link rel='stylesheet' href='css/toolbar.css'>
-    <link rel='stylesheet' href='css/filebrowser.css'>
--->
-<!--
-    <link rel='stylesheet' href='general/general.css'>
--->
+    <link rel='stylesheet' href='filebrowser/filebrowser.css'>
+    <link rel='stylesheet' href='serialconsole/serialconsole.css'>
 
     <script src="js/jquery.js"></script>
-    <script src="uikit/js/uikit.min.js"></script>
+    <script src="uikit/js/uikit.js"></script>
 </head>
 <body ng-controller='MainCtrl as ctrl'>
 
@@ -29,54 +19,60 @@
     <div class='middle grow'>
         <div class='hbox'>
 
-            <div id='filebrowser' class='left' ng-class='ctrl.getCollapseClasses()'>
-                <div class='divider divider-left'></div>
-                <div class='pane-title'>File Browser</div>
-                <div ng-include="'filebrowser.html'"></div>
+            <div id='filebrowser' class='left panel'>
+                <div ng-include="'filebrowser/filebrowser.html'"></div>
             </div>
 
-            <div id='editor' class='content grow' ng-class='ctrl.getCollapseClasses()'>
-                <div id='editor-title' class='pane-title'>
-                    <button ng-click='ctrl.openLibrary()' class='align-right action small'><i class='fa fa-plus'></i> Library</button>
-                    <span>{{ctrl.sketchName}}</span>
+            <div id='editor' class='content grow'>
+
+                <div class='vbox panel'>
+
+                    <h3>{{ctrl.sketchName}}
+                        <button ng-click='ctrl.openLibrary()' class='uk-button uk-button-success uk-button-mini uk-float-right'> Library</button>
+                    </h3>
+                    <ul class='uk-tab'>
+                        <li ng-repeat='file in ctrl.files' ng-class='ctrl.getActive(file.filename)'>
+                            <a href='#' ng-click="ctrl.switchTab(file.filename)">{{file.filename}}</a>
+                        </li>
+                    </ul>
+                    <div id='ace-editor' class='grow'>some code to edit</div>
                 </div>
-                <ul class='tab-group'>
-                    <li ng-repeat='file in ctrl.files' ng-class='ctrl.getActive(file.filename)'>
-                        <a href='#' ng-click="ctrl.switchTab(file.filename)">{{file.filename}}</a>
-                    </li>
-                </ul>
-                <div id='ace-editor'>some code to edit</div>
             </div>
 
-            <div id='sidebar' class='right' ng-class='ctrl.getCollapseClasses()' ng-controller='SidebarCtrl as sb'>
-                <div class='divider divider-right'></div>
-                <div class='pane-title'>
-                    Sidebar
-                </div>
-                <ul class='tab-group'>
-                    <li><a ng-click="sb.setTab('console')">Console</a></li>
-                    <li class='active'><a ng-click="sb.setTab('docs')">Docs</a></li>
-                </ul>
-                <ul class='tab-content-group'>
-                    <li ng-show="sb.showConsole">
-                        <div id='serial-console'>
-                            <div ng-include="'serial_panel.html'"></div>
+            <div id='sidebar' class='right' ng-controller='SidebarCtrl as sb'>
+
+    <!--                <div class='divider divider-right'></div> -->
+                    <div class='vbox panel'>
+                        <h3>Tools</h3>
+                        <ul class='uk-tab'>
+                            <li class='uk-active'><a ng-click="sb.setTab('console')">Console</a></li>
+                            <li><a ng-click="sb.setTab('docs')">Docs</a></li>
+                        </ul>
+                        <div class='grow'>
+                            <div ng-show="sb.showConsole">
+                                <div ng-include="'serialconsole/serialconsole.html'"/>
+                            </div>
+
+                            <div ng-show="sb.showDocs">
+                                <div ng-include="'docs_panel.html'"></div>
+                            </div>
                         </div>
-                    </li>
-                    <li ng-show="sb.showDocs">
-                        <div ng-include="'docs_panel.html'"></div>
-                    </li>
-                </ul>
+                    </div>
+                </div>
             </div>
 
         </div>
     </div>
 
     <div id='footer' class='bottom toolbar'>
-        <button ng-click='ctrl.collapseLeft()'><i class='fa fa-toggle-left'></i></button>
-        <button ng-click='ctrl.collapseRight()'><i class='fa fa-toggle-right'></i></button>
-        {{ctrl.footerStatus}}
+        <button class='uk-button' ng-click='ctrl.collapseLeft()'><i class='uk-icon-caret-left'></i> File Browser</button>
+        <span class='spacer'></span>
+        <label>Okay.{{ctrl.footerStatus}}</label>
+        <span class='spacer'></span>
+        <button class='uk-button' ng-click='ctrl.collapseRight()'>Options <i class='uk-icon-caret-right'></i></button>
+        <!--
         <button ng-click='ctrl.openDebugConsole()' class='align-right'><i class='fa fa-toggle-up'></i></button>
+    -->
     </div>
 
 
@@ -86,7 +82,7 @@
 
 <div ng-show='ctrl.debugVisible'          ng-include="'panels/debug_console.html'"   class='dialog'></div>
 
-<div ng-show='ctrl.settingsVisible'      ng-include="'settings_dialog.html'" class='dialog'></div>
+<div id='settings' ng-show='ctrl.settingsVisible'      ng-include="'settings/settings.html'" class='uk-modal'></div>
 
 <div ng-show='ctrl.librarySearchVisible' ng-include="'library_dialog.html'"  class='dialog'></div>
 
@@ -100,8 +96,8 @@
 <script src="./ace-builds-master/src-noconflict/ext-language_tools.js"></script>
 <script src='js/app.js'></script>
 <script src='js/Sketch.js'></script>
-<script src='js/filebrowser.js'></script>
 <script src='js/Monitor.js'></script>
+<script src='filebrowser/filebrowser.js'></script>
 <script type='text/javascript'>
 var editor;
 
@@ -113,12 +109,12 @@ var editorInit = function() {
     });
 
     editor.getSession().setMode('ace/mode/c_cpp');
-    editor.setTheme('ace/theme/solarized_light');
+    editor.setTheme('ace/theme/xcode');
     editor.getSession().setUseWrapMode(true);
 
 };
 
-//$(document).ready(editorInit);
+$(document).ready(editorInit);
 
 app
     .controller('MainCtrl', ['Sketch','$http', 'Monitor',function(Sketch,$http,Monitor) {
@@ -181,6 +177,8 @@ app
 
         this.openSettings = function() {
             self.settingsVisible = true;
+            var modal = $.UIkit.modal("#settings");
+            modal.show();
         }
         this.closeSettings = function() {
             self.settingsVisible = false;
@@ -228,7 +226,7 @@ app
 
         this.getActive = function(tab) {
             return {
-                active: (tab==self.tab)
+                'uk-active': (tab==self.tab)
             }
         }
         this.switchTab = function(tab) {
@@ -340,6 +338,8 @@ app
 
 
 
+
+
 </script>
 <style>
 
@@ -369,6 +369,8 @@ app
     flex-grow: 1;
     -webkit-flex-grow: 1;
     position: relative;
+    border: 0px solid green;
+    overflow: scroll;
 }
 
 .top, .left, .bottom, .right {
@@ -417,6 +419,7 @@ app
     padding: 0.3em 0.5em;
     text-transform: capitalize;
 }
+
 
 
 /* tweaks */
