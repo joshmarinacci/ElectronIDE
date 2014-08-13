@@ -38,20 +38,22 @@ function runAVRDude(hexfile, portpath, options, debug, cb) {
         uploadcmd.slice(1),
         function(error, stdout, stderr) {
             console.log(error,stdout,stderr);
-        if(error) {
-            console.log("error. code = ",error.code);
-            console.log(error);
-            var err = new Error("there was a problem running " + uploadcmd.join(" "));
-            err.cmd = uploadcmd;
-            err.output = stdout + stderr;
-            console.log(stdout);
-            console.log(stderr)
-            debug(err);
-        } else {
-            debug("uploaded");
+            if(error) {
+                console.log("error. code = ",error.code);
+                console.log(error);
+                var err = new Error("there was a problem running " + uploadcmd.join(" "));
+                err.cmd = uploadcmd;
+                err.output = stdout + stderr;
+                console.log(stdout);
+                console.log(stderr)
+                debug(err);
+                if(cb) cb(err);
+            } else {
+                debug("uploaded");
+                if(cb) cb();
+            }
         }
-        if(cb) setTimeout(cb,1000);
-    });
+    );
 }
 
 function scanForPortReturn(list1,cb) {
@@ -83,7 +85,7 @@ exports.upload = function(hexfile,portpath,options, publish, callback) {
     }
 
     console.log("uploading to device using ",options.device);
-//    var serialpath = "/tty/foobar";
+    //var serialpath = "/tty/foobar";
     //var serialpath = '/dev/cu.usbserial-AH019ZWX';
 
     if(options.device.bootloader.path == 'caterina') {

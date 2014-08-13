@@ -156,13 +156,19 @@ app.post('/run',function(req,res) {
         var port = req.body.port;
 
         function doUpload() {
-            uploader.upload(sketch,port, OPTIONS, publishEvent, function() {
-                console.log("fully done with upload");
+            uploader.upload(sketch,port, OPTIONS, publishEvent, function(err) {
+                console.log("fully done with upload",err);
+                if(err) {
+                    res.send(JSON.stringify({status:'upload error',err:err}));
+                    res.end();
+                    return;
+                }
+
                 res.send(JSON.stringify({status:'okay'}));
                 res.end();
-                //wait 500ms before reopening to let everything settle down a bit.
+                //wait 1500ms before reopening to let everything settle down a bit.
                 if(SERIAL.open) {
-                    console.log('waiting 1000ms');
+                    console.log('waiting 1500ms');
                     setTimeout(function() {
                         console.log("finished waiting");
                         serial.open(SERIAL.port, SERIAL.rate, SERIAL.callback);
