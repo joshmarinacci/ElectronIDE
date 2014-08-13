@@ -1,12 +1,12 @@
 console.log("inside of the master controller");
-var sp = require('serialport');
 var fs = require('fs');
 var path = require('path');
 var compile = require('./compile');
+//var sp = require('serialport');
 var uploader = require('./uploader');
 var settings = require('./settings.js');
 var sketches = require('./sketches.js');
-var serial = require('./serial.js');
+//var serial = require('./serial.js');
 var platform = require('./platform');
 var LIBS   = require('./libraries');
 var BOARDS = require('./boards').loadBoards();

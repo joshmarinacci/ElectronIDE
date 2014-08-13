@@ -1,4 +1,4 @@
-app.factory('Sketch', ['$http',function($http) {
+app.factory('Sketch', ['$http','AtomShell',function($http,AtomShell) {
     return {
         title:'Sketch',
         status: 'success',
@@ -11,15 +11,13 @@ app.factory('Sketch', ['$http',function($http) {
             if(name.indexOf('.')>=0) {
                 name = name.substring(0,name.lastIndexOf('.'));
             }
-            console.log('compiling the sketch',name);
-            $http.post('/compile',{
+            AtomShell.send('compile',{
                 code: editor.getValue(),
                 board: board.id,
                 sketch:name,
-            }).then(function(res) {
-                console.log("the response is",res.data.status);
-                self.status = res.data.status;
-                if(cb) cb(res.data);
+            },function(data) {
+                self.status = data.status;
+                if(cb) cb(data);
             });
         },
         run: function(serial, board, cb) {
@@ -43,15 +41,14 @@ app.factory('Sketch', ['$http',function($http) {
         loadSketch: function(file) {
             console.log("loading the sketch",file);
             var self = this;
-            $http.get('/sketch?id='+file.id).then(function(res) {
-                console.log("got result",res.data);
-                self.files = res.data.files;
-                self.sketchName = res.data.name;
+            AtomShell.send('sketch',file.id, function(data) {
+                console.log("got back sketch " + data);
+                self.files = data.files;
+                self.sketchName = data.name;
                 self.listeners.forEach(function(l) {
                     l();
                 })
-            })
-
+            });
         }
 
     }

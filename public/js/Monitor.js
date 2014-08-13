@@ -1,4 +1,5 @@
 app.factory('Monitor', ['$rootScope',function($rootScope) {
+    /*
         var wsurl = "ws:" + location.hostname + ":4203";
         var monitor = new WebSocket(wsurl);
         monitor.onopen = function(e) {
@@ -10,15 +11,18 @@ app.factory('Monitor', ['$rootScope',function($rootScope) {
         monitor.onerror = function(e) {
             console.log("error in websocket");
         };
+        */
 
         return {
             on: function(callback) {
+                /*
                 monitor.onmessage = function(e) {
                     var event = JSON.parse(e.data);
                     $rootScope.$apply(function() {
                         callback(event);
                     })
-                }
+                }*/
+                
             }
         }
     }]);

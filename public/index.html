@@ -108,6 +108,7 @@
 <script src='js/app.js'></script>
 <script src='js/Sketch.js'></script>
 <script src='js/Monitor.js'></script>
+<script src='AtomShell.js'></script>
 
 <link   href='filebrowser/filebrowser.css' rel='stylesheet' >
 <script  src='filebrowser/filebrowser.js'></script>
@@ -135,7 +136,8 @@ var editorInit = function() {
 $(document).ready(editorInit);
 
 app
-    .controller('MainCtrl', ['Sketch','$http', 'Monitor',function(Sketch,$http,Monitor) {
+    .controller('MainCtrl', ['Sketch','$http', 'Monitor', 'AtomShell',
+    function(Sketch,$http,Monitor, AtomShell) {
         var self = this;
         this.settingsVisible = false;
         this.boardSearchVisible = false;
@@ -260,8 +262,8 @@ app
         this.searchLibrary = function() {
             var q = this.searchQuery.toLowerCase();
             if(q.length < 2) return;
-            $http.get('/search?query='+q).then(function(res) {
-                self.searchResults = res.data;
+            AtomShell.send('search',q, function(data) {
+                self.searchResults = data;
             });
         };
 
