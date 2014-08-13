@@ -35,60 +35,45 @@ app.on('ready', function() {
   });
 
 
-
-});
-
-var ipc = require('ipc');
-ipc.on('sketches', function(event, arg) {
-  master.listSketches(function(list) {
-      event.sender.send('sketches',list);
-  });
-});
-ipc.on('sketch', function(event, id) {
-  var path = id.substring(0,id.lastIndexOf('/'));
-  master.getSketch(path,function(list) {
-      console.log('the list is');
-      event.sender.send('sketch',list);
-  });
-});
-ipc.on('compile', function(event, arg) {
-    var req = {};
-    req.body = arg;
-    console.log('compiling');
-    function publishEvent() {
-        console.log("publish event");
-    }
-    if(!req.body.board) return event.sender.send('compile',{status:'missing board name'});
-    try {
-        master.doCompile(req.body.code, req.body.board, req.body.sketch, function(err) {
-            if(err) return event.sender.send({status:'error',message:err});
-                console.log("success!");
-            event.sender.send('compile',{status:'okay'});
-        }, publishEvent);
-
-    } catch(e) {
-        console.log("compilation error",e);
-        console.log(e.output);
-        publishEvent({ type:'error', message: e.toString(), output: e.output});
-        res.json({status:'error',output:e.output, message: e.toString()}).end();
-    }
-
-})
-
-ipc.on('search', function(event, query) {
-    master.searchLibraries(query, function(results) {
-        event.sender.send('search',results);
-    });
-})
-
-ipc.on('synchronous-message', function(event, arg) {
-  console.log('2'+arg);  // prints "ping"
-  /*
-  if(arg.command && arg.command == 'sketches') {
+    var ipc = require('ipc');
+    ipc.on('sketches', function(event, arg) {
       master.listSketches(function(list) {
-        res.json(list).end();
+          event.sender.send('sketches',list);
+      });
     });
-      master.
-  }*/
-  event.returnValue = 'pong';
+    ipc.on('sketch', function(event, id) {
+      var path = id.substring(0,id.lastIndexOf('/'));
+      master.getSketch(path,function(list) {
+          console.log('the list is');
+          event.sender.send('sketch',list);
+      });
+    });
+    ipc.on('compile', function(event, arg) {
+        var req = {};
+        req.body = arg;
+        function publishEvent(e) {
+            mainWindow.webContents.send('compilewatch',e);
+        }
+        if(!req.body.board) return event.sender.send('compile',{status:'missing board name'});
+        try {
+            master.doCompile(req.body.code, req.body.board, req.body.sketch, function(err) {
+                if(err) return event.sender.send({status:'error',message:err});
+                event.sender.send('compile',{status:'okay'});
+            }, publishEvent);
+
+        } catch(e) {
+            console.log("compilation error",e);
+            console.log(e.output);
+            publishEvent({ type:'error', message: e.toString(), output: e.output});
+            res.json({status:'error',output:e.output, message: e.toString()}).end();
+        }
+
+    })
+
+    ipc.on('search', function(event, query) {
+        master.searchLibraries(query, function(results) {
+            event.sender.send('search',results);
+        });
+    })
+
 });
