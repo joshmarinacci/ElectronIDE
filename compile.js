@@ -332,8 +332,8 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
         });
 
         //standard global includes for the arduino core itself
-        includepaths.push(plat.getCorePath(options.device));
-        includepaths.push(plat.getVariantPath(options.device));
+        includepaths.push(plat.getCorePath());
+        includepaths.push(plat.getVariantPath());
         includepaths.push(sketchDir);
 
         console.log("include path =",includepaths);
@@ -378,15 +378,15 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
     //compile core
     tasks.push(function(cb) {
         debug("compiling core files");
-        var cfiles = listdir(plat.getCorePath(options.device));
+        var cfiles = listdir(plat.getCorePath());
         compileFiles(options,outdir,includepaths,cfiles,debug,cb);
     });
 
     //compile core avr-libc
     tasks.push(function(cb) {
-        var libcdir = plat.getCorePath(options.device)+'/avr-libc';
+        var libcdir = plat.getCorePath()+'/avr-libc';
         if(fs.existsSync(libcdir)) {
-            var cfiles = listdir(plat.getCorePath(options.device)+'/avr-libc');
+            var cfiles = listdir(plat.getCorePath()+'/avr-libc');
             compileFiles(options,outdir,includepaths,cfiles,debug,cb);
         } else {
             if(cb) cb();
@@ -466,7 +466,7 @@ function compileCPP(options, outdir, includepaths, cfile,debug, cb) {
     debug("compiling ",cfile);
 
     var cmd = [
-        options.platform.getCompilerBinaryPath(options.device)+"/avr-g++",
+        options.platform.getCompilerBinaryPath()+"/avr-g++",
         "-c", //compile, don't link
         '-g', //include debug info and line numbers
         '-Os', //optimize for size
@@ -497,7 +497,7 @@ function compileCPP(options, outdir, includepaths, cfile,debug, cb) {
 function compileC(options, outdir, includepaths, cfile, debug, cb) {
     debug("compiling ",cfile);//,"to",outdir,"with options",options);
     var cmd = [
-        options.platform.getCompilerBinaryPath(options.device)+"/avr-gcc", //gcc
+        options.platform.getCompilerBinaryPath()+"/avr-gcc", //gcc
         "-c", //compile, don't link
         '-g', //include debug info and line numbers
         '-Os', //optimize for size

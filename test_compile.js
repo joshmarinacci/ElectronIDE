@@ -20,6 +20,7 @@ var options = {
 }
 options.device = boards.getBoard('uno');
 options.device = boards.getBoard('digispark-pro');
+//options.device = boards.getBoard('flora');
 if(options.device == null) {
     throw new Error('Device Not Found');
 }

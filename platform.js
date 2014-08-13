@@ -48,22 +48,23 @@ function Platform() {
     this.getStandardLibraryPath = function() {
         return this.root + '/libraries';
     }
-    this.getCorePath = function(device) {
-        return this.root + '/hardware/arduino/cores/'+device.build.core;
+    this.getCorePath = function() {
+        console.log('getting',this.device);
+        return this.root + '/hardware/arduino/cores/'+this.device.build.core;
     }
-    this.getVariantPath = function(device) {
-        return this.root + '/hardware/arduino/variants/'+device.build.variant;
+    this.getVariantPath = function() {
+        return this.root + '/hardware/arduino/variants/'+this.device.build.variant;
     }
-    this.getCompilerBinaryPath = function(device) {
+    this.getCompilerBinaryPath = function() {
         return this.root + '/hardware/tools/avr/bin';
     }
-    this.getAvrDudeBinary = function(device) {
+    this.getAvrDudeBinary = function() {
         if(this.os == 'linux') {
             return this.root + '/hardware/tools/avrdude';
         }
         return this.root + '/hardware/tools/avr/bin/avrdude';
     }
-    this.getAvrDudeConf = function(device) {
+    this.getAvrDudeConf = function() {
         if(this.os == 'linux') {
             return this.root + '/hardware/tools/avrdude.conf';
         }
@@ -81,85 +82,105 @@ function Platform() {
         var zippath = CLOUDPATH+'/'+VERSION+'/arduino-'+VERSION+'-'+this.os+'-trimmed.tar.gz';
         util.downloadUntgzTo(zippath,this.root,update, cb);
     }
+
 }
+
+
 var _default = new Platform();
-var _digispark_pro = new Platform();
-_digispark_pro.id = 'digispark';
-var digifix = '/Digistump/hardware/digistump/avr'
-_digispark_pro.droot = _digispark_pro.getReposPath() + '/hardware/'+_digispark_pro.id;
-_digispark_pro.getStandardLibraryPath = function() {   return this.droot + digifix +'/libraries';  }
-_digispark_pro.getCorePath = function(device) { return this.droot + digifix + '/cores/'+device.build.core;   }
-_digispark_pro.getVariantPath = function(device) { return this.droot + digifix+ '/variants/'+device.build.core;   }
-_digispark_pro.getAvrDudeBinary = function(device) { return this.droot + digifix+ '/tools/avrdude'; }
-_digispark_pro.parentPlatform = _default;
-_digispark_pro.isInstalled = function() { return fs.existsSync(this.droot);  }
-_digispark_pro.installIfNeeded = function(cb,update) {
-    var self = this;
-    this.parentPlatform.installIfNeeded(function() {
-        if(self.isInstalled()) {
-            cb();
-            return;
-        }
-        var zippath = 'unknown path';
-        if(self.os == 'darwin') {
-            zippath = 'http://digispark.s3.amazonaws.com/digisparkpro_mac.zip';
-        }
-        if(self.os == 'linux') {
-            zippath = 'http://digispark.s3.amazonaws.com/digisparkpro_linux.zip';
-        }
-        if(self.os == 'win32') {
-            zippath = 'http://sourceforge.net/projects/digistump/files/Digistump1.5Addons-v09.zip/download';
-        }
-        var path = self.droot;
-        util.downloadUnzipTo(zippath,path,update, cb);
-    },update);
+_default.init = function(device) {
+    this.device = device;
+    return this;
+}
+
+var _digispark_pro = Object.create(_default);
+_digispark_pro.init = function(device) {
+    var digifix = '/Digistump/hardware/digistump/avr'
+    this.id = 'digispark';
+    this.device = device;
+    this.droot = this.getReposPath() + '/hardware/'+ this.id;
+    this.getCorePath = function() { return this.droot + digifix + '/cores/'+this.device.build.core;}
+    this.getStandardLibraryPath = function() {   return this.droot + digifix +'/libraries';  }
+    this.getVariantPath = function() { return this.droot + digifix+ '/variants/'+this.device.build.core;   }
+    this.getAvrDudeBinary = function() { return this.droot + digifix+ '/tools/avrdude'; }
+    this.parentPlatform = _default;
+    this.isInstalled = function() { return fs.existsSync(this.droot); }
+    this.installIfNeeded = function(cb,update) {
+        var self = this;
+        this.parentPlatform.installIfNeeded(function() {
+            if(self.isInstalled()) {
+                cb();
+                return;
+            }
+            var zippath = 'unknown path';
+            if(self.os == 'darwin') {
+                zippath = 'http://digispark.s3.amazonaws.com/digisparkpro_mac.zip';
+            }
+            if(self.os == 'linux') {
+                zippath = 'http://digispark.s3.amazonaws.com/digisparkpro_linux.zip';
+            }
+            if(self.os == 'win32') {
+                zippath = 'http://sourceforge.net/projects/digistump/files/Digistump1.5Addons-v09.zip/download';
+            }
+            var path = self.droot;
+            util.downloadUnzipTo(zippath,path,update, cb);
+        },update);
+    }
+    return this;
 }
 
 
-var _trinket3 = new Platform();
-_trinket3.id = 'trinket3';
-_trinket3.hroot = _trinket3.getReposPath() + '/hardware/'+_trinket3.id;
+var _trinket3 = Object.create(_default);
+_trinket3.init = function(device) {
+    this.device = device;
+    this.id = 'trinket3';
+    this.hroot = this.getReposPath() + '/hardware/'+ this.id;
+    this.parentPlatform = _default;
+    this.getVariantPath = function() {   return this.hroot + '/hardware/attiny/variants/' + this.device.build.variant;  }
+    this.isInstalled = function() { return fs.existsSync(this.hroot);  }
+    this.installIfNeeded = function(cb,update) {
+        var self = this;
+        this.parentPlatform.installIfNeeded(function() {
+            if(self.isInstalled()) {
+                cb();
+                return;
+            }
+            var zippath = 'http://learn.adafruit.com/system/assets/assets/000/010/777/original/trinkethardwaresupport.zip?1378321062';
+            var path = self.hroot;
+            util.downloadUnzipTo(zippath,path,update, function() {
+                var confpath = 'http://learn.adafruit.com/system/assets/assets/000/010/980/original/avrdudeconfmac.zip?1379342581';
+                util.downloadUnzipTo(confpath,path, update, cb);
+            });
+        },update);
+    }
 
-_trinket3.parentPlatform = _default;
-_trinket3.getVariantPath = function(device) {   return this.hroot + '/hardware/attiny/variants/' + device.build.variant;  }
-_trinket3.isInstalled = function() { return fs.existsSync(this.hroot);  }
-
-_trinket3.installIfNeeded = function(cb,update) {
-    var self = this;
-    this.parentPlatform.installIfNeeded(function() {
-        if(self.isInstalled()) {
-            cb();
-            return;
-        }
-        var zippath = 'http://learn.adafruit.com/system/assets/assets/000/010/777/original/trinkethardwaresupport.zip?1378321062';
-        var path = self.hroot;
-        util.downloadUnzipTo(zippath,path,update, function() {
-            var confpath = 'http://learn.adafruit.com/system/assets/assets/000/010/980/original/avrdudeconfmac.zip?1379342581';
-            util.downloadUnzipTo(confpath,path, update, cb);
-        });
-    },update);
+    this.useSerial = function() { return false; }
+    this.getAvrDudeConf = function() { return this.hroot + '/avrdude.conf'; }
+    this.getProgrammerId = function() { return 'usbtiny'; }
+    return this;
 }
-_trinket3.useSerial = function() { return false; }
-_trinket3.getAvrDudeConf = function(device) { return this.hroot + '/avrdude.conf'; }
-_trinket3.getProgrammerId = function() { return 'usbtiny'; }
 
-var _flora = new Platform();
-_flora.id = 'flora';
-_flora.hroot = _flora.getReposPath() + '/hardware/' + _flora.id;
-_flora.parentPlatform = _default;
-_flora.getVariantPath = function(device) {   return this.hroot;  }
-_flora.isInstalled = function() { return fs.existsSync(this.hroot);  }
-_flora.installIfNeeded = function(cb,update) {
-    var self = this;
-    this.parentPlatform.installIfNeeded(function() {
-        if(self.isInstalled()) {
-            cb();
-            return;
-        }
-        var remote_path = 'http://learn.adafruit.com/system/assets/assets/000/009/337/original/pins_arduino.h';
-        var local_path = self.hroot;
-        util.downloadTo(remote_path, local_path, 'pins_arduino.h', update, cb);
-    },update);
+
+var _flora = Object.create(_default);
+_flora.init = function(device) {
+    this.device = device;
+    this.id = 'flora';
+    this.hroot = this.getReposPath() + '/hardware/' + this.id;
+    this.parentPlatform = _default;
+    this.getVariantPath = function() {   return this.hroot;  }
+    this.isInstalled = function() { return fs.existsSync(this.hroot);  }
+    this.installIfNeeded = function(cb,update) {
+        var self = this;
+        this.parentPlatform.installIfNeeded(function() {
+            if(self.isInstalled()) {
+                cb();
+                return;
+            }
+            var remote_path = 'http://learn.adafruit.com/system/assets/assets/000/009/337/original/pins_arduino.h';
+            var local_path = self.hroot;
+            util.downloadTo(remote_path, local_path, 'pins_arduino.h', update, cb);
+        },update);
+    }
+    return this;
 }
 
 
@@ -168,11 +189,11 @@ exports.getDefaultPlatform = function() {
 }
 
 exports.getPlatform = function(device) {
-    if(device.id == 'digispark-pro') return _digispark_pro;
-    if(device.id == 'digispark-tiny') return _digispark_pro;
-    if(device.id == 'trinket3') return _trinket3;
-    if(device.id == 'trinket5') return _trinket3;
-    if(device.id == 'gemma') return _trinket3;
-    if(device.id == 'flora') return _flora;
-    return _default;
+    if(device.id == 'digispark-pro') return Object.create(_digispark_pro).init(device);
+    if(device.id == 'digispark-tiny') return Object.create(_digispark_pro).init(device);
+    if(device.id == 'trinket3') return Object.create(_trinket3).init(device);
+    if(device.id == 'trinket5') return Object.create(_trinket3).init(device);
+    if(device.id == 'gemma') return Object.create(_trinket3).init(device);
+    if(device.id == 'flora') return Object.create(_flora).init(device);
+    return Object.create(_default).init(device);
 }

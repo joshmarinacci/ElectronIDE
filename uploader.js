@@ -12,8 +12,8 @@ function runAVRDude(hexfile, portpath, options, debug, cb) {
 
     if(options.platform.useSerial()) {
         var uploadcmd = [
-            options.platform.getAvrDudeBinary(options.device),
-            '-C'+options.platform.getAvrDudeConf(options.device),
+            options.platform.getAvrDudeBinary(),
+            '-C'+options.platform.getAvrDudeConf(),
             '-v','-v','-v', //super verbose
             '-p'+options.device.build.mcu,
             '-c'+options.device.upload.protocol,
@@ -24,8 +24,8 @@ function runAVRDude(hexfile, portpath, options, debug, cb) {
         ];
     } else {
         var uploadcmd = [
-            options.platform.getAvrDudeBinary(options.device),
-            '-C'+options.platform.getAvrDudeConf(options.device),
+            options.platform.getAvrDudeBinary(),
+            '-C'+options.platform.getAvrDudeConf(),
             '-c',options.platform.getProgrammerId(),//'usbtiny',
             '-p',options.device.build.mcu,//'attiny85',
             '-Uflash:w:'+hexfile,
