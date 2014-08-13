@@ -1,30 +1,16 @@
+var master = require('./master');
+
 var fs = require('fs');
+var path = require('path');
 var express = require('express');
 var multer = require('multer');
 var moment = require('moment');
 var http   = require('http');
-var sp = require('serialport');
-var compile = require('./compile');
-var uploader = require('./uploader');
 var websocket = require('nodejs-websocket');
-var path = require('path');
 var bodyParser = require('body-parser');
 
-var settings = require('./settings.js');
-var sketches = require('./sketches.js');
-var serial = require('./serial.js');
-var platform = require('./platform');
 
-//load up standard boards
-var BOARDS = require('./boards').loadBoards();
-var LIBS   = require('./libraries');
-//standard options
-var OPTIONS = {
-    userlibs: settings.userlibs
-}
 
-console.log('settings',settings);
-console.log("options",OPTIONS);
 
 var wslist = [];
 function publishEvent(evt) {
@@ -43,129 +29,53 @@ app.use(bodyParser.json());
 app.use(express.static(__dirname+'/public'));
 
 app.get('/ports',function(req,res) {
-    sp.list(function(err,list) {
-
-        // format the data (workaround serialport issue on Win (&*nix?))
-        list.forEach(function(port) {
-            if(port.pnpId){
-                var data = /^USB\\VID_([a-fA-F0-9]{4})\&PID_([a-fA-F0-9]{4})/.exec(port.pnpId);
-                if(data){
-                    port.vendorId = port.vendorId || '0x'+data[1];
-                    port.productId = port.productId || '0x'+data[2];
-                }
-            }
-        });
-
-        res.send(JSON.stringify(list));
-        res.end();
+    master.listPorts(function(err, list) {
+        res.json(list).end();
     });
 });
 
 app.get('/boards',function(req,res) {
-    res.send(JSON.stringify(BOARDS));
-    res.end();
-})
+    res.json(master.getBoards()).end();
+});
 
-function makeCleanDir(outpath) {
-    if(fs.existsSync(outpath)) {
-        fs.readdirSync(outpath).forEach(function(file) {
-            fs.unlinkSync(outpath+'/'+file);
-        })
-        fs.rmdirSync(outpath);
-    }
-    fs.mkdirSync(outpath);
-    return outpath;
-}
-
-function doCompile(code,board,sketch, cb) {
-    //create output dir
-    if(!fs.existsSync('build')) {
-        fs.mkdirSync('build');
-    }
-    var outpath = makeCleanDir('build/out');
-    var sketchpath = makeCleanDir("build/tmp");
-    var inoFile = path.join(sketchpath, sketch + '.ino');
-    fs.writeFileSync(inoFile, code);
-
-    publishEvent({ type:'compile', message:'writing to ' + inoFile });
-
-    var foundBoard = null;
-    BOARDS.forEach(function(bd) {
-        if(bd.id == board) foundBoard = bd;
-    })
-    OPTIONS.device = foundBoard;
-    OPTIONS.platform = platform.getPlatform(OPTIONS.device);
-    OPTIONS.platform.installIfNeeded(function() {
-        OPTIONS.name = sketch;
-        compile.compile(sketchpath,outpath,OPTIONS, publishEvent,
-                path.join(OPTIONS.platform.getUserSketchesDir(), sketch), cb);
-    }, function(per) {
-        console.log("percentage = ",per);
-    });
-}
 
 app.post('/compile',function(req,res) {
     console.log("code = ",req.body);
-    if(!req.body.board) {
-        res.send(JSON.stringify({status:'missing board name'}));
-        res.end();
-        return;
-    }
+    if(!req.body.board) return res.json({status:'missing board name'}).end();
     try {
-        doCompile(req.body.code, req.body.board, req.body.sketch, function(err) {
-            console.log("the error was",err);
-            if(err) {
-                res.json({status:'error',message:err})
-                res.end();
-                return;
-            }
-            res.send(JSON.stringify({status:'okay'}));
-            res.end();
-        });
+        master.doCompile(req.body.code, req.body.board, req.body.sketch, function(err) {
+            if(err) return res.json({status:'error',message:err}).end();
+            res.json({status:'okay'}).end();
+        }, publishEvent);
 
     } catch(e) {
         console.log("compilation error",e);
         console.log(e.output);
-        res.send(JSON.stringify({status:'error',output:e.output, message: e.toString()}));
         publishEvent({ type:'error', message: e.toString(), output: e.output});
-        res.end();
+        res.json({status:'error',output:e.output, message: e.toString()}).end();
     }
 });
 
 app.post('/run',function(req,res) {
     console.log("body = ",req.body.code);
-    if(!req.body.board) {
-        res.send(JSON.stringify({status:'error', message:'missing board name'}));
-        res.end();
-        return;
-    }
-    if(!req.body.port) {
-        res.send(JSON.stringify({status:'error', message:'missing port name'}));
-        res.end();
-        return;
-    }
+    if(!req.body.board) return res.json({status:'error', message:'missing board name'}).end();
+    if(!req.body.port)  return res.json({status:'error', message:'missing port name'}).end();
 
-    doCompile(req.body.code,req.body.board,req.body.sketch, function(err) {
+    master.doCompile(req.body.code,req.body.board,req.body.sketch, function(err) {
+        if(err) return res.json({status:'compile error'}).end();
+
         console.log("compile is done. now on to uploading to hardware");
-        if(err) {
-            res.send(JSON.stringify({status:'compile error'}));
-            res.end();
-            return;
-        }
         var sketch = path.join('build', 'out', req.body.sketch+'.hex');
         var port = req.body.port;
 
         function doUpload() {
-            uploader.upload(sketch,port, OPTIONS, publishEvent, function(err) {
+            master.upload(sketch,port, publishEvent, function(err) {
                 console.log("fully done with upload",err);
                 if(err) {
-                    res.send(JSON.stringify({status:'upload error',err:err}));
-                    res.end();
-                    return;
+                    return res.json({status:'upload error',err:err}).end();
                 }
 
-                res.send(JSON.stringify({status:'okay'}));
-                res.end();
+                res.json({status:'okay'}).end();
                 //wait 1500ms before reopening to let everything settle down a bit.
                 if(SERIAL.open) {
                     console.log('waiting 1500ms');
@@ -182,9 +92,10 @@ app.post('/run',function(req,res) {
         } else {
             doUpload();
         }
-    });
+    },publishEvent);
 });
 
+/*
 app.post('/new',function(req,res) {
     console.log(req.body.name);
     if(!req.body.name) {
@@ -231,7 +142,9 @@ app.post('/rename',function(req,res) {
         res.end(JSON.stringify({status:'error',output:err.toString()}));
     }
 });
+*/
 
+/*
 app.post('/sketches/delete', function(req,res){
     console.log(req.body.name);
     if(!req.body.name) {
@@ -250,47 +163,50 @@ app.post('/sketches/delete', function(req,res){
         res.end(JSON.stringify({status:'error',output:err.toString()}));
     }
 });
+*/
 
+/*
 app.get('/sketches',function(req,res) {
-    sketches.listSketches(function(list) {
+    master.listSketches(function(list) {
         res.send(JSON.stringify(list));
         res.end();
     });
 });
-app.get('/sketchtree',function(req,res) {
-    sketches.listSketchesFull(function(list) {
-        res.send(JSON.stringify(list));
-        res.end();
+*/
+
+app.get('/sketches',function(req,res) {
+    master.listSketches(function(list) {
+        res.json(list).end();
     });
 })
 
+/*
 app.post('/save',function(req,res) {
     sketches.saveSketch(req.body.name,req.body.code,function(results) {
-        res.send(JSON.stringify({status:'okay', name:req.body.name}));
-        res.end();
+        res.json({status:'okay', name:req.body.name}).end();
     });
 });
+*/
 
 app.get('/sketch',function(req,res) {
     var path = req.query.id.substring(0,req.query.id.lastIndexOf('/'));
-    sketches.getSketch(path, function(sketch) {
-        res.send(sketch);
-        res.end();
+    master.getSketch(path, function(sketch) {
+        res.json(sketch).end();
     });
 });
 
+/*
 app.get('/sketchfile', function(req,res) {
     sketches.getFile(req.query.id,function(file) {
-        res.json(file);
-        res.end();
+        res.json(file).end();
     })
 });
+*/
 
 app.get('/search',function(req,res){
-    LIBS.search(req.query.query,function(results) {
-        res.send(results);
-        res.end();
-    })
+    master.searchLibraries(req.query.query, function(results) {
+        res.json(results).end();
+    });
 })
 
 
