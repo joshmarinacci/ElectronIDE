@@ -74,6 +74,9 @@ app.on('ready', function() {
         master.searchLibraries(query, function(results) {
             event.sender.send('search',results);
         });
-    })
+    });
 
+    ipc.on('boards', function(event) {
+        event.sender.send('boards',master.getBoards());
+    });
 });

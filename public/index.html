@@ -169,9 +169,9 @@ app
             var q = this.boardQuery.toLowerCase();
             if(q.length < 2) return;
             this.boardResultsVisible = true;
-            $http.get('/boards').then(function(res) {
+            AtomShell.send('boards', null, function(data) {
                 self.boardResults = [];
-                res.data.forEach(function(board) {
+                data.forEach(function(board) {
                     if(board.id.toLowerCase().indexOf(q) >= 0
                      || board.name.toLowerCase().indexOf(q) >= 0)
                      {
