@@ -43,13 +43,17 @@
                     <ul class='uk-tab'>
                         <li class='uk-active'><a ng-click="sb.setTab('console')">Console</a></li>
                         <li><a ng-click="sb.setTab('docs')">Docs</a></li>
+                        <li><a ng-click="sb.setTab('debug')">Debug</a></li>
                     </ul>
                     <div class='grow'>
-                        <div ng-show="sb.showDocs">
-                            <div ng-include="'docs_panel.html'"></div>
-                        </div>
                         <div ng-show="sb.showConsole">
                             <div ng-include="'serialconsole/serialconsole.html'"></div>
+                        </div>
+                        <div ng-show="sb.showDocs">
+                            <div ng-include="'docspanel/docspanel.html'"></div>
+                        </div>
+                        <div ng-show='sb.showDebug'>
+                            <div ng-include="'debugconsole/debugconsole.html'"></div>
                         </div>
                     </div>
                 </div>
@@ -334,13 +338,15 @@ app
 
     .controller('SidebarCtrl', ['$http', function($http){
         this.tab = 'console';
-        this.showConsole = false;
-        this.showDocs = true;
+        this.showConsole    = true;
+        this.showDocs       = false;
+        this.showDebug      = false;
         this.setTab = function(tab) {
             console.log('swapping tabs',this.tab);
             this.tab = tab;
             this.showConsole = (this.tab == 'console');
             this.showDocs = (this.tab == 'docs');
+            this.showDebug = (this.tab == 'debug');
         }
     }])
 
