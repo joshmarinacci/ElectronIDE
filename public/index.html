@@ -24,11 +24,11 @@
 
             <div id='editor'      class='content grow'>
                 <div class='vbox panel'>
-                    <h3>{{ctrl.sketchName}}
+                    <h3 class='fix'>{{ctrl.sketchName}}
                         <button ng-click='ctrl.openLibrary()'
                             class='uk-button uk-button-success uk-button-mini uk-float-right'> Library</button>
                     </h3>
-                    <ul class='uk-tab'>
+                    <ul class='uk-tab fix'>
                         <li ng-repeat='file in ctrl.files' ng-class='ctrl.getActive(file.filename)'>
                             <a href='#' ng-click="ctrl.switchTab(file.filename)">{{file.filename}}</a>
                         </li>
@@ -39,8 +39,8 @@
 
             <div id='sidebar'     class='right'>
                 <div class='vbox panel' ng-controller='SidebarCtrl as sb'>
-                    <h3>Tools</h3>
-                    <ul class='uk-tab'>
+                    <h3 class='fix'>Tools</h3>
+                    <ul class='uk-tab fix'>
                         <li class='uk-active'><a ng-click="sb.setTab('console')">Console</a></li>
                         <li><a ng-click="sb.setTab('docs')">Docs</a></li>
                         <li><a ng-click="sb.setTab('debug')">Debug</a></li>
@@ -63,7 +63,7 @@
         </div>
     </div>
 
-    <div id='footer' class='bottom toolbar'>
+    <div id='footer' class='bottom toolbar fix'>
         <button class='uk-button'
             ng-click='ctrl.collapseLeft()'><i class='uk-icon-caret-left'></i> File Browser</button>
         <span class='spacer'></span>
@@ -386,6 +386,11 @@ app
     position: relative;
     border: 0px solid green;
     overflow: scroll;
+}
+
+.fix {
+    flex-shrink: 0;
+    -webkit-flex-shrink: 0;
 }
 
 .top, .left, .bottom, .right {
