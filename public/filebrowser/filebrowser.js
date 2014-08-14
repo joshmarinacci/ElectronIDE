@@ -1,8 +1,10 @@
-app.controller('FilebrowserCtrl', ['Sketch','$http',function(Sketch,$http){
+app.controller('FilebrowserCtrl', ['Sketch','$http','$rootScope','AtomShell',
+    function(Sketch,$http, $rootScope, AtomShell){
         this.sketches = [];
         var self = this;
-        $http.get('/sketches').then(function(res) {
-            self.sketches = res.data;
+
+        AtomShell.send('sketches',null,function(files) {
+            self.sketches = files;
         });
         this.loadFile = function(file) {
             Sketch.loadSketch(file);
