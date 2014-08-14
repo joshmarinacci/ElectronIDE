@@ -65,7 +65,7 @@ app.on('ready', function() {
             console.log("compilation error",e);
             console.log(e.output);
             publishEvent({ type:'error', message: e.toString(), output: e.output});
-            res.json({status:'error',output:e.output, message: e.toString()}).end();
+            event.sender.send('compile',{status:'error',output:e.output, message: e.toString()});
         }
 
     })

@@ -24,10 +24,24 @@ wrench.copyDirSyncRecursive(
 var pkg = {
   "name"    : "your-app",
   "version" : "0.1.0",
-  "main"    : "main.js"
+  "main"    : "main.js",
+  "dependencies": {
+    "adm-zip": "^0.4.4",
+    "arduinodata": ">=0.1.0",
+    "async": "^0.9.0",
+    "express": "^4.4.2",
+    "moment": "^2.6.0",
+    "multer": "^0.1.0",
+    "nodejs-websocket": "^0.1.5",
+    "tar": "^0.1.19",
+    "unzip": "^0.1.9",
+    "wrench": "^1.5.8",
+    "body-parser": "^1.5.2",
+    "ncp": "~0.6.0"
+  }
 };
 
-fs.writeFileSync('build_atomshell/public/package.json',JSON.stringify(pkg));
+fs.writeFileSync('build_atomshell/public/package.json',JSON.stringify(pkg,null,'  '));
 fs.writeFileSync('build_atomshell/public/main.js',fs.readFileSync('main.js').toString());
 fs.writeFileSync('build_atomshell/public/master.js',fs.readFileSync('master.js').toString());
 
