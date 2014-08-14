@@ -1,7 +1,7 @@
 var fs = require('fs');
 var wrench = require('wrench');
 
-var ATOM_PATH = "/Users/josh/Downloads/atom-shell-v0-3/Atom.app";
+var ATOM_PATH = "/Users/josh/Downloads/atom-shell-v0/Atom.app";
 var BUILD_DIR = 'build_atomshell';
 
 console.log("Making Atom Shell build",ATOM_PATH,BUILD_DIR);
