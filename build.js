@@ -68,4 +68,11 @@ ncp(__dirname,"build_atomshell/public", {
     }
 }, function(err) {
     console.log('cpying is done');
+
+
+    require('child_process').exec('npm install', {
+        cwd: 'build_atomshell/public'
+    }, function(err,stdout,stderr) {
+        console.log("output was",stdout,stderr);
+    });
 })
