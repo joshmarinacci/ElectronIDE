@@ -36,11 +36,13 @@ app.on('ready', function() {
 
 
     var ipc = require('ipc');
+
     ipc.on('sketches', function(event, arg) {
       master.listSketches(function(list) {
           event.sender.send('sketches',list);
       });
     });
+
     ipc.on('sketch', function(event, id) {
       var path = id.substring(0,id.lastIndexOf('/'));
       master.getSketch(path,function(list) {
@@ -48,6 +50,7 @@ app.on('ready', function() {
           event.sender.send('sketch',list);
       });
     });
+
     ipc.on('compile', function(event, arg) {
         var req = {};
         req.body = arg;

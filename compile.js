@@ -104,8 +104,7 @@ function calculateLibs(list, paths, libs, debug, cb, plat) {
                 return;
             }
             if(!lib.isInstalled()) {
-                debug("not installed yet. we must install it");
-                throw new Error("library should alredy be installed! " + libname);
+                throw new Error("library should already be installed! " + libname);
             }
             debug("include path = ",lib.getIncludePaths(plat));
             lib.getIncludePaths(plat).forEach(function(path) { paths.push(path); });
@@ -254,9 +253,15 @@ function processList(list, cb, publish) {
 }
 
 exports.compile = function(sketchPath, outdir,options, publish, sketchDir, finalcb) {
+    console.log("compiling to");
+    console.log("sketchpath ", sketchPath);
+    console.log("outdir = ", outdir);
+//    console.log("optiosn = ", options);
+    console.log("sketchdir = ", sketchDir);
     var errorHit = false;
     function debug(message) {
         var args = Array.prototype.slice.call(arguments);
+        console.log("message = " + message + args.join(" "));
         if(message instanceof Error) {
             errorHit = true;
             publish({type:'error', message: args.join(" ") + message.output});
@@ -270,21 +275,20 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
     debug("compiling ",sketchPath,"to dir",outdir);
     debug("root sketch dir = ",sketchDir);
 
-    var tmp = "build/tmp";
     wrench.rmdirSyncRecursive(outdir, true);
-    wrench.mkdirSyncRecursive(tmp);
     wrench.mkdirSyncRecursive(outdir);
+//    wrench.mkdirSyncRecursive(sketchPath);
 
 
 
 
-    debug("assembling the sketch in the directory",tmp);
-    checkfile(tmp);
+    debug("assembling the sketch in the directory",outdir);
+    checkfile(outdir);
 
 
     var tasks = [];
 
-    var cfile = tmp+'/'+options.name+'.cpp';
+    var cfile = outdir + '/' + options.name + '.cpp';
     var cfiles = [];
     var includepaths = [];
     var libextra = [];
@@ -303,9 +307,9 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
             fs.writeFileSync(outdir+'/'+file,text);
         }
         fs.readdirSync(sketchDir).forEach(function(file) {
-            if(file.toLowerCase().endsWith('.h')) copyToDir(file,sketchDir,tmp);
-            if(file.toLowerCase().endsWith('.cpp')) copyToDir(file,sketchDir,tmp);
-            cfiles.push(tmp+'/'+file);
+            if(file.toLowerCase().endsWith('.h')) copyToDir(file,sketchDir,sketchPath);
+            if(file.toLowerCase().endsWith('.cpp')) copyToDir(file,sketchDir,sketchPath);
+            cfiles.push(sketchPath+'/'+file);
         });
         cb();
     });
@@ -370,7 +374,7 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
                     })
                 ;
             });
-
+            debug('cfiles',cfiles);
             compileFiles(options, outdir, includepaths, cfiles, debug,cb);
         },cb);
     });
@@ -417,7 +421,7 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
                     if(file.endsWith('.cpp')) return true;
                     return false;
                 }).map(function(filename) {
-                    libofiles.push('build/out/'+filename.substring(filename.lastIndexOf('/')+1) + '.o');
+                    libofiles.push(outdir+'/'+filename.substring(filename.lastIndexOf('/')+1) + '.o');
                 });
             });
         });

@@ -1,5 +1,6 @@
 console.log("inside of the master controller");
 var fs = require('fs');
+var os = require('os');
 var path = require('path');
 var compile = require('./compile');
 //var sp = require('serialport');
@@ -53,12 +54,15 @@ exports.getBoards = function() {
 
 
 exports.doCompile = function(code,board,sketch, cb, publishEvent) {
+    var BUILD_DIR = os.tmpdir() + 'build';
+    publishEvent({ type:'compile', message:BUILD_DIR});
+    console.log("compiling with build dir:", BUILD_DIR);
     //create output dir
-    if(!fs.existsSync('build')) {
-        fs.mkdirSync('build');
+    if(!fs.existsSync(BUILD_DIR)) {
+        fs.mkdirSync(BUILD_DIR);
     }
-    var outpath = makeCleanDir('build/out');
-    var sketchpath = makeCleanDir("build/tmp");
+    var outpath    = makeCleanDir(BUILD_DIR+'/out');
+    var sketchpath = makeCleanDir(BUILD_DIR+"/tmp");
     var inoFile = path.join(sketchpath, sketch + '.ino');
     fs.writeFileSync(inoFile, code);
 

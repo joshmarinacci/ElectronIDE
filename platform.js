@@ -49,7 +49,6 @@ function Platform() {
         return this.root + '/libraries';
     }
     this.getCorePath = function() {
-        console.log('getting',this.device);
         return this.root + '/hardware/arduino/cores/'+this.device.build.core;
     }
     this.getVariantPath = function() {

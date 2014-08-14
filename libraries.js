@@ -15,10 +15,17 @@ var plat = platform.getDefaultPlatform();
 
 function isInstalled() {
     console.log('checking if',this.id,'is installed');
-    if(this.source == 'ide') return true;
+    if(this.source == 'ide') {
+        console.log("  it's IDE. already installed");
+        return true;
+    }
     var path = plat.getReposPath()+'/'+this.id;
     console.log('checking if path exists',path);
-    if(fs.existsSync(plat.getReposPath()+'/'+this.id)) return true;
+    if(fs.existsSync(plat.getReposPath()+'/'+this.id)) {
+        console.log("  it exists. already installed");
+        return true;
+    }
+    console.log("   not installed");
     return false;
 }
 
@@ -87,7 +94,7 @@ function install(cb) {
         if(this.location.indexOf('https://') == 0) {
             var req = https.get(this.location);
         } else {
-            var req = http.get(this.locatin);
+            var req = http.get(this.location);
         }
         req.on('response',function(res) {
                 console.log("response");
