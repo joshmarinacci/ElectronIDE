@@ -20,7 +20,23 @@ buildapp(
             'build/linux32',
             '/resources/app',
             function() {
-                console.log("done");
+                console.log("done with linux 32");
+                buildapp(
+                    "/Users/josh/projects/atomshell/v0.15.4/linux64",
+                    'build/linux64',
+                    '/resources/app',
+                    function() {
+                        console.log("done with linux 64")
+                        buildapp(
+                            "/Users/josh/projects/atomshell/v0.15.4/win32",
+                            'build/win32',
+                            '/resources/app',
+                            function() {
+                                console.log("done with win 32")
+                            }
+                        );
+                    }
+                );
             }
         );
     }
