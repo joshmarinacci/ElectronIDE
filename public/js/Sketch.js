@@ -42,7 +42,6 @@ app.factory('Sketch', ['$http','AtomShell',function($http,AtomShell) {
             console.log("loading the sketch",file);
             var self = this;
             AtomShell.send('sketch',file.id, function(data) {
-                console.log("got back sketch " + data);
                 self.files = data.files;
                 self.sketchName = data.name;
                 self.listeners.forEach(function(l) {

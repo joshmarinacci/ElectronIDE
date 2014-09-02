@@ -1,5 +1,17 @@
-var ipc = require('ipc');
-app.factory('Monitor', ['$rootScope',function($rootScope) {
+if(typeof require == 'undefined') {
+    console.log("we are in the browser");
+    app.factory('Monitor', ['$rootScope', function($rootScope) {
+        return {
+            on: function(callback) {
+                console.log("adding a monitoring callback");
+            }
+        }
+    }]);
+
+} else {
+
+    var ipc = require('ipc');
+    app.factory('Monitor', ['$rootScope',function($rootScope) {
     /*
         var wsurl = "ws:" + location.hostname + ":4203";
         var monitor = new WebSocket(wsurl);
@@ -33,3 +45,4 @@ app.factory('Monitor', ['$rootScope',function($rootScope) {
             }
         }
     }]);
+}
