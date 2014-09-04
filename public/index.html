@@ -272,8 +272,10 @@ app
             editor.insert('#include <'+lib.name+'.h>\n');
         }
         function rescan() {
-            $http.get('/ports').then(function(res) {
-                self.ports = res.data;
+            AtomShell.send('ports',null, function(data) {
+                console.log("got ports back");
+                console.log(data);
+                self.ports = data;
                 self.ports.unshift({
                     comName:'None',
                 })

@@ -1,9 +1,17 @@
 console.log("inside of the master controller");
+console.log("node version = ", process.versions);
 var fs = require('fs');
 var os = require('os');
 var path = require('path');
 var compile = require('./compile');
+console.log("about to load the serial port");
+try {
 var sp = require('serialport');
+} catch(e) {
+    console.log("error loading serial port");
+    console.log(e);
+    console.log(e.stack);
+}
 var uploader = require('./uploader');
 var settings = require('./settings.js');
 var sketches = require('./sketches.js');

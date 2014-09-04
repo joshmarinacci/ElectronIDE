@@ -2,19 +2,38 @@ var fs = require('fs');
 var wrench = require('wrench');
 var ncp = require('ncp').ncp;
 
-//var ATOM_PATH = "/Users/josh/projects/atomshell/v0.15.4/mac/Atom.app";
-//var BUILD_DIR = 'build_atomshell';
+/*
+ run app with
+ build/mac/Atom.app/Contents/MacOS/Atom build/mac/Atom.app/Contents/Resources/app
 
+*/
 
 
 if(!fs.existsSync('build')) fs.mkdirSync('build');
 
+var atom_to_node_versions = {
+    'v0.13.3':'0.11.10',
+}
+
+var ATOM_VERSION = 'v0.13.3';
+
+var atom_node = atom_to_node_versions[ATOM_VERSION];
+var build_node = process.versions.node;
+console.log("node version we will run under",atom_node);
+console.log("current node version = ",build_node);
+if(atom_node != build_node) {
+    console.log("WARNING! This wont work. build node doesn't match atom node");
+    return;
+}
+
+
 buildapp(
-    "/Users/josh/projects/atomshell/v0.15.4/mac",
+    "/Users/josh/projects/atomshell/"+ATOM_VERSION+"/mac",
     'build/mac',
     '/Atom.app/Contents/Resources/app',
     function() {
         console.log("done with mac. doing next");
+        /*
         buildapp(
             "/Users/josh/projects/atomshell/v0.15.4/linux32",
             'build/linux32',
@@ -39,6 +58,7 @@ buildapp(
                 );
             }
         );
+        */
     }
 );
 
@@ -110,6 +130,7 @@ function buildPackageJson(cb) {
         "unzip": "^0.1.9",
         "wrench": "^1.5.8",
         "body-parser": "^1.5.2",
+        "serialport": "1.4.1", //pin serialport version for atom compatibility
         "ncp": "~0.6.0"
       }
     };
@@ -119,10 +140,6 @@ function buildPackageJson(cb) {
     if(cb) cb();
 }
 
-
-    //fs.mkdirSync('build_atomshell/public');
-    //fs.writeFileSync('build_atomshell/public/main.js',fs.readFileSync('main.js').toString());
-    //fs.writeFileSync('build_atomshell/public/master.js',fs.readFileSync('master.js').toString());
 
 
 function copyServer(cb) {

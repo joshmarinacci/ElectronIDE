@@ -51,6 +51,12 @@ app.on('ready', function() {
       });
     });
 
+    ipc.on('ports', function(event, arg) {
+        master.listPorts(function(err,list) {
+            event.sender.send('ports',list);
+        })
+    })
+
     ipc.on('compile', function(event, arg) {
         var req = {};
         req.body = arg;
