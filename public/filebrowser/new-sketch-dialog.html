@@ -1,0 +1,13 @@
+<div class='uk-modal-dialog'>
+    <h3 class='header'>Create New Sketch</h3>
+    <form class='uk-form'>
+        <input type='text'
+            placeholder='new sketch name'
+            ng-model='ctrl.newSketchName'
+            >
+    </form>
+    <div class='footer'>
+        <button ng-click='ctrl.cancelNewSketchDialog()' class='uk-button'>cancel</button>
+        <button ng-click='ctrl.acceptNewSketchDialog()' class='uk-button uk-button-primary'>create</button>
+    </div>
+</div>

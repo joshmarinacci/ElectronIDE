@@ -34,6 +34,7 @@ app.get('/ports',function(req,res) {
     });
 });
 
+
 app.get('/boards',function(req,res) {
     res.json(master.getBoards()).end();
 });
@@ -173,6 +174,14 @@ app.get('/sketches',function(req,res) {
     });
 });
 */
+app.post('/sketches_new',function(req,res) {
+    console.log("getting some new sketches",req.body);;
+    master.makeNewSketch(req.body.name, function(result){ res.json(result).end() });
+})
+app.post('/sketches_delete',function(req,res) {
+    console.log("deleting a sketch",req.body);;
+    master.deleteSketch(req.body.name, function(result){ res.json(result).end() });
+})
 
 app.get('/sketches',function(req,res) {
     master.listSketches(function(list) {

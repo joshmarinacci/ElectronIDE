@@ -99,6 +99,13 @@ exports.listSketches = function(cb) {
     sketches.listSketchesFull(cb);
 }
 
+exports.makeNewSketch = function(name,cb) {
+    sketches.makeNewSketch(name,cb);
+}
+exports.deleteSketch = function(name,cb) {
+    sketches.deleteSketch(name,cb);
+}
+
 exports.searchLibraries = function(query,cb) {
     LIBS.search(query,cb);
 }

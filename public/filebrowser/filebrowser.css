@@ -15,3 +15,7 @@
 #filebrowser .tree-node-closed ul {
     display: none;
 }
+
+#filebrowser li.selected {
+    background-color: #cccccc;
+}

@@ -18,7 +18,7 @@
         <div class='hbox'>
 
             <div id='filebrowser' class='left'>
-                <div class='vbox panel' ng-include="'filebrowser/filebrowser.html'"></div>
+                <div ng-include="'filebrowser/filebrowser.html'"></div>
                 <div class='divider divider-left'></div>
             </div>
 
@@ -98,6 +98,13 @@
      class='uk-modal'
      ng-include="'boardpicker/boardpicker.html'"></div>
 
+<div id='new-sketch-dialog'
+     class='uk-modal'
+     ng-include="'filebrowser/new-sketch-dialog.html'"></div>
+
+<div id='delete-sketch-dialog'
+     class='uk-modal'
+     ng-include="'filebrowser/delete-sketch-dialog.html'"></div>
 
 
 <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular.js'></script>
@@ -136,10 +143,9 @@ var editorInit = function() {
 $(document).ready(editorInit);
 
 app
-    .controller('MainCtrl', ['Sketch','$http', 'Monitor', 'AtomShell',
-    function(Sketch,$http,Monitor, AtomShell) {
+    .controller('MainCtrl', ['Sketch','$http', 'Monitor', 'AtomShell', '$rootScope', '$scope',
+    function(Sketch,$http,Monitor, AtomShell, $rootScope, $scope) {
         var self = this;
-        this.settingsVisible = false;
         this.boardSearchVisible = false;
         this.debugVisible = false;
 
@@ -195,10 +201,10 @@ app
         }
 
         this.openSettings = function() {
-            self.settingsVisible = true;
+            $.UIkit.modal('#settings').show();
         }
         this.closeSettings = function() {
-            self.settingsVisible = false;
+            $.UIkit.modal('#settings').hide();
         }
         this.openLibrary = function() {
             $.UIkit.modal('#librarypicker').show();
@@ -206,6 +212,41 @@ app
         this.closeLibrary = function() {
             $.UIkit.modal('#librarypicker').hide();
         }
+        this.openNewSketchDialog = function() {
+            $.UIkit.modal('#new-sketch-dialog').show();
+        }
+        this.cancelNewSketchDialog = function() {
+            $.UIkit.modal('#new-sketch-dialog').hide();
+        }
+        this.acceptNewSketchDialog = function() {
+            $.UIkit.modal('#new-sketch-dialog').hide();
+            console.log("going to create a new sketch with the name",this.newSketchName);
+            AtomShell.send('sketches_new',{name:this.newSketchName},function(res) {
+                console.log("the result is ",res);
+                $rootScope.$broadcast('newsketch',[res]);
+            });
+
+        }
+        this.openDeleteSketchDialog = function() {
+            $.UIkit.modal('#delete-sketch-dialog').show();
+        }
+        this.cancelDeleteSketchDialog = function() {
+            $.UIkit.modal('#delete-sketch-dialog').hide();
+        }
+        this.acceptDeleteSketchDialog = function() {
+            $.UIkit.modal('#delete-sketch-dialog').hide();
+            console.log("going to delete a new sketch with the name",this.selectedSketch.id);
+            AtomShell.send('sketches_delete',{name:this.selectedSketch.id},function(res) {
+                console.log("the result is ",res);
+                $rootScope.$broadcast('deletesketch',res);
+            });
+        }
+
+        $scope.$on('selectnode',function(event,node) {
+            console.log('selected a node',node);
+            self.selectedSketch = node;
+        })
+
         this.openDebugConsole = function() {
             self.debugVisible = true;
         }

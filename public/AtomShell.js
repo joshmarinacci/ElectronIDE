@@ -19,11 +19,19 @@ if(typeof require == 'undefined') {
                         cb(res.data);
                     });
                 }
+                if(command == 'sketches_new' || command == 'sketches_delete') {
+                    console.log("sending sketches new/delete");
+                    $http.post('/'+command,args).then(function(res) {
+                        console.log('command',command,'returned',res.data);
+                        cb(res.data);
+                    });
+                }
 
                 if(command == 'compile') {
                     console.log("compling",args);
                     $http.post('/'+command,args).then(function(res) {
                         console.log('command',command,'returned',res.data);
+                        cb(res.data);
                     });
                 }
                 if(command == 'ports') {
