@@ -17,7 +17,7 @@
     <div class='middle grow'>
         <div class='hbox'>
 
-            <div id='filebrowser' class='left'>
+            <div id='filebrowser' class='left' ng-class='ctrl.getCollapseClasses()'>
                 <div ng-include="'filebrowser/filebrowser.html'"></div>
                 <div class='divider divider-left'></div>
             </div>
@@ -37,7 +37,7 @@
                 </div>
             </div>
 
-            <div id='sidebar'     class='right'>
+            <div id='sidebar' class='right' ng-class='ctrl.getCollapseClasses()'>
                 <div class='vbox panel' ng-controller='SidebarCtrl as sb'>
                     <h3 class='fix'>Tools</h3>
                     <ul class='uk-tab fix'>
@@ -442,6 +442,8 @@ app
 .left, .right {
     width: 300px;
 }
+
+.left.left-collapse, .right.right-collapse   { display: none; }
 
 
 
