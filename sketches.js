@@ -80,7 +80,7 @@ var SKETCH_DIR_FILTER = function(file) {
     return true;
 }
 exports.listSketchesFull = function(cb) {
-
+    plat.verifyUserSketchesDir();
     fs.readdir(plat.getUserSketchesDir(), function(err,list) {
         list = list.filter(SKETCH_DIR_FILTER).map(function(dir) {
             var ret = {

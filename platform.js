@@ -25,7 +25,12 @@ function Platform() {
         }
         return this.getUserHome() + '/ElectronIDE/downloads';
     }
-
+    this.verifyUserSketchesDir = function() {
+        var dir = this.getUserSketchesDir();
+        if(!fs.existsSync(dir)) {
+            fs.mkdirSync(dir);
+        }
+    }
     this.getUserSketchesDir = function() {
         if(settings.usersketches) return settings.usersketches;
 
