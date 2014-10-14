@@ -48,6 +48,15 @@ app.factory('Sketch', ['$http','AtomShell',function($http,AtomShell) {
                     l();
                 })
             });
+        },
+        saveSketch: function(file) {
+            console.log('saving the sketch file',file);
+            AtomShell.send('save',{
+                code:editor.getValue(),
+                file:file,
+            },function(data) {
+                console.log("got back from saving");
+            })
         }
 
     }

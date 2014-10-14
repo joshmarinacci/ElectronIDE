@@ -7,7 +7,6 @@ var platform = require('./platform');
 
 
 
-var settings = require('./settings.js');
 var master = null;
 var libs = null;
 var plat = platform.getDefaultPlatform();
@@ -127,8 +126,8 @@ function install(cb) {
 function init() {
     if(libs == null) {
         libs = [];
-        fs.readdirSync(settings.datapath).forEach(function(file){
-            var str = fs.readFileSync(settings.datapath+'/'+file).toString();
+        fs.readdirSync(platform.getSettings().datapath).forEach(function(file){
+            var str = fs.readFileSync(platform.getSettings().datapath+'/'+file).toString();
             var lib = JSON.parse(str);
             lib.isInstalled = isInstalled;
             lib.install = install;
@@ -164,7 +163,7 @@ exports.install = function(targets, cb) {
             if(lib == null) return false;
             return !lib.isInstalled();
           });
-    //console.log("need to install", toinstall);
+    console.log("need to install", toinstall);
     var deps = [];
     toinstall.forEach(function(lib) {
         collectdeps(lib,deps);
@@ -225,6 +224,7 @@ exports.isUserLib = function(libname, plat) {
         console.log('exists. its a user lib');
         return true;
     }
+    console.log("user lib does not exist",libname);
     return false;
 }
 

@@ -1,5 +1,4 @@
 var fs = require('fs');
-var settings = require('./settings');
 var http = require('http');
 var util = require('./util');
 
@@ -8,6 +7,14 @@ var CLOUDPATH = 'http://joshondesign.com/p/apps/electron/platforms';
 var VERSION = "1.0.5";
 
 console.log("os = ",process.platform);
+
+var settings = {
+    datapath:  __dirname+"/node_modules/arduinodata/libraries",
+    boardpath: __dirname+"/node_modules/arduinodata/boards",
+    sketchtemplate: "sketchtemplate.ino",
+};
+
+
 
 function Platform() {
     this.os = process.platform;
@@ -32,8 +39,7 @@ function Platform() {
         }
     }
     this.getUserSketchesDir = function() {
-        if(settings.usersketches) return settings.usersketches;
-
+        if(settings.user_sketches_dir) return settings.user_sketches_dir;
         if(this.os == 'darwin') {
             return this.getUserHome()+'/Documents/Arduino';
         }
@@ -201,3 +207,43 @@ exports.getPlatform = function(device) {
     if(device.id == 'flora') return Object.create(_flora).init(device);
     return Object.create(_default).init(device);
 }
+
+exports.getSettings = function() {
+    var cln = {};
+    for(var name in settings) {
+        cln[name] = settings[name];
+    }
+    cln.user_sketches_dir = exports.getDefaultPlatform().getUserSketchesDir();
+    return cln;
+}
+
+exports.setSettings = function(newset, cb) {
+    console.log("WRITING SETTINGS ",SETTINGS_FILE);
+    console.log("new settings = ", newset);
+    fs.writeFile(SETTINGS_FILE,JSON.stringify(newset,null,'  '), function(e) {
+        console.log("done writing",e);
+        settings = newset;
+        cb();
+    })
+}
+
+var SETTINGS_FILE = __dirname+"/settings.json";
+exports.loadSettings = function() {
+    console.log("LOADING SETTINGS",SETTINGS_FILE);
+    if(!fs.existsSync(SETTINGS_FILE)) return;
+    var json = fs.readFileSync(SETTINGS_FILE);
+    try {
+        var ext_settings = JSON.parse(json);
+        console.log('ext settings = ',ext_settings);
+        console.log("settings",settings);
+        for(var name in ext_settings) {
+            settings[name] = ext_settings[name];
+        }
+        console.log("settings",settings);
+    } catch (e) {
+        console.log("error loading the settings",e);
+    }
+}
+
+
+exports.loadSettings();

@@ -189,15 +189,24 @@ app.get('/sketches',function(req,res) {
     });
 })
 
-/*
-app.post('/save',function(req,res) {
-    sketches.saveSketch(req.body.name,req.body.code,function(results) {
-        res.json({status:'okay', name:req.body.name}).end();
+
+app.post('/get_settings',function(req,res) {
+    master.getSettings({},function(result){ res.json(result).end() });
+})
+app.post('/set_settings',function(req,res) {
+    master.setSettings(req.body,function(result){ res.json(result).end() });
+})
+
+
+app.post('/save',function(req, res) {
+    //console.log(req.body);
+    master.saveSketch(req.body,function(results) {
+        res.json({status:'okay'}).end();
     });
 });
-*/
 
-app.get('/sketch',function(req,res) {
+
+app.get('/sketch',function(req, res) {
     var path = req.query.id.substring(0,req.query.id.lastIndexOf('/'));
     master.getSketch(path, function(sketch) {
         res.json(sketch).end();

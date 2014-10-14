@@ -15,9 +15,9 @@ var BUILD_DIR = os.tmpdir() + '/build/out';
 //var sketchPath = 'test/examples/NESTest/';
 //var sketchPath = '/Users/josh/projects/Digistump/hardware/digistump/avr/libraries/SPI/examples/DigitalPotControl';
 //var sketchPath = '/Users/josh/Documents/Arduino/BetterName2';
-//var sketchPath = '/Users/josh/Documents/Arduino/BleRobot2';
+var sketchPath = '/Users/josh/Documents/Arduino/BleRobot2';
 //var sketchPath = '/Users/josh/Documents/Arduino/DigitalPotControl';
-var sketchPath = '/Users/josh/Documents/Arduino/DrawBot2';
+//var sketchPath = '/Users/josh/Documents/Arduino/DrawBot2';
 
 /*
 
@@ -45,7 +45,8 @@ options.platform.installIfNeeded(function() {
 },debug);
 */
 
-var code = fs.readFileSync(sketchPath+'/DrawBot2.ino').toString();
+//var code = fs.readFileSync(sketchPath+'/DrawBot2.ino').toString();
+var code = fs.readFileSync(sketchPath+'/BleRobot2.ino').toString();
 //console.log('code = ', code);
 master.doCompile(code, "uno", 'DrawBot2',
 function() {
