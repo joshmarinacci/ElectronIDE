@@ -35,13 +35,17 @@ if(!fs.existsSync('build')) fs.mkdirSync('build');
 var atom_to_node_versions = {
     'v0.13.3':'0.11.10',
     'v0.16.3':'0.11.13',
+    'v0.17.0':'0.11.14',
     'v0.17.1':'0.11.14', // ????
     'v0.17.2':'0.11.14',
+    'v0.18.1':'0.11.14',
 }
 
 //var ATOM_VERSION = 'v0.13.3';
 var ATOM_VERSION = 'v0.17.1';
+var ATOM_VERSION = 'v0.18.1';
 var ATOM_VERSION = 'v0.16.3';
+
 console.log("node is ",process.version);
 
 var atom_node = atom_to_node_versions[ATOM_VERSION];
@@ -65,7 +69,8 @@ installDeps(appdir,function() {
 return;
 */
 
-buildapp(
+
+/*buildapp(
     "../atomshell/"+ATOM_VERSION+"/win32",
     'build/win32',
     '/resources/app',
@@ -74,6 +79,7 @@ buildapp(
     }
 );
 return;
+*/
 
 /*
 
@@ -89,6 +95,7 @@ buildapp(
 
 return;
 */
+
 buildapp(
     "/Users/josh/projects/atomshell/"+ATOM_VERSION+"/mac",
     'build/mac',
@@ -215,15 +222,15 @@ function installDeps(APP_DIR, cb) {
         'install',
         "--dd",
         "--target=0.11.13",
-        "--msvs_version=2010",
+        //"--msvs_version=2010",
         "--disturl=https://gh-contractor-zcbenz.s3.amazonaws.com/atom-shell/dist",
-        "--arch=ia32",
-        "--target_arch=ia32",
-        //"--arch=x64",
-        //"--target_arch=x64",
+        //"--arch=ia32",
+        //"--target_arch=ia32",
+        "--arch=x64",
+        "--target_arch=x64",
     ];
     var bin = 'npm';
-    var bin = 'C:\\Program Files\\nodejs\\npm.cmd';
+    //var bin = 'C:\\Program Files\\nodejs\\npm.cmd';
     console.log("NPM exists",fs.existsSync(bin));
     var ch = require('child_process').spawn(bin,args, {  cwd: APP_DIR });
     ch.stdout.pipe(process.stdout);
