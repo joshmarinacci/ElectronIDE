@@ -200,11 +200,21 @@ app
             this.boardSearchVisible = false;
         }
 
-        this.openSettings = function() {
-            $.UIkit.modal('#settings').show();
+        this.settings = {
         }
-        this.closeSettings = function() {
+        this.openSettings = function() {
+            AtomShell.send("get_settings",{},function(res) {
+                self.settings = res;
+                $.UIkit.modal('#settings').show();
+            })
+        }
+        this.closeSettings = function(save) {
             $.UIkit.modal('#settings').hide();
+            if(save) {
+                AtomShell.send('set_settings',self.settings,function(res) {
+                    $rootScope.$broadcast('newsketch',[res]);
+                });
+            }
         }
         this.openLibrary = function() {
             $.UIkit.modal('#librarypicker').show();
@@ -245,6 +255,8 @@ app
         $scope.$on('selectnode',function(event,node) {
             console.log('selected a node',node);
             self.selectedSketch = node;
+            self.selectedDir = node.id;
+            self.selectedFile = node.files[0].id;
         })
 
         this.openDebugConsole = function() {
@@ -281,6 +293,10 @@ app
                 }
             });
         }
+        this.save = function() {
+            Sketch.saveSketch(self.selectedFile);
+        }
+
 
         this.getActive = function(tab) {
             return {
@@ -291,6 +307,7 @@ app
             self.tab = tab;
             this.files.forEach(function(file) {
                 if(file.filename == self.tab) {
+                    self.selectedFile = self.selectedDir+'/'+file.filename;
                     editor.setValue(file.content);
                     editor.clearSelection();
                     editor.gotoLine(0);

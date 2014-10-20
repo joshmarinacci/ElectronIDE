@@ -13,16 +13,15 @@ var sp = require('serialport');
     console.log(e.stack);
 }
 var uploader = require('./uploader');
-var settings = require('./settings.js');
 var sketches = require('./sketches.js');
 var serial = require('./serial.js');
 var platform = require('./platform');
 var LIBS   = require('./libraries');
 var BOARDS = require('./boards').loadBoards();
 var OPTIONS = {
-    userlibs: settings.userlibs
+    userlibs: platform.getSettings().userlibs
 }
-console.log('settings',settings);
+console.log('settings',platform.getSettings());
 console.log("options",OPTIONS);
 
 
@@ -95,6 +94,11 @@ exports.getSketch = function (path, cb) {
     sketches.getSketch(path,cb);
 }
 
+exports.saveSketch = function (args, cb) {
+    if(!args.file) throw new Error('missing filename');
+    if(!args.code) throw new Error('missing code');
+    sketches.saveSketch(args.file, args.code,cb);
+}
 exports.listSketches = function(cb) {
     sketches.listSketchesFull(cb);
 }
@@ -112,4 +116,13 @@ exports.searchLibraries = function(query,cb) {
 
 exports.upload = function(sketch, port, pub, cb) {
     uploader.upload(sketch,port,OPTIONS,pub,cb);
+}
+
+exports.getSettings = function(args,cb) {
+    console.log("master doing get settings");
+    cb(platform.getSettings());
+}
+exports.setSettings = function(args,cb) {
+    console.log("master doing set settings");
+    platform.setSettings(args,cb);
 }

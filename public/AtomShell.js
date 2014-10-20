@@ -1,16 +1,27 @@
 
+
 if(typeof require == 'undefined') {
     console.log("we are in the browser");
     app.factory('AtomShell', ['$rootScope', '$http', function($rootScope, $http) {
+
+        function doPost(command, args, cb) {
+            console.log("really sending", command);
+            $http.post('/'+command,args).then(function(res) {
+                console.log('command',command,'returned',res.data);
+                cb(res.data);
+            });
+        }
+
         return {
             send: function(command, args, cb) {
-                console.log("sending command", command);
+                console.log("sendings command", command);
                 if(command == 'sketches') {
                     $http.get('/'+command).then(function(res) {
                         //self.ports = res.data;
                         console.log('command',command,'returned');
                         cb(res.data);
                     });
+                    return;
                 }
                 if(command == 'sketch') {
                     $http.get('/'+command+'?id='+args).then(function(res) {
@@ -18,13 +29,11 @@ if(typeof require == 'undefined') {
                         console.log('command',command,'returned');
                         cb(res.data);
                     });
+                    return;
                 }
                 if(command == 'sketches_new' || command == 'sketches_delete') {
-                    console.log("sending sketches new/delete");
-                    $http.post('/'+command,args).then(function(res) {
-                        console.log('command',command,'returned',res.data);
-                        cb(res.data);
-                    });
+                    doPost(command,args,cb);
+                    return;
                 }
 
                 if(command == 'compile') {
@@ -33,15 +42,16 @@ if(typeof require == 'undefined') {
                         console.log('command',command,'returned',res.data);
                         cb(res.data);
                     });
+                    return;
                 }
                 if(command == 'ports') {
                     $http.get('/'+command).then(function(res) {
                         console.log('command',command,'returned',res.data);
                         cb(res.data);
                     });
+                    return;
                 }
-
-
+                doPost(command, args, cb);
             }
         }
     }]);

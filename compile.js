@@ -101,7 +101,7 @@ function calculateLibs(list, paths, libs, debug, cb, plat) {
             var lib = LIBRARIES.getById(libname.toLowerCase());
             if(!lib) {
                 debug("ERROR. couldn't find library",libname);
-                return;
+                throw new Error("Missing Library! " + libname);
             }
             if(!lib.isInstalled()) {
                 throw new Error("library should already be installed! " + libname);
@@ -261,7 +261,7 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
     var errorHit = false;
     function debug(message) {
         var args = Array.prototype.slice.call(arguments);
-        console.log("message = " + message + args.join(" "));
+        console.log("message = " + message + args.join(" ")+'\n');
         if(message instanceof Error) {
             errorHit = true;
             publish({type:'error', message: args.join(" ") + message.output});
@@ -282,7 +282,7 @@ exports.compile = function(sketchPath, outdir,options, publish, sketchDir, final
 
 
 
-    debug("assembling the sketch in the directory",outdir);
+    debug("assembling the sketch in the directory\n",outdir);
     checkfile(outdir);
 
 

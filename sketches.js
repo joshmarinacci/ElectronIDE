@@ -1,6 +1,5 @@
 var fs = require('fs');
 
-var settings = require('./settings.js');
 var platform = require('./platform');
 var plat = platform.getDefaultPlatform();
 
@@ -11,7 +10,7 @@ exports.makeNewSketch = function(name,cb) {
         return;
     }
     fs.mkdirSync(dir);
-    var example = fs.readFileSync(settings.sketchtemplate).toString();
+    var example = fs.readFileSync(platform.getSettings().sketchtemplate).toString();
     fs.writeFileSync(plat.getUserSketchesDir()+'/'+name+'/'+name+'.ino',example);
     if(cb) cb(name,example);
 }
@@ -88,14 +87,16 @@ exports.listSketchesFull = function(cb) {
                 label:dir,
                 files:[],
             }
-            fs.readdirSync(plat.getUserSketchesDir()+'/'+dir)
-               .filter(SKETCH_DIR_FILTER)
-               .forEach(function(file) {
-                   ret.files.push({
-                       id:dir+'/'+file,
-                       label:file
-                       });
-            });
+            if(fs.statSync(plat.getUserSketchesDir()+'/'+dir).isDirectory() == true) {
+                fs.readdirSync(plat.getUserSketchesDir()+'/'+dir)
+                   .filter(SKETCH_DIR_FILTER)
+                   .forEach(function(file) {
+                       ret.files.push({
+                           id:dir+'/'+file,
+                           label:file
+                           });
+                });
+            }
             return ret;
         });
         cb(list);
@@ -104,9 +105,9 @@ exports.listSketchesFull = function(cb) {
 
 exports.saveSketch = function(name, code, cb) {
     console.log("saving to ",name);
-    var dir = plat.getUserSketchesDir() + '/' + name;
-    console.log("dir = ",dir);
-    var file = dir+'/'+name+'.ino';
+    var file = plat.getUserSketchesDir() + '/' + name;
+    //console.log("dir = ",dir);
+    //var file = dir+'/'+name+'.ino';
     console.log("file = ",file);
     fs.writeFileSync(file,code);
     if(cb)cb();

@@ -1,8 +1,9 @@
 var fs = require('fs');
-var settings = require('./settings.js');
+var platform = require('./platform.js');
 
 var boards = [];
 function init() {
+    var settings = platform.getSettings();
     console.log("loading boards from ",settings.boardpath);
     fs.readdirSync(settings.boardpath).forEach(function(file){
         console.log("parsing board file = ",file);
