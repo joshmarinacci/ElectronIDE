@@ -10,10 +10,8 @@ hard coded for Mac.
 To try it out do:
 
 * have NodeJS and NPM installed
-* have the regular Arduino IDE installed (not true for Linux)
 * check out the code: `git clone https://github.com/joshmarinacci/ElectronIDE`
 * install all deps with `cd ElectronIDE; npm install`
-* optionally modify `settings.js` to fit your environment
 * run `node electron`
 * open your browser to `http://localhost:54329/`
 
@@ -30,6 +28,13 @@ say you have to install it AND `nodejs`, which allows running it as `node` and `
 
 
 # What's New?
+
+## Version 0.4b3 released
+
+Electron has a brand new UI built with UIKit and AngularJS. Electron works as a .app bundle now on Mac. Other platforms should use commandline install.  `settings.js` is no longer used. Instead you can use the settings dialog.  There are probably tons of bugs due to the UI changes. Please file issues.
+I'll get to them ASAP.
+
+
 
 ## Version 0.1 released
 
@@ -59,7 +64,7 @@ If you want to help on the Node side, you can work on
 * support proper software reset on Unos (setting DTR high?)
 * figure out how to extract documentation from Arduino library source directly (doxygen?) see [#56](https://github.com/joshmarinacci/ElectronIDE/issues/56)
   for further discussion
-* look into integrating the embedded webkit from Atom.io (Atom-Shell)
+* help with Windows integration with the embedded webkit from Atom.io (Atom-Shell)
 
 If you want to help on the HTML side, you can work on
 
@@ -73,7 +78,7 @@ If you want to help with metadata, you can add to the [repo](https://github.com/
 * more extensive lib info, like alternate versions of AccelStepper for other platforms
 
 
-And of course everyone can test test test.
+And of course everyone must test test test.
 
 ### Roadmap
 
