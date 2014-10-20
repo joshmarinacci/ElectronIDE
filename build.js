@@ -13,9 +13,11 @@ if(!fs.existsSync('build')) fs.mkdirSync('build');
 
 var atom_to_node_versions = {
     'v0.13.3':'0.11.10',
+    'v0.17.1':'0.11.14', // ????
 }
 
-var ATOM_VERSION = 'v0.13.3';
+//var ATOM_VERSION = 'v0.13.3';
+var ATOM_VERSION = 'v0.17.1';
 
 var atom_node = atom_to_node_versions[ATOM_VERSION];
 var build_node = process.versions.node;
@@ -65,6 +67,7 @@ buildapp(
 
 function buildapp(ATOM_PATH, BUILD_DIR, RESOURCES_DIR, cb) {
     console.log("Making Atom Shell build",ATOM_PATH,BUILD_DIR);
+    if(!fs.existsSync(ATOM_PATH)) throw new Error("path doesn't exist " + ATOM_PATH);
     var APP_DIR   = BUILD_DIR+'/'+RESOURCES_DIR;
     console.log("app dir = ", APP_DIR);
 
