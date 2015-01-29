@@ -61,7 +61,7 @@ exports.getBoards = function() {
 
 
 exports.doCompile = function(code,board,sketch, cb, publishEvent) {
-    var BUILD_DIR = os.tmpdir() + 'build';
+    var BUILD_DIR = os.tmpdir() + '/build';
     publishEvent({ type:'compile', message:BUILD_DIR});
     console.log("compiling with build dir:", BUILD_DIR);
     //create output dir
