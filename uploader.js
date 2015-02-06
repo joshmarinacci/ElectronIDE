@@ -1,6 +1,6 @@
 //var sp = require('serialport');
 var child_process = require('child_process');
-
+var os = require('os');
 /*
 sp.list(function(err,list) {
     console.log(list);
@@ -20,7 +20,7 @@ function runAVRDude(hexfile, portpath, options, debug, cb) {
             '-P'+portpath,
             '-b'+options.device.upload.speed,
             '-D', //don't erase
-            '-Uflash:w:'+hexfile+':i',
+            '-Uflash:w:'+os.tmpdir() +'/'+hexfile+':i',
         ];
     } else {
         var uploadcmd = [
