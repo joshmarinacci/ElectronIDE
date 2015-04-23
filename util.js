@@ -41,6 +41,7 @@ exports.downloadUntgzTo = function (remote, outpath, update, cb) {
     var fout = fs.createWriteStream('/tmp/blah.zip');
     req.on('response', function(res) {
         var total = res.headers['content-length']; //total byte length
+        console.log("total should be",total);
         var count = 0;
         res
             .on('data', function(data) {

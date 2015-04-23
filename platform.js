@@ -1,17 +1,18 @@
 var fs = require('fs');
 var http = require('http');
 var util = require('./util');
+var Q = require('q');
 
 //var CLOUDPATH = "/Users/josh/projects/ArduinoZips";
 var CLOUDPATH = 'http://joshondesign.com/p/apps/electron/platforms';
 var VERSION = "1.0.5";
 
-console.log("os = ",process.platform);
+//console.log("os = ",process.platform);
 
 var settings = {
     datapath:  __dirname+"/node_modules/arduinodata/libraries",
     boardpath: __dirname+"/node_modules/arduinodata/boards",
-    sketchtemplate: "sketchtemplate.ino",
+    sketchtemplate: "sketchtemplate.ino"
 };
 
 
@@ -81,6 +82,7 @@ function Platform() {
         return this.root + '/hardware/tools/avr/etc/avrdude.conf';
     }
     this.isInstalled = function() {
+        console.log("checking this.root",this.root);
         return fs.existsSync(this.root);
     }
 
@@ -91,6 +93,17 @@ function Platform() {
         }
         var zippath = CLOUDPATH+'/'+VERSION+'/arduino-'+VERSION+'-'+this.os+'-trimmed.tar.gz';
         util.downloadUntgzTo(zippath,this.root,update, cb);
+    }
+    this.installIfNeeded_P = function() {
+        var self = this;
+        return Q.Promise(function(resolve, reject, notify){
+           if(self.isInstalled()) return resolve();
+            var zippath = CLOUDPATH+'/'+VERSION+'/arduino-'+VERSION+'-'+self.os+'-trimmed.tar.gz';
+            util.downloadUntgzTo(zippath,self.root, notify, function(){
+                console.log("done with the install");
+                resolve();
+            });
+        });
     }
 
 }
@@ -113,8 +126,9 @@ _digispark_pro.init = function(device) {
     this.getVariantPath = function() { return this.droot + digifix+ '/variants/'+this.device.build.core;   }
     this.getAvrDudeBinary = function() { return this.droot + digifix+ '/tools/avrdude'; }
     this.parentPlatform = _default;
-    this.isInstalled = function() { return fs.existsSync(this.droot); }
+    this.isInstalled = function() { console.log("checking",this.droot); return fs.existsSync(this.droot); }
     this.installIfNeeded = function(cb,update) {
+        console.log("installing if needed");
         var self = this;
         this.parentPlatform.installIfNeeded(function() {
             if(self.isInstalled()) {
@@ -229,17 +243,17 @@ exports.setSettings = function(newset, cb) {
 
 var SETTINGS_FILE = __dirname+"/settings.json";
 exports.loadSettings = function() {
-    console.log("LOADING SETTINGS",SETTINGS_FILE);
+    //console.log("LOADING SETTINGS",SETTINGS_FILE);
     if(!fs.existsSync(SETTINGS_FILE)) return;
     var json = fs.readFileSync(SETTINGS_FILE);
     try {
         var ext_settings = JSON.parse(json);
-        console.log('ext settings = ',ext_settings);
-        console.log("settings",settings);
+        //console.log('ext settings = ',ext_settings);
+        //console.log("settings",settings);
         for(var name in ext_settings) {
             settings[name] = ext_settings[name];
         }
-        console.log("settings",settings);
+        //console.log("settings",settings);
     } catch (e) {
         console.log("error loading the settings",e);
     }
