@@ -1,24 +1,27 @@
 {
-  "name": "ElectronIDE",
-  "description": "new arduino ide",
-  "version": "0.0.1",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/joshmarinacci/ElectronIDE.git"
-  },
-  "dependencies": {
-    "adm-zip": "^0.4.4",
-    "arduinodata": ">=0.1.0",
-    "async": "^0.9.0",
-    "express": "^4.4.2",
-    "moment": "^2.6.0",
-    "multer": "^0.1.0",
-    "nodejs-websocket": "^0.1.5",
-    "serialport": "^1.4.0",
-    "tar": "^0.1.19",
-    "unzip": "^0.1.9",
-    "wrench": "^1.5.8",
-    "body-parser": "^1.5.2",
-    "ncp": "~0.6.0"
-  }
+    "name": "ElectronIDE",
+    "description": "new arduino ide",
+    "version": "0.0.1",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/joshmarinacci/ElectronIDE.git"
+    },
+    "dependencies": {
+        "adm-zip": "^0.4.4",
+        "arduinodata": ">=0.1.0",
+        "async": "^0.9.0",
+        "express": "^4.4.2",
+        "moment": "^2.6.0",
+        "multer": "^0.1.0",
+        "nodejs-websocket": "^0.1.5",
+        "serialport": "^1.4.0",
+        "tar": "^0.1.19",
+        "unzip": "^0.1.9",
+        "wrench": "^1.5.8",
+        "body-parser": "^1.5.2",
+        "ncp": "~0.6.0"
+    },
+    "scripts": {
+        "simple-test":"node test/test_compile.js"
+    }
 }
