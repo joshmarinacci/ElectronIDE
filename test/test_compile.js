@@ -3,6 +3,8 @@ var os = require('os');
 
 var boards = require('../boards');
 var platform = require('../platform');
+var compile = require('../compile');
+var wrench = require('wrench');
 var Q = require('q');
 
 
@@ -54,18 +56,69 @@ options.platform.installIfNeeded(function() {
 
 //var code = fs.readFileSync(sketchPath+'/DrawBot2.ino').toString();
 
+function errorIfMissing(file) {
+    console.log("checking",file);
+    if(!fs.existsSync(file)) throw new Error("file not found " + file);
+}
+function cleanDir(outdir){
+    console.log("cleaning",outdir);
+    wrench.rmdirSyncRecursive(outdir, true);
+    wrench.mkdirSyncRecursive(outdir);
+}
+
+function generateCPPFile_P(options) {
+    return Q.fcall(function() {
+        console.log("generating CPP file ");
+    });
+}
+
+function copyAllFilesMatching_P(exts, srcDir, destDir) {
+    console.log("foo");
+    console.log("making");
+    return Q.fcall(function() {
+        console.log("coipying all ", exts);
+    });
+}
+
+function calculateLibs_P(options) {
+
+}
+
 var Compiler = {
     buildSketch: function(sketchPath, boardId) {
         var OPTIONS = { userlibs: platform.getSettings().userlibs };
         OPTIONS.device =  boards.getBoard(boardId);
         OPTIONS.platform = platform.getPlatform(OPTIONS.device);
+        OPTIONS.buildDir = os.tmpdir() + '/build';
+        OPTIONS.outDir = OPTIONS.buildDir+'/out';
+        OPTIONS.sketchDir = sketchPath;
+        OPTIONS.sketchOutDir = OPTIONS.outDir + sketchPath;
         return OPTIONS.platform
             .installIfNeeded_P()
-            .then(this.compile_P());
+            .then(this.compile_P(sketchPath, OPTIONS));
     },
-    compile_P: function() {
-        return Q.fcall(function() {
-            console.log('compiling');
+    compile_P: function(sketchPath, options) {
+        return Q.Promise(function(resolve, reject, notify){
+            console.log('compiling sketch ', sketchPath);
+            //check compiler exists
+            errorIfMissing(options.platform.getCompilerBinaryPath());
+            //clean dirs
+            cleanDir(options.outDir);
+            errorIfMissing(options.outDir);
+            //generate the CPP file and copy all files to the output directory
+            console.log("here");
+            try {
+
+                var p1 = generateCPPFile_P(options);
+                var p2 = copyAllFilesMatching_P([".h", ".cpp"], options.sketchDir, options.sketchOutDir);
+                var p3 = calculateLibs_P(options);
+                p1.then(p2).then(p3).done(function() {
+                    resolve();
+                });
+            } catch(e) {
+                console.log(e);
+                reject(e);
+            }
         });
     }
 };
