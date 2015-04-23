@@ -34,8 +34,8 @@ exports.downloadUnzipTo = function (remote, outpath, update, cb) {
 }
 
 exports.downloadUntgzTo = function (remote, outpath, update, cb) {
+    update("downloadings",remote);
     console.log('downloading ',remote);
-    var self = this;
     console.log('unziping to ',outpath);
     var req = http.get(remote);
     var fout = fs.createWriteStream('/tmp/blah.zip');
@@ -46,7 +46,7 @@ exports.downloadUntgzTo = function (remote, outpath, update, cb) {
         res
             .on('data', function(data) {
                 count += data.length;
-                if(update) update( {message:count/total});
+                if(update) update( {progress:count/total});
             })
             .pipe(zlib.createGunzip())
             .pipe(tar.Extract({path:outpath, strip: 1}))

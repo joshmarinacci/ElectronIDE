@@ -4,6 +4,7 @@ var http = require('http');
 var https = require('https');
 var AdmZip = require('adm-zip');
 var platform = require('./platform');
+var Q = require('q');
 
 
 
@@ -13,18 +14,18 @@ var plat = platform.getDefaultPlatform();
 
 
 function isInstalled() {
-    console.log('checking if',this.id,'is installed');
+    //console.log('checking if',this.id,'is installed');
     if(this.source == 'ide') {
-        console.log("  it's IDE. already installed");
+        //console.log("  it's IDE. already installed");
         return true;
     }
     var path = plat.getReposPath()+'/'+this.id;
-    console.log('checking if path exists',path);
+    //console.log('checking if path exists',path);
     if(fs.existsSync(plat.getReposPath()+'/'+this.id)) {
-        console.log("  it exists. already installed");
+        //console.log("  it exists. already installed");
         return true;
     }
-    console.log("   not installed");
+    //console.log("   not installed");
     return false;
 }
 
@@ -57,69 +58,72 @@ function getIncludePaths(platform) {
     return scanSubdirs(plat.getReposPath()+'/'+this.id);
 }
 
-function install(cb) {
-    if(!fs.existsSync(plat.getReposPath())) {
-        fs.mkdirSync(plat.getReposPath());
-    }
-
-    console.log('installing',this.id);
-    if(this.source == 'git') {
-        var bin = 'git';
-        var cmd = [
-            'clone',
-            this.location,
-            plat.getReposPath()+'/'+this.id,
-        ];
-        console.log("execing",bin,cmd);
-        var proc = spawn(bin,cmd);
-        proc.stdout.on('data',function(data) {
-            console.log("STDOUT",data.toString());
-        });
-        proc.stderr.on('data',function(data) {
-            console.log("STDERR",data.toString());
-        });
-        proc.on('close',function(code) {
-            console.log("exited with code",code);
-            if(cb) cb(null);
-        });
-    }
-
-    if(this.source == 'http'){
-        console.log("source is http",this.location);
-        var outpath = plat.getReposPath();
-        var outfile = plat.getReposPath()+'/'+this.location.substring(this.location.lastIndexOf('/')+1);
-        console.log("output file = ",outfile);
-        //var req = http.get(this.location);
-        if(this.location.indexOf('https://') == 0) {
-            var req = https.get(this.location);
-        } else {
-            var req = http.get(this.location);
+function install_P() {
+    var self = this;
+    return Q.Promise(function(resolve, reject, notify) {
+        if(!fs.existsSync(plat.getReposPath())) {
+            fs.mkdirSync(plat.getReposPath());
         }
-        req.on('response',function(res) {
-                console.log("response");
-                console.log('code = ', res.statusCode);
-                console.log("version = ", res.httpVersion);
-                console.log("headers = ", res.headers);
-                res.pipe(fs.createWriteStream(outfile))
-                .on('close',function(){
-                    console.log('finished downloading');
-                    var zip = new AdmZip(outfile);
-                    var zipEntries = zip.getEntries();
-                    var rootpath = zipEntries[0].entryName;
-                    rootpath = rootpath.substring(0,rootpath.indexOf('/'));
-                    console.log("rootpath of the zip is",rootpath);
-                    zip.extractAllTo(plat.getReposPath(),true);
-                    console.log('done extracting from ',outfile, 'to',plat.getReposPath());
-                    fs.renameSync(plat.getReposPath()+'/'+rootpath, plat.getReposPath()+'/'+rootpath.toLowerCase());
-                    if(cb) cb(null);
-                });
-            })
-            .on('error',function() {
-                console.log('an error with the http request');
-            })
-            ;
-        req.end();
-    }
+        console.log('installing',self.id,self.source);
+        if(self.source == 'git') {
+            var bin = 'git';
+            var cmd = [
+                'clone',
+                self.location,
+                plat.getReposPath()+'/'+self.id,
+            ];
+            console.log("execing",bin,cmd);
+            var proc = spawn(bin,cmd);
+            proc.stdout.on('data',function(data) {
+                console.log("STDOUT",data.toString());
+            });
+            proc.stderr.on('data',function(data) {
+                console.log("STDERR",data.toString());
+            });
+            proc.on('close',function(code) {
+                console.log("exited with code",code);
+                resolve();
+            });
+        }
+
+        if(self.source == 'http'){
+            console.log("source is http",self.location);
+            var outpath = plat.getReposPath();
+            var outfile = plat.getReposPath()+'/'+self.location.substring(self.location.lastIndexOf('/')+1);
+            console.log("output file = ",outfile);
+            //var req = http.get(this.location);
+            if(self.location.indexOf('https://') == 0) {
+                var req = https.get(self.location);
+            } else {
+                var req = http.get(self.location);
+            }
+            req.on('response',function(res) {
+                    console.log("response");
+                    console.log('code = ', res.statusCode);
+                    console.log("version = ", res.httpVersion);
+                    console.log("headers = ", res.headers);
+                    res.pipe(fs.createWriteStream(outfile))
+                    .on('close',function(){
+                        console.log('finished downloading');
+                        var zip = new AdmZip(outfile);
+                        var zipEntries = zip.getEntries();
+                        var rootpath = zipEntries[0].entryName;
+                        rootpath = rootpath.substring(0,rootpath.indexOf('/'));
+                        console.log("rootpath of the zip is",rootpath);
+                        zip.extractAllTo(plat.getReposPath(),true);
+                        console.log('done extracting from ',outfile, 'to',plat.getReposPath());
+                        fs.renameSync(plat.getReposPath()+'/'+rootpath, plat.getReposPath()+'/'+rootpath.toLowerCase());
+                        resolve();
+                    });
+                })
+                .on('error',function() {
+                    console.log('an error with the http request');
+                    reject();
+                })
+                ;
+            req.end();
+        }
+    });
 
 }
 
@@ -130,7 +134,7 @@ function init() {
             var str = fs.readFileSync(platform.getSettings().datapath+'/'+file).toString();
             var lib = JSON.parse(str);
             lib.isInstalled = isInstalled;
-            lib.install = install;
+            lib.install_P = install_P;
             lib.getIncludePaths = getIncludePaths;
             libs.push(lib);
         });

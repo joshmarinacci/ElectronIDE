@@ -9,8 +9,8 @@ var options = {
     name: sketchPath.substring(sketchPath.lastIndexOf('/')),
 }
 //options.device = boards.getBoard('uno');
-//options.device = boards.getBoard('digispark-pro');
-options.device = boards.getBoard('trinket5');
+options.device = boards.getBoard('digispark-pro');
+//options.device = boards.getBoard('trinket5');
 options.platform = platform.getPlatform(options.device);
 
 var debug = function(res) {

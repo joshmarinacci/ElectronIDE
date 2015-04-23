@@ -97,9 +97,14 @@ function Platform() {
     this.installIfNeeded_P = function() {
         var self = this;
         return Q.Promise(function(resolve, reject, notify){
-           if(self.isInstalled()) return resolve();
+           notify("checking if platform is installed");
+           if(self.isInstalled()) {
+               notify("platform is installed");
+               return resolve();
+           }
+            notify("platform not installed. ");
             var zippath = CLOUDPATH+'/'+VERSION+'/arduino-'+VERSION+'-'+self.os+'-trimmed.tar.gz';
-            util.downloadUntgzTo(zippath,self.root, notify, function(){
+            util.downloadUntgzTo(zippath, self.root, notify, function(){
                 console.log("done with the install");
                 resolve();
             });

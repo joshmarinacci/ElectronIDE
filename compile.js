@@ -247,7 +247,7 @@ function processList(list, cb, publish) {
             message:err.toString(),
             path:err.path,
             errno: err.errno,
-            code: err.code,
+            code: err.code
         });
     }
 }
@@ -465,6 +465,7 @@ function compileFiles(options, outdir, includepaths, cfiles,debug, cb) {
 
     async.mapSeries(cfiles, comp, cb);
 }
+exports.compileFiles = compileFiles;
 
 function compileCPP(options, outdir, includepaths, cfile,debug, cb) {
     debug("compiling ",cfile);
